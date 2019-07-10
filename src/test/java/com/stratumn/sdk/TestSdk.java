@@ -1,22 +1,37 @@
 package com.stratumn.sdk;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.stratumn.sdk.model.trace.*;
+import com.stratumn.sdk.model.client.*;
+
+import com.google.gson.*;
+
+class DefaultSerializer implements ISerializer<Object> {
+
+  private Gson gson;
+
+  public DefaultSerializer() {
+    this.gson = new Gson();
+  }
+
+  public Object deserialize(String json) {
+    return this.gson.fromJson(json, Object.class);
+  }
+}
 
 public class TestSdk {
 
   @Test
   public void testNewTrace() {
-    SdkOptions opts = new SdkOptions("123");
-    Sdk<Object> s = new Sdk<Object>(opts);
+    Secret s = Secret.newPrivateKeySecret("----- PRIVATE KEY ------");
+    SdkOptions opts = new SdkOptions("123", s);
+    Sdk<Object> sdk = new Sdk<Object>(opts);
+    sdk.setSerializer(new DefaultSerializer());
 
     String formId = "42";
     Object data = new Object();
     NewTraceInput<Object> input = new NewTraceInput<Object>(formId, data);
-    assertThrows(UnsupportedOperationException.class, () -> {
-      s.newTrace(input);
-    });
+    sdk.newTrace(input);
   }
 }

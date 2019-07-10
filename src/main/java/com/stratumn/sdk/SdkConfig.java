@@ -10,6 +10,9 @@ public class SdkConfig {
   // cf: https://github.com/str4d/ed25519-java
   String signingPrivateKey;
 
+  public SdkConfig() {
+  }
+
   public SdkConfig(String workflowId, String userId, String accountId, String groupId, String ownerId,
       String signingPrivateKey) {
     this.workflowId = workflowId;

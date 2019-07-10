@@ -1,11 +1,40 @@
 package com.stratumn.sdk;
 
+import com.stratumn.sdk.model.account.*;
 import com.stratumn.sdk.model.trace.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.stratumn.chainscript.*;
 
 public class Sdk<TState> implements ISdk<TState> {
 
+  private ISerializer<TState> serializer;
+
+  public void setSerializer(ISerializer<TState> s) {
+    this.serializer = s;
+  }
+
   private SdkOptions opts;
   private SdkConfig config;
+
+  // This is temporary until we plug the SDK to the APIs.
+  private TState getMockState() {
+    String path = "mockState.json";
+    String contents;
+    try {
+      contents = new String(Files.readAllBytes(Paths.get(path)));
+    } catch (IOException e) {
+      return null;
+    }
+
+    return this.serializer.deserialize(contents);
+  }
 
   public Sdk(SdkOptions opts) {
     this.opts = opts;
@@ -13,46 +42,50 @@ public class Sdk<TState> implements ISdk<TState> {
 
   @Override
   public <TLinkData> TraceState<TState> newTrace(NewTraceInput<TLinkData> input) {
-    // The next 2 lines are just here to use opts and config once
-    // so that the linter doesn't complain.
-    System.out.println(opts.workflowId);
-    System.out.println(config.ownerId);
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public <TLinkData> TraceState<TState> appendLink(AppendLinkInput<TLinkData> input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public <TLinkData> TraceState<TState> pushTrace(PushTransferInput<TLinkData> input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public <TLinkData> TraceState<TState> pullTrace(PullTransferInput<TLinkData> input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public <TLinkData> TraceState<TState> acceptTransfer(TransferResponseInput<TLinkData> input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public <TLinkData> TraceState<TState> rejectTransfer(TransferResponseInput<TLinkData> input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public <TLinkData> TraceState<TState> cancelTransfer(TransferResponseInput<TLinkData> input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
   public TraceState<TState> getTraceState(GetTraceStateInput input) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(),
+        this.getMockState());
   }
 
   @Override
@@ -62,17 +95,26 @@ public class Sdk<TState> implements ISdk<TState> {
 
   @Override
   public TracesState<TState> getIncomingTraces(PaginationInfo paginationInfo) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    List<TraceState<TState>> res = new ArrayList<TraceState<TState>>();
+    res.add(
+        new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(), this.getMockState()));
+    return new TracesState<TState>(res);
   }
 
   @Override
   public TracesState<TState> getOutgoingTraces(PaginationInfo paginationInfo) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    List<TraceState<TState>> res = new ArrayList<TraceState<TState>>();
+    res.add(
+        new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(), this.getMockState()));
+    return new TracesState<TState>(res);
   }
 
   @Override
   public TracesState<TState> getBacklogTraces(PaginationInfo paginationInfo) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    List<TraceState<TState>> res = new ArrayList<TraceState<TState>>();
+    res.add(
+        new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(), this.getMockState()));
+    return new TracesState<TState>(res);
   }
 
 }

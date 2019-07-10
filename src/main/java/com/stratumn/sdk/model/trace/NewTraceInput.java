@@ -13,4 +13,8 @@ public class NewTraceInput<TLinkData> {
     this.data = data;
   }
 
+  public TLinkData getData() {
+    return this.data;
+  }
+
 }

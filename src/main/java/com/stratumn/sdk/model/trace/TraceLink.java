@@ -10,7 +10,7 @@ public class TraceLink extends Link {
     super();
   }
 
-  public <TLinkData> TLinkData data() {
+  public <TLinkData> TLinkData formdata() {
     throw new UnsupportedOperationException("Not implemented yet");
   }
 
