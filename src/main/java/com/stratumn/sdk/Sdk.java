@@ -3,9 +3,6 @@ package com.stratumn.sdk;
 import com.stratumn.sdk.model.account.*;
 import com.stratumn.sdk.model.trace.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,15 +22,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
   // This is temporary until we plug the SDK to the APIs.
   private TState getMockState() {
-    String path = "mockState.json";
-    String contents;
-    try {
-      contents = new String(Files.readAllBytes(Paths.get(path)));
-    } catch (IOException e) {
-      return null;
-    }
-
-    return this.serializer.deserialize(contents);
+    return this.serializer.deserialize(null);
   }
 
   public Sdk(SdkOptions opts) {
