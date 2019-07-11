@@ -1,0 +1,73 @@
+<project>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.stratumn.sdk</groupId>
+  <artifactId>sdk-java</artifactId>
+  <version>1</version>
+  <name>Stratumn JAVA SDK</name>
+  
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <repositories>
+    <repository>
+        <id>bintray-americanexpress-maven</id>
+        <url>https://dl.bintray.com/americanexpress/maven</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- junit 5, unit test -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.5.0</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- https://mvnrepository.com/artifact/net.i2p.crypto/eddsa -->
+    <dependency>
+      <groupId>net.i2p.crypto</groupId>
+      <artifactId>eddsa</artifactId>
+      <version>0.3.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.aexp.nodes.graphql</groupId>
+      <artifactId>nodes</artifactId>
+      <version>0.4.0</version>
+    </dependency>
+
+    <!--  Gson: Java to Json conversion -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.5</version>
+      <scope>compile</scope>
+    </dependency>
+
+
+  </dependencies>
+
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>fully.qualified.MainClass</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+    
+</project>
