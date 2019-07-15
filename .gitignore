@@ -25,3 +25,5 @@ hs_err_pid*
 # java stuff
 target
 .classpath
+release.properties
+pom.xml.releaseBackup
