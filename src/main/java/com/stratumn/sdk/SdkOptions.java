@@ -10,6 +10,12 @@ public class SdkOptions {
   public SdkOptions(String workflowId, Secret secret) {
     this.workflowId = workflowId;
     this.secret = secret;
-    this.endpoints = new Endpoints();
+    this.endpoints = new Endpoints(Environment.RELEASE);
+  }
+
+  public SdkOptions(String workflowId, Secret secret, Environment env) {
+    this.workflowId = workflowId;
+    this.secret = secret;
+    this.endpoints = new Endpoints(env);
   }
 }
