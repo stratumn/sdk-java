@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.stratumn.sdk</groupId>
   <artifactId>sdk-java</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.2</version>
   <name>Stratumn JAVA SDK</name>
   <description>Stratumn services SDK</description>
   <url>https://github.com/stratumn/sdk-java</url>
@@ -63,7 +63,7 @@
     <connection>scm:git://github.com/stratumn/sdk-java.git</connection>
     <url>https://github.com/stratumn/sdk-java</url>
     <developerConnection>scm:git://github.com/stratumn/sdk-java</developerConnection>
-    <tag>HEAD</tag>
+    <tag>sdk-java-0.0.2</tag>
   </scm>
 
   <developers>
