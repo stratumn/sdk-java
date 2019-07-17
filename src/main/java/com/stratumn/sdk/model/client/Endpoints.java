@@ -15,6 +15,12 @@ public class Endpoints {
   public static final String ACCOUNT_DEMO_URL = "https://account-api.demo.stratumn.com";
   public static final String MEDIA_DEMO_URL = "https://media-api.demo.stratumn.com";
 
+  public Endpoints(String trace, String account, String media) {
+    this.trace = trace;
+    this.account = account;
+    this.media = media;
+  }
+
   public Endpoints(Environment env) {
 
     switch (env) {
