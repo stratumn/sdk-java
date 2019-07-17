@@ -15,6 +15,10 @@ public class Endpoints {
   public static final String ACCOUNT_DEMO_URL = "https://account-api.demo.stratumn.com";
   public static final String MEDIA_DEMO_URL = "https://media-api.demo.stratumn.com";
 
+  public static final String TRACE_STAGING_URL = "https://trace-api.staging.stratumn.com";
+  public static final String ACCOUNT_STAGING_URL = "https://account-api.staging.stratumn.com";
+  public static final String MEDIA_STAGING_URL = "https://media-api.staging.stratumn.com";
+
   public Endpoints(String trace, String account, String media) {
     this.trace = trace;
     this.account = account;
@@ -24,6 +28,11 @@ public class Endpoints {
   public Endpoints(Environment env) {
 
     switch (env) {
+    case STAGING:
+      this.trace = TRACE_STAGING_URL;
+      this.account = ACCOUNT_STAGING_URL;
+      this.media = MEDIA_STAGING_URL;
+      break;
     case DEMO:
       this.trace = TRACE_DEMO_URL;
       this.account = ACCOUNT_DEMO_URL;

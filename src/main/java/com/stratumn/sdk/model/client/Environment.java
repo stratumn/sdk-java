@@ -5,5 +5,5 @@ package com.stratumn.sdk.model.client;
  * - RELEASE is used for production.
  */
 public enum Environment {
-  DEMO, RELEASE
+  STAGING, DEMO, RELEASE
 }
