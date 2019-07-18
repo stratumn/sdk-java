@@ -3,6 +3,8 @@ package com.stratumn.sdk;
 import com.stratumn.sdk.model.account.*;
 import com.stratumn.sdk.model.trace.*;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +29,29 @@ public class Sdk<TState> implements ISdk<TState> {
 
   public Sdk(SdkOptions opts) {
     this.opts = opts;
+
+    this.pingTrace();
+  }
+
+  private void pingTrace() {
+    try {
+      // ping trace to test network connectivity.
+      String url = String.format("%s/healthz", this.opts.endpoints.trace);
+      HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+      int responseCode = connection.getResponseCode();
+      if (responseCode != 200) {
+        System.out.printf("Could not call Trace (%d)\n", responseCode);
+      }
+
+    } catch (Exception e) {
+      System.err.print("Could not call Trace");
+      e.printStackTrace();
+      return;
+    }
+
+    System.out.println("================================================================================");
+    System.out.println("                    Connection to trace established                             ");
+    System.out.println("================================================================================");
   }
 
   @Override
