@@ -1,0 +1,29 @@
+version: v1.0
+name: SDK Java Maven release Pipeline
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+execution_time_limit:
+  minutes: 15
+
+blocks:
+  - name: Release
+    task:
+      env_vars:
+        - name: MAVEN_OPTS
+          value: "-Dmaven.repo.local=.m2"
+      prologue:
+        commands:
+          - checkout
+          - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+          - cache restore build-$KEY
+          - cache restore maven-$KEY
+      jobs:
+        - name: Publish
+          commands:
+            - mvn --batch-mode release:prepare
+            - mvn release:perform
+            # the release creates commits with tags, we need to push them to github
+            - git push origin master
+
