@@ -19,6 +19,7 @@ blocks:
       prologue:
         commands:
           - checkout
+          - GPG_TTY=$(tty)
           - gpg --batch --import /home/semaphore/semaphoreci_gpg_key.asc
           - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
           - cache restore build-$KEY
