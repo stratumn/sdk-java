@@ -10,12 +10,15 @@ execution_time_limit:
 blocks:
   - name: Release
     task:
+      secrets:
+        - name: maven
       env_vars:
         - name: MAVEN_OPTS
           value: "-Dmaven.repo.local=.m2"
       prologue:
         commands:
           - checkout
+          - gpg --import /semaphoreci_gpg_key.asc
           - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
           - cache restore build-$KEY
           - cache restore maven-$KEY
