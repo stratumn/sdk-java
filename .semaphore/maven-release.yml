@@ -18,7 +18,7 @@ blocks:
       prologue:
         commands:
           - checkout
-          - gpg --import /semaphoreci_gpg_key.asc
+          - gpg --import semaphoreci_gpg_key.asc
           - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
           - cache restore build-$KEY
           - cache restore maven-$KEY
