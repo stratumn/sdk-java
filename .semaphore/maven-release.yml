@@ -12,6 +12,7 @@ blocks:
     task:
       secrets:
         - name: maven
+        - name: github-write
       env_vars:
         - name: MAVEN_OPTS
           value: "-Dmaven.repo.local=.m2"
