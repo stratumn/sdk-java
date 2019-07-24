@@ -2,7 +2,10 @@ package com.stratumn.sdk;
 
 import com.stratumn.sdk.model.account.*;
 import com.stratumn.sdk.model.trace.*;
+import com.stratumn.sdk.model.media.*;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -129,6 +132,12 @@ public class Sdk<TState> implements ISdk<TState> {
     res.add(
         new TraceState<TState>("trace ID", new TraceLink(new Link()), new Date(), new Account(), this.getMockState()));
     return new TracesState<TState>(res);
+  }
+
+  @Override
+  public BufferedInputStream downloadFile(MediaRecord m) {
+    // mock the return value
+    return new BufferedInputStream(new ByteArrayInputStream(new byte[1]));
   }
 
 }
