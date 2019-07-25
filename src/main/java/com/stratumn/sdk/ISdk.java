@@ -1,5 +1,8 @@
 package com.stratumn.sdk;
 
+import java.io.BufferedInputStream;
+
+import com.stratumn.sdk.model.media.*;
 import com.stratumn.sdk.model.trace.*;
 
 public interface ISdk<TState> {
@@ -27,4 +30,6 @@ public interface ISdk<TState> {
   public TracesState<TState> getOutgoingTraces(PaginationInfo paginationInfo);
 
   public TracesState<TState> getBacklogTraces(PaginationInfo paginationInfo);
+
+  public BufferedInputStream downloadFile(MediaRecord m);
 }
