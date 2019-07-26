@@ -40,7 +40,12 @@ public class Sdk<TState> implements ISdk<TState> {
     try {
       // ping trace to test network connectivity.
       String url = String.format("%s/healthz", this.opts.endpoints.trace);
-      HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+      HttpURLConnection connection;
+      if (this.opts.proxy != null) {
+        connection = (HttpURLConnection) new URL(url).openConnection(this.opts.proxy);
+      } else {
+        connection = (HttpURLConnection) new URL(url).openConnection();
+      }
       int responseCode = connection.getResponseCode();
       if (responseCode != 200) {
         System.out.printf("Could not call Trace (%d)\n", responseCode);
