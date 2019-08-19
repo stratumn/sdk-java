@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.stratumn.sdk</groupId>
   <artifactId>sdk-java</artifactId>
-  <version>0.0.7-SNAPSHOT</version>
+  <version>0.0.9-SNAPSHOT</version>
   <name>Stratumn JAVA SDK</name>
   <description>Stratumn services SDK</description>
   <url>https://github.com/stratumn/sdk-java</url>
@@ -119,6 +119,12 @@
             <goals>
               <goal>sign</goal>
             </goals>
+            <configuration>
+              <gpgArguments>
+                  <arg>--pinentry-mode</arg>
+                  <arg>loopback</arg>
+              </gpgArguments> 
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -176,6 +182,7 @@
         <configuration>
           <serverId>ossrh</serverId>
           <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
         </configuration>
       </plugin>
 
