@@ -851,7 +851,7 @@ public class Sdk<TState> implements ISdk<TState>
     */
    public void searchTraces(SearchTracesFilter filter, PaginationInfo paginationInfo)
    {
-      throw new NotImplementedException();
+       
    }
 
 }
