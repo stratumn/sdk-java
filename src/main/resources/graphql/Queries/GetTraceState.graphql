@@ -1,0 +1,9 @@
+  query getTraceStateQuery($traceId: UUID!) {
+      trace: traceById(id: $traceId) {
+        ...TraceStateFragment
+      }
+    }
+    ${TraceStateFragment}
+    
+     
+    

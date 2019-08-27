@@ -1,0 +1,24 @@
+ query getTracesInStageQuery(
+      $groupId: BigInt!
+      $stageType: StageType!
+      $formId: BigInt
+      $first: Int
+      $last: Int
+      $before: Cursor
+      $after: Cursor
+    ) {
+      group: groupByRowId(rowId: $groupId) {
+        stages(condition: { type: $stageType, formId: $formId  }) {
+          nodes {
+            traces(first: $first, last: $last, before: $before, after: $after) {
+              nodes {
+                ...TraceStateFragment
+              }
+              ...PaginationInfoOnTracesConnectionFragment
+            }
+          }
+        }
+      }
+    }
+    ${TraceStateFragment}
+    ${PaginationInfoOnTracesConnectionFragment}
