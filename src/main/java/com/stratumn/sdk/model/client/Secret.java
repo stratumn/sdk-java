@@ -1,87 +1,70 @@
+/*
+Copyright 2017 Stratumn SAS. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+  limitations under the License.
+*/
 package com.stratumn.sdk.model.client;
 
-public class Secret {
+/***
+ * The secret abstract class 
+ *
+ */
+public abstract class Secret
+{  
 
-  final public SecretType type;
+   public static Secret newCredentialSecret(String email, String password)
+   { 
+      return   new CredentialSecret(email, password) ;
+   }
 
-  private CredentialSecret credentialSecret;
-  private PrivateKeySecret privateKeySecret;
-  private ProtectedKeySecret protectedKeySecret;
+   public static Secret newPrivateKeySecret(String privateKey)
+   {
+      return  new PrivateKeySecret(privateKey) ;
+   }
 
-  private Secret(CredentialSecret s) throws IllegalArgumentException {
-    if (s == null) {
-      throw new IllegalArgumentException("input cannot be null in Secret constructor");
-    }
-    this.type = SecretType.CREDENTIAL;
-    this.credentialSecret = s;
-  }
+   public static Secret newProtectedKeySecret(String publicKey, String password)
+   {
+        return  new ProtectedKeySecret(publicKey, password) ;
+   }
+   
+   /**
+    * Helper method to test that an object is of type CredentialSecret
+    * @param secret
+    * @return
+    */
+   public static boolean isCredentialSecret(Secret secret)
+   {
+      return (secret instanceof CredentialSecret);
+   }
 
-  private Secret(PrivateKeySecret s) throws IllegalArgumentException {
-    if (s == null) {
-      throw new IllegalArgumentException("input cannot be null in Secret constructor");
-    }
-    this.type = SecretType.PRIVATE_KEY;
-    this.privateKeySecret = s;
-  }
-
-  private Secret(ProtectedKeySecret s) throws IllegalArgumentException {
-    if (s == null) {
-      throw new IllegalArgumentException("input cannot be null in Secret constructor");
-    }
-    this.type = SecretType.PROTECTED_KEY;
-    this.protectedKeySecret = s;
-  }
-
-  public static Secret newCredentialSecret(String email, String password) {
-    throw new UnsupportedOperationException("Not implemented yet");
-    // return new Secret(new CredentialSecret(email, password));
-  }
-
-  public static Secret newPrivateKeySecret(String privateKey) {
-    return new Secret(new PrivateKeySecret(privateKey));
-  }
-
-  public static Secret newProtectedKeySecret(String publicKey, String password) {
-    throw new UnsupportedOperationException("Not implemented yet");
-    // return new Secret(new ProtectedKeySecret(publicKey, password));
-  }
-
-  public String getEmail() {
-    switch (this.type) {
-    case CREDENTIAL:
-      return this.credentialSecret.email;
-    default:
-      return null;
-    }
-  }
-
-  public String getPassword() {
-    switch (this.type) {
-    case CREDENTIAL:
-      return this.credentialSecret.password;
-    case PROTECTED_KEY:
-      return this.protectedKeySecret.password;
-    default:
-      return null;
-    }
-  }
-
-  public String getPrivateKey() {
-    switch (this.type) {
-    case PRIVATE_KEY:
-      return this.privateKeySecret.privateKey;
-    default:
-      return null;
-    }
-  }
-
-  public String getPublicKey() {
-    switch (this.type) {
-    case PROTECTED_KEY:
-      return this.protectedKeySecret.publicKey;
-    default:
-      return null;
-    }
-  }
+   /***
+    * Helper method to test that an object is of type PrivateKeySecret
+    * @param secret
+    * @return
+    */
+   public static boolean isPrivateKeySecret(Secret secret)
+   {
+      return secret instanceof PrivateKeySecret;
+   }
+   
+   /***
+    * Helper method to test that an object is of type ProtectedKeySecret
+    * @param secret
+    * @return
+    */
+   public static Boolean isProtectedKeySecret(Secret secret)
+   {
+      return secret instanceof ProtectedKeySecret;
+   }
 
 }

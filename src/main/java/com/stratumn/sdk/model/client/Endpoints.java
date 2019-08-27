@@ -1,50 +1,88 @@
+/*
+Copyright 2017 Stratumn SAS. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+  limitations under the License.
+*/
 package com.stratumn.sdk.model.client;
 
-import com.stratumn.sdk.model.client.Environment;
+/***
+ * The endpoints interface to describe the api urls
+ * of all stratumn services 
+ *
+ */
+public class Endpoints
+{
 
-public class Endpoints {
-  public final String trace;
-  public final String account;
-  public final String media;
+   private String trace;
+   private String account;
+   private String media;
 
-  public static final String TRACE_RELEASE_URL = "https://trace-api.stratumn.com";
-  public static final String ACCOUNT_RELEASE_URL = "https://account-api.stratumn.com";
-  public static final String MEDIA_RELEASE_URL = "https://media-api.stratumn.com";
+   public Endpoints(String account, String trace, String media)
+   {
+      this.account = account;
+      this.trace = trace;
+      this.media = media;
+   }
 
-  public static final String TRACE_DEMO_URL = "https://trace-api.demo.stratumn.com";
-  public static final String ACCOUNT_DEMO_URL = "https://account-api.demo.stratumn.com";
-  public static final String MEDIA_DEMO_URL = "https://media-api.demo.stratumn.com";
+   public String getTrace()
+   {
+      return this.trace;
+   }
 
-  public static final String TRACE_STAGING_URL = "https://trace-api.staging.stratumn.com";
-  public static final String ACCOUNT_STAGING_URL = "https://account-api.staging.stratumn.com";
-  public static final String MEDIA_STAGING_URL = "https://media-api.staging.stratumn.com";
+   public void setTrace(String trace)
+   {
+      this.trace = trace;
+   }
 
-  public Endpoints(String trace, String account, String media) {
-    this.trace = trace;
-    this.account = account;
-    this.media = media;
-  }
+   public String getAccount()
+   {
+      return this.account;
+   }
 
-  public Endpoints(Environment env) {
+   public void setAccount(String account)
+   {
+      this.account = account;
+   }
 
-    switch (env) {
-    case STAGING:
-      this.trace = TRACE_STAGING_URL;
-      this.account = ACCOUNT_STAGING_URL;
-      this.media = MEDIA_STAGING_URL;
-      break;
-    case DEMO:
-      this.trace = TRACE_DEMO_URL;
-      this.account = ACCOUNT_DEMO_URL;
-      this.media = MEDIA_DEMO_URL;
-      break;
-    case RELEASE:
-      this.trace = TRACE_RELEASE_URL;
-      this.account = ACCOUNT_RELEASE_URL;
-      this.media = MEDIA_RELEASE_URL;
-      break;
-    default:
-      throw new IllegalArgumentException(String.format("unknown environment %s", env));
-    }
-  }
+   public String getMedia()
+   {
+      return this.media;
+   }
+
+   public void setMedia(String media)
+   {
+      this.media = media;
+   }
+
+   /***
+    * Returns the endpoint by service type
+    * @param service
+    * @return
+    */
+   public String getEndpoint(Service service)
+   {
+      switch(service)
+      {
+         case ACCOUNT:
+            return this.getAccount();
+
+         case TRACE:
+            return getTrace();
+
+         case MEDIA:
+            return getMedia();
+
+      }
+      return null;
+   }
 }
