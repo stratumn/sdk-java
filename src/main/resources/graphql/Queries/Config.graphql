@@ -1,0 +1,33 @@
+query ConfigQuery($workflowId: BigInt!) {
+      account: me {
+        userId: rowId
+        accountId
+        account {
+          signingKey {
+            privateKey {
+              passwordProtected
+              decrypted
+            }
+          }
+        }
+        memberOf {
+          nodes {
+            accountId: rowId
+          }
+        }
+      }
+      workflow: workflowByRowId(rowId: $workflowId) {
+        forms {
+          nodes {
+            formId: rowId
+            stageName
+          }
+        }
+        groups {
+          nodes {
+            groupId: rowId
+            accountId: ownerId
+          }
+        }
+      }
+    }
