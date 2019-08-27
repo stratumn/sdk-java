@@ -149,7 +149,7 @@ public class Client {
     *
     * @param request its instance from HttpHelpers
     * @throws HttpError
-    * @returns the responseContent
+    * @return the responseContent
     */
    @SuppressWarnings("unchecked")
    private <T> T fetch(HttpHelpers request, int retry) throws HttpError {
@@ -296,7 +296,7 @@ public class Client {
     * @param body    the POST body object
     * @param opts    additional fetch options
     * @throws TraceSdkException
-    * @returns the response body object
+    * @return the response body object
     */
    public <T> T post(Service service, String route, String body, FetchOptions opts) throws TraceSdkException {
       try {
@@ -343,7 +343,7 @@ public class Client {
     * @param params  the query parameters
     * @param opts    additional fetch options
     * @throws TraceSdkException
-    * @returns the response body object
+    * @return the response body object
     */
    public <T> T get(Service service, String route, Map<String, String> params, FetchOptions opts)
          throws TraceSdkException {
@@ -435,8 +435,6 @@ public class Client {
     * Uploads an array of files to media-api.
     *
     * @param files the file wrappers to upload
-    * @return
-    * @return the array of corresponding media records
     * @throws TraceSdkException
     * @throws ExecutionException
     * @throws InterruptedException
