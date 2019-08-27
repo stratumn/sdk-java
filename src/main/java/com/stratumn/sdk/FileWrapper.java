@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -29,15 +28,14 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import com.stratumn.sdk.model.file.FileInfo;
-import com.stratumn.sdk.model.misc.Identifiable; 
+import com.stratumn.sdk.model.misc.Identifiable;
 
 /**
  * A file wrapper is a file representation on the platform. This class is
  * abstract and has various concrete implementation depending on the platform
  * (Browser, NodeJs).
  */
-public abstract class FileWrapper implements Identifiable
-{
+public abstract class FileWrapper implements Identifiable {
    /**
     * A unique identifier of the file wrapper. Satisfies the Identifiable
     * constraint.
@@ -47,97 +45,86 @@ public abstract class FileWrapper implements Identifiable
    private AesWrapper key;
 
    @Override
-   public String getId()
-   {
+   public String getId() {
       return this.id;
    }
 
-   public FileWrapper()
-   {
-      this(true,null); 
+   public FileWrapper() {
+      this(true, null);
    }
-   
-   
-   public FileWrapper(boolean disableEncryption, String key)
-   {
-      if(!disableEncryption)
-      {
-         try
-         {
+
+   public FileWrapper(boolean disableEncryption, String key) {
+      if (!disableEncryption) {
+         try {
             this.key = new AesWrapper(key);
-         }
-         catch(UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException e)
-         {
-            
+         } catch (UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+
          }
       }
    }
-   
-   /*** 
+
+   /***
     * @param data
     * @return
     * @throws InvalidKeyException
     * @throws IllegalBlockSizeException
     * @throws BadPaddingException
     */
-   protected ByteBuffer encryptData(ByteBuffer data) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException
-   {
+   protected ByteBuffer encryptData(ByteBuffer data)
+         throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
       if (this.key == null)
          return data;
-      data  = key.encrypt(data);
+      data = key.encrypt(data);
       return data;
    }
-   
-   /*** 
+
+   /***
     * @param data
     * @return
     * @throws InvalidKeyException
     * @throws IllegalBlockSizeException
     * @throws BadPaddingException
     */
-   protected ByteBuffer decryptData(ByteBuffer data) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException
-   {
+   protected ByteBuffer decryptData(ByteBuffer data)
+         throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
       if (this.key == null)
          return data;
-      data  = key.decrypt(data);
+      data = key.decrypt(data);
       return data;
    }
-   
-   
-   protected FileInfo addKeyToFileInfo(  FileInfo info) {
-      if ( this.key == null) {
-        return info;
+
+   protected FileInfo addKeyToFileInfo(FileInfo info) {
+      if (this.key == null) {
+         return info;
       }
-      String keyEx  =new String( this.key.getSecretKey().getEncoded());
-      
-       info.setKey(keyEx);
-       return info;
-    }
-   
+      String keyEx = new String(this.key.getSecretKey().getEncoded());
+
+      info.setKey(keyEx);
+      return info;
+   }
 
    /**
     * Get the file info. This method is async as in the NodeJs case, the info is
     * retrieved asynchronously using the statAsync function.
-    * @throws IOException 
-    * @throws TraceSdkException 
+    * 
+    * @throws TraceSdkException
     */
-   public abstract  FileInfo  info() throws   TraceSdkException;
+   public abstract FileInfo info() throws TraceSdkException;
 
    /**
     * The actual file data.
-    * @throws IOException 
+    * 
     */
-   public abstract  ByteBuffer  encryptedData() throws TraceSdkException ;
-   
-   public abstract  ByteBuffer  decryptedData() throws TraceSdkException ;
+   public abstract ByteBuffer encryptedData() throws TraceSdkException;
+
+   public abstract ByteBuffer decryptedData() throws TraceSdkException;
 
    /**
     * Creates a FileWrapper from a browser file representation.
     *
     * @param file the browser File object
     */
-   public static FileWrapper fromBrowserFile(File file)
-   {
+   public static FileWrapper fromBrowserFile(File file) {
       return new BrowserFileWrapper(file);
    }
 
@@ -146,8 +133,7 @@ public abstract class FileWrapper implements Identifiable
     *
     * @param fp the file path
     */
-   public static FileWrapper fromFilePath(Path fp)
-   {
+   public static FileWrapper fromFilePath(Path fp) {
       return new FilePathWrapper(fp);
    }
 
@@ -157,8 +143,7 @@ public abstract class FileWrapper implements Identifiable
     * @param blob     the blob data
     * @param fileInfo the file info
     */
-   public static FileBlobWrapper fromFileBlob(ByteBuffer blob, FileInfo fileInfo)
-   {
+   public static FileBlobWrapper fromFileBlob(ByteBuffer blob, FileInfo fileInfo) {
       return new FileBlobWrapper(blob, fileInfo);
    }
 
@@ -167,8 +152,7 @@ public abstract class FileWrapper implements Identifiable
     *
     * @param obj the object to test.
     */
-   public static Boolean isFileWrapper(Object obj)
-   {
+   public static Boolean isFileWrapper(Object obj) {
       return obj instanceof FileWrapper;
    }
 
