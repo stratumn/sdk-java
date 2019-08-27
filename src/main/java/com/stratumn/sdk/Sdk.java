@@ -63,7 +63,6 @@ import com.stratumn.sdk.model.trace.TraceStageType;
 import com.stratumn.sdk.model.trace.TraceState;
 import com.stratumn.sdk.model.trace.TracesState;
 import com.stratumn.sdk.model.trace.TransferResponseInput;
-
 /**
  * The Stratumn java Sdk
  */
