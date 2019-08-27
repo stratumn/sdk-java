@@ -1,0 +1,46 @@
+# version: v1.0
+# name: Stratumn java SDK Pipeline
+# agent:
+#   machine:
+#     type: e1-standard-2
+#     os_image: ubuntu1804
+# execution_time_limit:
+#   minutes: 15
+
+# blocks:
+#   - name: Install dependencies
+#     task:
+#       env_vars:
+#         - name: MAVEN_OPTS
+#           value: "-Dmaven.repo.local=.m2"
+#       prologue:
+#         commands:
+#           - checkout
+#       jobs:
+#         - name: Build
+#           commands:
+#             - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+#             - mvn -q package
+#             - cache store build-$KEY target
+#             - cache store maven-$KEY .m2
+
+#   - name: Test & Build
+#     task:
+#       env_vars:
+#         - name: MAVEN_OPTS
+#           value: "-Dmaven.repo.local=.m2"
+
+#       prologue:
+#         commands:
+#           - checkout
+#           - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+#           - cache restore build-$KEY
+#           - cache restore maven-$KEY
+#       jobs:
+#         - name: Unit tests
+#           commands:
+#             - mvn test
+
+# promotions:
+#   - name: Release to maven registry
+#     pipeline_file: maven-release.yml
