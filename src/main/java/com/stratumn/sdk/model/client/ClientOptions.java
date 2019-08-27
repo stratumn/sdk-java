@@ -15,49 +15,62 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk.model.client;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+
 /**
  * Options Class used to instantiate the Client.
  */
-public class ClientOptions
-{
+public class ClientOptions {
    /**
-   * To configure the endpoints. Can be a short tag like 'release' or 'staging'.
-   * Can also be a struct to configure each service endpoint, eg: { trace: 'https://...' .. }.
-   * Defaults to release endpoints.
-   */
+    * To configure the endpoints. Can be a short tag like 'release' or 'staging'.
+    * Can also be a struct to configure each service endpoint, eg: { trace:
+    * 'https://...' .. }. Defaults to release endpoints.
+    */
    private Endpoints endpoints;
 
    /**
-   * The secret used to authenticate the input.
-   * Can be a signing key or a username + password.
-   */
+    * The secret used to authenticate the input. Can be a signing key or a username
+    * + password.
+    */
    private Secret secret;
 
-   
-   public ClientOptions(Endpoints endpoints, Secret secret) throws IllegalArgumentException
-   {    
+   private Proxy proxy;
+
+   public ClientOptions(Endpoints endpoints, Secret secret) throws IllegalArgumentException {
       this.endpoints = endpoints;
       this.secret = secret;
    }
 
-   public Endpoints getEndpoints()
-   {
+   public Endpoints getEndpoints() {
       return this.endpoints;
    }
 
-   public void setEndpoints(Endpoints endpoints)
-   {
+   public void setEndpoints(Endpoints endpoints) {
       this.endpoints = endpoints;
    }
 
-   public Secret getSecret()
-   {
+   public Secret getSecret() {
       return this.secret;
    }
 
-   public void setSecret(Secret secret)
-   {
+   public void setSecret(Secret secret) {
       this.secret = secret;
+   }
+
+   public void setProxy(String host, int port) throws IllegalArgumentException {
+      if (host == null) {
+         throw new IllegalArgumentException("host cannot be null in proxy");
+      }
+      if (port == 0) {
+         throw new IllegalArgumentException("port cannot be 0 in proxy");
+      }
+
+      this.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
+   }
+
+   public Proxy getProxy() {
+      return this.proxy;
    }
 
 }

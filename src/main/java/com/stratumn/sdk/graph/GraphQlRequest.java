@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk.graph;
 
+import java.net.Proxy;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -32,12 +34,11 @@ import org.springframework.web.client.RestTemplate;
  * A wrapper class for executing the GraphQL request and returning the response.
  *
  */
-public class GraphQlRequest
-{
- 
+public class GraphQlRequest {
 
    /**
-    * Executes the query and returns a responseEntity of type passed 
+    * Executes the query and returns a responseEntity of type passed
+    * 
     * @param url
     * @param auth
     * @param query
@@ -45,8 +46,8 @@ public class GraphQlRequest
     * @param tClass
     * @return
     */
-   public static <T> ResponseEntity<T> request(String url, String auth, String query, Map<String, Object> Variables, Class<T> tClass)
-   {
+   public static <T> ResponseEntity<T> request(String url, String auth, String query, Map<String, Object> Variables,
+         Class<T> tClass, Proxy proxy) {
 
       GraphQlQuery topologyQuery = new GraphQlQuery();
 
@@ -60,35 +61,40 @@ public class GraphQlRequest
 
       HttpEntity<GraphQlQuery> entity = new HttpEntity<GraphQlQuery>(topologyQuery, headers);
 
-      RestTemplate restTemplate = new RestTemplate();
- 
+      SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+
+      if (proxy != null) {
+         requestFactory.setProxy(proxy);
+      }
+      RestTemplate restTemplate = new RestTemplate(requestFactory);
+
       ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass);
-      //System.out.println(resp.getBody());
+      // System.out.println(resp.getBody());
       return resp;
 
    }
-   
+
    /***
     * Expects a map of filename, file buffer data
+    * 
     * @param filesMap
-    * @return 
+    * @return
     */
-   public static <T> ResponseEntity<T> uploadFiles(String url, String auth, Map<String,ByteBuffer> filesMap, Class<T> tClass)
-   {
+   public static <T> ResponseEntity<T> uploadFiles(String url, String auth, Map<String, ByteBuffer> filesMap,
+         Class<T> tClass) {
       MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-      for(Entry<String, ByteBuffer> file : filesMap.entrySet()) 
-         bodyMap.add(file.getKey(), new ByteArrayResource(file.getValue().array(),file.getKey()));
+      for (Entry<String, ByteBuffer> file : filesMap.entrySet())
+         bodyMap.add(file.getKey(), new ByteArrayResource(file.getValue().array(), file.getKey()));
 
       HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(bodyMap, headers);
 
-       
       RestTemplate restTemplate = new RestTemplate();
-      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity ,  tClass);
-      
-      return response ;   
+      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass);
+
+      return response;
    }
 
 }

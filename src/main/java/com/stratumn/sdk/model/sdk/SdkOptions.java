@@ -15,14 +15,10 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk.model.sdk;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-
 import com.stratumn.sdk.model.client.*;
 
 public class SdkOptions extends ClientOptions {
   private String workflowId;
-  Proxy proxy;
 
   public SdkOptions(String workflowId, Secret secret) {
     super(null, secret);
@@ -35,17 +31,6 @@ public class SdkOptions extends ClientOptions {
 
   public void setWorkflowId(String workflowId) {
     this.workflowId = workflowId;
-  }
-
-  public void setProxy(String host, int port) throws IllegalArgumentException {
-    if (host == null) {
-      throw new IllegalArgumentException("host cannot be null in proxy");
-    }
-    if (port == 0) {
-      throw new IllegalArgumentException("port cannot be 0 in proxy");
-    }
-
-    this.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
   }
 
 }

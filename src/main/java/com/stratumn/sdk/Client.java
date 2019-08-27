@@ -88,6 +88,7 @@ public class Client {
     */
    public Client(ClientOptions opts) {
       this.endpoints = Helpers.makeEndpoints(opts.getEndpoints());
+      this.proxy = opts.getProxy();
 
       this.secret = opts.getSecret();
 
@@ -406,7 +407,7 @@ public class Client {
 
       // delegate the graphql request execution
       ResponseEntity<T> response = GraphQlRequest.request(gqlUrl, this.getAuthorizationHeader(null), queryStr,
-            variables, tclass);
+            variables, tclass, this.proxy);
       if (response.getStatusCode() == HttpStatus.OK) {
          // if the response is empty, throw.
          if (!response.hasBody())
