@@ -55,8 +55,7 @@ import com.stratumn.sdk.model.trace.TraceStageType;
 import com.stratumn.sdk.model.trace.TraceState;
 import com.stratumn.sdk.model.trace.TracesState;
 import com.stratumn.sdk.model.trace.TransferResponseInput;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+ 
 /**
  * The Stratumn java  Sdk
  */
