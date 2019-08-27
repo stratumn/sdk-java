@@ -45,7 +45,6 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	private ITraceLink<TLinkData> parentLink;
 
 	private TLinkData formData;
-
 	/**
 	 * Create a new instance of a TraceLinkBuilder.
 	 *

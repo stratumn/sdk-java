@@ -100,7 +100,6 @@ public class Helpers {
       // sign the message
       String signature = CryptoUtils.sign(key, message);
       String publicKeyPem = CryptoUtils.encodePublicKey(CryptoUtils.getPublicKeyFromPrivateKey(key));
-
       // convert message , signature and public key to base64
       String messagebase64 = Base64.getEncoder().encodeToString(message);
       String signaturebase64 = Base64.getEncoder().encodeToString(signature.getBytes(Constants.UTF8));

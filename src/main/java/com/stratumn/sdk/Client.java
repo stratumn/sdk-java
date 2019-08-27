@@ -161,7 +161,6 @@ public class Client {
 
       this.login();
       return this.makeAuthorizationHeader(this.token);
-
    }
 
    /**
@@ -222,7 +221,6 @@ public class Client {
       return responseContent;
 
    }
-
    /**
     * Authenticate using a signed message via the GET /login route.
     *
