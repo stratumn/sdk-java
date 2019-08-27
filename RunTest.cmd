@@ -66,7 +66,7 @@ If "%FILEPATH%" == "" goto success
 
 setLocal EnableDelayedExpansion
 set CLASSPATH=
-for /R  target/chainscript/lib %%a in (*.jar) do (
+for /R  target/sdk/lib %%a in (*.jar) do (
    set CLASSPATH=!CLASSPATH!;%%a
 )
 set CLASSPATH="!CLASSPATH!"
