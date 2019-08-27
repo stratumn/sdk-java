@@ -1,0 +1,8 @@
+ mutation createLinkMutation($link: JSON!, $data: JSON) {
+      createLink(input: { link: $link, data: $data }) {
+        trace {
+          ...TraceStateFragment
+        }
+      }
+    }
+    ${TraceStateFragment}

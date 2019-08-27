@@ -1,0 +1,8 @@
+mutation addTagsToTraceMutation($traceId: UUID!, $tags: [String]!) {
+      addTagsToTrace(input: { traceRowId: $traceId, tags: $tags }) {
+        trace {
+          ...TraceStateFragment
+        }
+      }
+    }
+    ${TraceStateFragment}

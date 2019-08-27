@@ -1,0 +1,18 @@
+ fragment TraceStateFragment on Trace {
+        updatedAt
+        state {
+          data
+        }
+        head {
+          raw
+          data
+        }
+        # TODO: temporary, remove once state computation
+        # is handled server side
+        links {
+          nodes {
+            raw
+            data
+          }
+        }
+      }

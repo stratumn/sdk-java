@@ -1,0 +1,18 @@
+    query getTraceDetailsQuery(
+      $traceId: UUID!
+      $first: Int
+      $last: Int
+      $before: Cursor
+      $after: Cursor
+    ) {
+      trace: traceById(id: $traceId) {
+        links(first: $first, last: $last, before: $before, after: $after) {
+          nodes {
+            raw
+            data
+          }
+          ...PaginationInfoOnLinksConnectionFragment
+        }
+      }
+    }
+    ${PaginationInfoOnLinksConnectionFragment}
