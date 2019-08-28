@@ -118,7 +118,6 @@ public class Helpers {
    public static long nowInSeconds() {
       return Calendar.getInstance().getTime().getTime() / 1000;
    }
-
    /**
     * Extract all file records from some data.
     *

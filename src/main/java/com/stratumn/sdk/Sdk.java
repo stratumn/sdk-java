@@ -419,7 +419,6 @@ public class Sdk<TState> implements ISdk<TState> {
       Helpers.assignObjects(fileRecordList);
 
    }
-
    /**
     * Extract, download and replace all file records in a data object.
     * 
@@ -577,7 +576,6 @@ public class Sdk<TState> implements ISdk<TState> {
       Map<String, String> actionNames = sdkConfig.getActionNames();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
-
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       cfg.setWorkflowId(workflowId);
       // use a TraceLinkBuilder to create the first link

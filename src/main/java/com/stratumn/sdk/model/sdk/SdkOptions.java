@@ -17,20 +17,22 @@ package com.stratumn.sdk.model.sdk;
 
 import com.stratumn.sdk.model.client.*;
 
-public class SdkOptions extends ClientOptions {
+public class SdkOptions extends ClientOptions{
   private String workflowId;
+ 
 
   public SdkOptions(String workflowId, Secret secret) {
-    super(null, secret);
-    this.workflowId = workflowId;
+      super(null, secret);
+      this.workflowId = workflowId;
   }
+   
+	public String getWorkflowId() {
+		return this.workflowId;
+	}
 
-  public String getWorkflowId() {
-    return this.workflowId;
-  }
+	public void setWorkflowId(String workflowId) {
+		this.workflowId = workflowId;
+	}
+	
 
-  public void setWorkflowId(String workflowId) {
-    this.workflowId = workflowId;
-  }
-
-}
+} 
