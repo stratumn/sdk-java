@@ -18,33 +18,50 @@ package com.stratumn.sdk.model.file;
 /**
  * A record of a file in the Media service.
  */
-public class MediaRecord {
-  private String name;
-  private String digest;
+public class MediaRecord
+{
+   private String name;
+   private String digest;
 
-  public MediaRecord(String name, String digest) throws IllegalArgumentException {
-    if (name == null) {
-      throw new IllegalArgumentException("name cannot be null");
-   }
-    if (digest == null) {
-      throw new IllegalArgumentException("digest cannot be null");
-    }
- 
-    this.name = name;
-    this.digest = digest;
-  }
+   public MediaRecord(String name, String digest) throws IllegalArgumentException
+   {
+      if(name == null)
+      {
+         throw new IllegalArgumentException("name cannot be null");
+      }
+      if(digest == null)
+      {
+         throw new IllegalArgumentException("digest cannot be null");
+      }
 
-  public String getDigest() {
-    return this.digest;
-  }
-  public void setDigest(String digest) {
-      this.digest = digest;
-  }
-
-  public String getName() {
-    return this.name;
-  }
-  public void setName(String name) {
       this.name = name;
-  }
+      this.digest = digest;
+   }
+
+   public String getDigest()
+   {
+      return this.digest;
+   }
+
+   public void setDigest(String digest)
+   {
+      this.digest = digest;
+   }
+
+   public String getName()
+   {
+      return this.name;
+   }
+
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "MediaRecord [name=" + name + ", digest=" + digest + "]";
+   }
+
 }

@@ -22,10 +22,6 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.security.InvalidKeyException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 
 import com.stratumn.sdk.model.file.FileInfo;
 
@@ -44,27 +40,26 @@ public class FilePathWrapper extends FileWrapper
       this.filePath = fp;
    }
 
-   public FileInfo info() throws TraceSdkException
+   public FileInfo info()  
    {
-
       File file = filePath.toFile();
       if(!file.exists())
       {
-         throw new TraceSdkException("Error while loading file " + file.getAbsolutePath());
+         throw new IllegalArgumentException("Error while loading file " + file.getAbsolutePath());
       }
 
       if(!file.isFile())
       {
-         throw new TraceSdkException(file.getAbsolutePath() + " is not a valid file");
+         throw new IllegalArgumentException(file.getAbsolutePath() + " is not a valid file");
       }
 
-      final Long size = file.length(); 
+      final Long size = file.length();
       final String mimetype = URLConnection.guessContentTypeFromName(file.getName());
       final String name = file.getName();
 
       FileInfo fileInfo = new FileInfo(name, size, mimetype, null);
 
-      return addKeyToFileInfo(fileInfo) ;
+      return addKeyToFileInfo(fileInfo);
 
    }
 
@@ -78,57 +73,46 @@ public class FilePathWrapper extends FileWrapper
       this.filePath = filePath;
    }
 
-   public  ByteBuffer  data() throws IOException  
+   private ByteBuffer data() throws TraceSdkException
    {
-      ByteBuffer buffer;
-      RandomAccessFile rFile = null;
-      FileChannel inChannel = null;
-      try 
+      File file = filePath.toFile();
+      if(!file.exists() || !file.isFile())
       {
-         rFile = new RandomAccessFile(filePath.toFile(), "r");
-         inChannel = rFile.getChannel();
+         throw new IllegalArgumentException("File not found " + file.getAbsolutePath());
+      }
+      ByteBuffer buffer = null;  
+      try(RandomAccessFile rFile = new RandomAccessFile(filePath.toFile(), "r");
+         FileChannel inChannel = rFile.getChannel();
+         )
+      { 
          long fileSize = inChannel.size();
          buffer = ByteBuffer.allocate((int) fileSize);
          inChannel.read(buffer);
          buffer.rewind();
       }
-      finally
-      {
-         if (inChannel!=null)
-         inChannel.close();
-         if (rFile!=null)
-         rFile.close();
-      }
+      catch (IOException e) { 
+         throw new TraceSdkException("Error reading file " , e); 
+      } 
       return buffer;
    }
 
    @Override
-   public  ByteBuffer  decryptedData() throws TraceSdkException  
+   public ByteBuffer decryptedData() throws TraceSdkException
    {
       ByteBuffer buffer = null;
-      try
-      {
-         buffer = data() ;
-      }
-      catch(IOException  e)
-      { 
-         throw new TraceSdkException("Decryption failed ", e);
-      }
-      return buffer ;
+
+      buffer = data();
+
+      return buffer;
    }
 
    @Override
-   public ByteBuffer encryptedData () throws TraceSdkException  
-   { 
+   public ByteBuffer encryptedData() throws TraceSdkException
+   {
       ByteBuffer buffer = null;
-      try
-      {
-         buffer = super.encryptData( data() )   ;
-      }
-      catch(IOException |   BadPaddingException | InvalidKeyException | IllegalBlockSizeException   e)
-      { 
-         throw new TraceSdkException("Encryption failed ", e);
-      }
+
+      buffer = super.encryptData(data());
+
       return buffer;
    }
 

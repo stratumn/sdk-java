@@ -16,10 +16,6 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 
 import com.stratumn.sdk.model.file.FileInfo;
 
@@ -27,7 +23,9 @@ import com.stratumn.sdk.model.file.FileInfo;
  * The implementation of a FileWrapper using the blob and info to represent it.
  */
 public class FileBlobWrapper extends FileWrapper {
-	private ByteBuffer blob;
+	
+   
+    private ByteBuffer blob;
 	private FileInfo fileInfo;
 
 	public FileBlobWrapper(ByteBuffer blob, FileInfo fileInfo) {
@@ -44,16 +42,10 @@ public class FileBlobWrapper extends FileWrapper {
 
    @Override
    public ByteBuffer encryptedData() throws TraceSdkException
-   {
-      try
-      {
+   { 
          ByteBuffer data = super.decryptData(this.blob);
          return data;
-      }
-      catch(InvalidKeyException | IllegalBlockSizeException | BadPaddingException e)
-      {
-         throw new TraceSdkException("Decryption failed", e);
-      }
+      
    }
 
    @Override

@@ -10,6 +10,17 @@ public class GraphQlQuery
    public GraphQlQuery()
    { 
    }
+   
+   
+
+   public GraphQlQuery(Map<String, Object> variables, String query)
+   {
+      super();
+      this.variables = variables;
+      this.query = query;
+   }
+
+
 
    private Map<String, Object> variables;
 

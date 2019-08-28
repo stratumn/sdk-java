@@ -15,18 +15,12 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk.model.file;
 
-import java.io.File;
-
 /**
  * A file information interface.
  */
-public class FileInfo extends File
+public class FileInfo 
 {
-
-   /**
-    * 
-    */
-   private static final long serialVersionUID = 7255769380438279189L;
+  
    private String mimetype;
    private Long size;
    private String name;
@@ -34,9 +28,7 @@ public class FileInfo extends File
 
    public FileInfo(String name, Long size, String mimetype, String key) throws IllegalArgumentException
    {
-
-      super(name);
-
+ 
       if(name == null)
       {
          throw new IllegalArgumentException("name cannot be null");
@@ -94,6 +86,12 @@ public class FileInfo extends File
    public void setKey(String key)
    {
       this.key = key;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "FileInfo [mimetype=" + mimetype + ", size=" + size + ", name=" + name + ", key=" + key + "]";
    }
 
 }

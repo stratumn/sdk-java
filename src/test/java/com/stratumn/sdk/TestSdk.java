@@ -65,9 +65,9 @@ public class TestSdk {
    private static final String MEDIA_RELEASE_URL = "https://media-api.staging.stratumn.com";
 
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
-   private static String WORFKLOW_ID = "565";
-   private static String FORM_ID = "8124";
-   private static String MY_GROUP = "1696";
+   private static String WORFKLOW_ID = "591";
+   private static String FORM_ID = "8209";
+   private static String MY_GROUP = "1744";
 
    private static Sdk<Object> sdk;
 
@@ -86,11 +86,11 @@ public class TestSdk {
    public void getTraceDetailsTest() {
       try {
          Sdk<Object> sdk = getSdk();
-         String traceId = "79757504-3d19-4401-9d96-c183bb31b1d5";
+         String traceId = "a41257f9-2d9d-4d42-ab2a-fd0c83ea31df";
          GetTraceDetailsInput input = new GetTraceDetailsInput(traceId, 5, null, null, null);
 
          TraceDetails<Object> details = sdk.getTraceDetails(input);
-         // // System.out.println("traceLink " + gson.toJson(details));
+
          assertTrue(details.getTotalCount() > 0);
          assertFalse(gson.toJson(details).contains("Error"));
       } catch (Exception ex) {
@@ -104,7 +104,7 @@ public class TestSdk {
    public void getTraceStateTest() {
       try {
          Sdk<Object> sdk = getSdk();
-         String traceId = "79757504-3d19-4401-9d96-c183bb31b1d5";
+         String traceId = "a41257f9-2d9d-4d42-ab2a-fd0c83ea31df";
          GetTraceStateInput input = new GetTraceStateInput(traceId);
          TraceState<Object, Object> state = sdk.getTraceState(input);
          // // System.out.println("testTraceState" + gson.toJson(state));
@@ -192,38 +192,46 @@ public class TestSdk {
          assertNotNull(state.getTraceId());
          someTraceState = state;
       } catch (Exception ex) {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
 
-   // @Test
-   // public void newTraceUploadTest()
-   // {
-   // try
-   // {
-   // Sdk<Object> sdk = getSdk();
-   // Map<String, Object> data = new HashMap<String, Object>();
-   // data.put("weight", "123");
-   // data.put("valid", true);
-   // data.put("operators", new String[]{"1", "2" });
-   // data.put("operation", "my new operation 1");
+   @Test
+   public void newTraceUploadTest() {
+      try {
+         Sdk<Object> sdk = getSdk();
+         Map<String, Object> data = new HashMap<String, Object>();
+         data.put("weight", "123");
+         data.put("valid", true);
+         data.put("operators", new String[] { "1", "2" });
+         data.put("operation", "my new operation 1");
+         data.put("Certificate", FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png")));
+         // data.put("Certificates",new Identifiable[] {
+         // FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png"))
+         // } );
+         // class Pojo
+         // {
+         // public Pojo(Identifiable f)
+         // {
+         // this.f = f;
+         // }
+         // private Identifiable f;
+         // }
+         // data.put("pojofile", new
+         // Pojo(FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt"))
+         // ));
 
-   // data.put("Certificate",
-   // FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png")));
-   // NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID,
-   // data);
+         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
 
-   // TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
-   // assertNotNull(state.getTraceId());
-   // someTraceState = state;
-   // }
-   // catch(Exception ex)
-   // {
-
-   // fail(ex.getMessage());
-   // }
-   // }
+         TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
+         assertNotNull(state.getTraceId());
+         someTraceState = state;
+      } catch (Exception ex) {
+         ex.printStackTrace();
+         fail(ex.getMessage());
+      }
+   }
 
    @Test
    public void appendLinkTest() {
@@ -238,7 +246,6 @@ public class TestSdk {
          TraceState<Object, Object> state = getSdk().appendLink(appLinkInput);
          assertNotNull(state.getTraceId());
       } catch (Exception ex) {
-
          fail(ex.getMessage());
       }
    }
@@ -287,7 +294,7 @@ public class TestSdk {
          // System.out.println("pullTrace:" + "\r\n" + statepul);
          assertNotNull(statepul.getTraceId());
       } catch (Exception ex) {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
 
@@ -311,14 +318,20 @@ public class TestSdk {
    @Test
    public void rejectTransferTest() {
       try {
-         pushTraceToMyGroupTest();
-         TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(someTraceState.getTraceId(), null,
-               null);
+         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
+         TracesState<Object, Object> tracesIn = getSdk().getIncomingTraces(paginationInfo);
+         someTraceState = tracesIn.getTraces().get(0);
+         String traceId = someTraceState.getTraceId();
+         if (tracesIn.getTotalCount() == 0) {
+            pushTraceToMyGroupTest();
+            traceId = someTraceState.getTraceId();
+         }
+         TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(traceId, null, null);
          TraceState<Object, Object> stateReject = getSdk().rejectTransfer(trInput);
          // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
          assertNotNull(stateReject.getTraceId());
       } catch (Exception ex) {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -338,16 +351,19 @@ public class TestSdk {
       }
    }
 
+   // TODO: Fix test
    // @Test
-   // public void downloadFilesInObject() {
+   // public void downloadFilesInObjectTest() {
    // try {
-
-   // newTraceTest();
-   // Object dataWithRecords = someTraceState.getHeadLink().formData();
+   // // newTraceUploadTest();
+   // TraceState<Object, Object> state = getSdk()
+   // .getTraceState(new
+   // GetTraceStateInput("0754f74d-a265-4039-92ac-231d766a79a8"));
+   // Object dataWithRecords = state/* someTraceState */.getHeadLink().formData();
    // Object dataWithFiles = getSdk().downloadFilesInObject(dataWithRecords);
 
    // } catch (Exception ex) {
-
+   // ex.printStackTrace();
    // fail(ex.getMessage());
    // }
    // }

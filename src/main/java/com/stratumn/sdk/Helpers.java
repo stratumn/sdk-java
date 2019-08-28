@@ -15,8 +15,10 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -26,16 +28,21 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gson.JsonObject;
 import com.stratumn.chainscript.Constants;
 import com.stratumn.chainscript.utils.CryptoUtils;
+import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.client.Endpoints;
 import com.stratumn.sdk.model.misc.Identifiable;
+import com.stratumn.sdk.model.misc.Property;
 
 public class Helpers {
 
@@ -118,13 +125,9 @@ public class Helpers {
     *
     * @param data the data containing file records to extract
     */
-   public static <T> Map<String, FileRecord> extractFileRecords(T data) {
-      return extractObjects(data, (T) -> FileRecord.isFileRecord(data), (T) -> {
-         try {
-            return FileRecord.fromObject((String) data);
-         } catch (IOException e) {
-            return null;
-         }
+   public static <T> Map<String, Property<FileRecord>> extractFileRecords(T data) {
+      return extractObjects(data, (T) -> FileRecord.isFileRecord(T), (T) -> {
+         return FileRecord.fromObject((Object) T);
       });
    }
 
@@ -134,30 +137,26 @@ public class Helpers {
     * @param data the data containing file wrappers to extract
     * @return [pathToIdMap,idToObjectMap]
     */
-   public static <T> Map<String, FileWrapper> extractFileWrappers(T data) {
+   public static <T> Map<String, Property<FileWrapper>> extractFileWrappers(T data) {
       return extractObjects(data, (X) -> FileWrapper.isFileWrapper(X), null);
    }
 
    /**
     * Extracts all identifiable objects in data that satisfy a predicate and return
-    * two maps to easily work with them: - pathToIdMap: maps all the paths where an
-    * object was found to their id - idToObjectMap: maps all ids to the actual
-    * extracted objects
     *
-    * @param data      the data where objects should be extracted
     * @param predicate the predicate function used to determine if object should be
     *                  extracted
     * @param reviver   (optional) a function to apply on the extracted object
     * @return Map Array [pathToIdMap,idToObjectMap]
     */
-   private static <T, V extends Identifiable> Map<String, V> extractObjects(T data, Predicate<T> predicate,
-         Function<V, V> reviver) {
+   private static <T, V extends Identifiable> Map<String, Property<V>> extractObjects(T data, Predicate<T> predicate,
+         Function<T, V> reviver) {
 
       // create a new idToObject map
-      Map<String, V> idToObjectMap = new HashMap<String, V>();
+      Map<String, Property<V>> idToObjectMap = new HashMap<String, Property<V>>();
 
       // call the implementation
-      extractObjectsImpl(data, "", idToObjectMap, predicate, reviver);
+      extractObjectsImpl(data, null, "", idToObjectMap, predicate, reviver);
       // return the maps
       return idToObjectMap;
    }
@@ -174,36 +173,27 @@ public class Helpers {
     * @param reviver       (optional) a function to apply on the extracted object
     */
    @SuppressWarnings("unchecked")
-   private static <T, V extends Identifiable> void extractObjectsImpl(T data, String path, Map<String, V> idToObjectMap,
-         Predicate<T> predicate, Function<V, V> reviver) {
+   private static <T, V extends Identifiable> void extractObjectsImpl(T data, Object parent, String path,
+         Map<String, Property<V>> idToObjectMap, Predicate<T> predicate, Function<T, V> reviver) {
       // if the predicate is true, then this data should be extracted
       if (predicate.test(data)) {
-
-         // apply reviver if provided
-         V newData = reviver != null ? reviver.apply((V) data) : (V) data;
-
+         // apply reviver if provided to generate new Data
+         V newData = reviver != null ? reviver.apply(data) : (V) data;
          // add a new entry to the idToObject map
-         idToObjectMap.put(newData.getId(), newData);
+         idToObjectMap.put(newData.getId(), new Property<V>(newData.getId(), newData, path, parent));
       } else if (data != null && data.getClass().isArray()) {
          // if it is an array, iterate through each element and
          // extract objects recursively
          int idx = 0;
          for (T value : ((T[]) data)) {
-            extractObjectsImpl(
-                  // the new data to extract from
-                  value,
-                  // the new path is `path[idx]`
-                  path + "[" + idx + "]",
-
-                  idToObjectMap, predicate, reviver);
+            extractObjectsImpl(value, data, path + "[" + idx + "]", idToObjectMap, predicate, reviver);
             idx++;
          }
-
       } else if (data instanceof Map) {
          for (Entry<String, Object> element : ((Map<String, Object>) data).entrySet()) {
             extractObjectsImpl(
                   // the new data to extract from
-                  (T) element.getValue(),
+                  (T) element.getValue(), data,
                   // the new path is `path.key`
                   // when in the root data, path is empty
                   // so use the key directly
@@ -211,7 +201,99 @@ public class Helpers {
 
                   idToObjectMap, predicate, reviver);
          }
+      } else if (data instanceof Object) {
+         // if it is an object, iterate through each entry
+         // and extract objects recursively
+         Class<?> clazz = data.getClass();
+         if (!clazz.getName().startsWith("java.")) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+               if (field.getType().isPrimitive() || field.getType().getName().startsWith("java.")
+                     || field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers()))
+                  continue;
+               System.out.println(field.getName() + " " + field.getType().getCanonicalName());
+               if (!field.isAccessible())
+                  field.setAccessible(true);
+               T value;
+               try {
+                  value = (T) field.get(data);
+               } catch (Exception e) {
+                  continue;
+               }
+
+               extractObjectsImpl(
+                     // the new data to extract from
+                     value, data,
+                     // the new path is `path.key`
+                     // when in the root data, path is empty
+                     // so use the key directly
+                     path.isEmpty() ? field.getName() : path + "." + field.getName(), idToObjectMap, predicate,
+                     reviver);
+            }
+         }
+
       }
 
    }
+
+   /***
+    * Replaces one object with the other based on path provider both objects extend
+    * Identifiable interface and fields/arrays are defined using that interface.S
+    * 
+    * @param propertyList
+    * @throws TraceSdkException
+    */
+   @SuppressWarnings("unchecked")
+   public static <V extends Identifiable> void assignObjects(List<Property<V>> propertyList) throws TraceSdkException {
+
+      Pattern lastArrIndex = Pattern.compile("\\[(\\d+)\\]$");
+      for (Property<V> propertyElement : propertyList) {
+         Object parent = propertyElement.getParent();
+         // read the key name from the path
+         String[] pathElements = propertyElement.getPath().split("\\.");
+         String key = pathElements[pathElements.length - 1];
+         if (parent instanceof Map) {
+            ((Map<String, Object>) parent).put(key, propertyElement.getValue());
+         } else if (parent.getClass().isArray()) {
+            // get the index of the value in the array
+            // read the index from the path
+            Matcher lastIndexMatcher = lastArrIndex.matcher(key);
+            int index;
+            if (lastIndexMatcher.find()) {
+               String valIndex = lastIndexMatcher.group(1);
+               index = Integer.parseInt(valIndex);
+            } else
+               throw new TraceSdkException("Array index not found on path " + key);
+
+            // object could be an identifable or it could be a deserialized map
+            if (parent.getClass().getComponentType().isAssignableFrom(Map.class)) { // convert the value to map~
+               Map<?, ?> map = JsonHelper.objectToMap(propertyElement.getValue());
+               Array.set(parent, index, map);
+            } else {
+               Array.set(parent, index, propertyElement.getValue());
+            }
+         } else if (parent instanceof Object) {
+            try {
+               // write the object to the field
+               // in java there is currently no way of changing the type of a field.
+               // the field has to be of type identifiable to support both types.
+               Field field = parent.getClass().getDeclaredField(key);
+               if (!field.isAccessible())
+                  field.setAccessible(true);
+               if (Map.class.isAssignableFrom(field.getType())) { // convert the value to map~
+                  Map<?, ?> map = JsonHelper.objectToMap(propertyElement.getValue());
+                  field.set(parent, map);
+               } else {
+                  if (!field.getType().isAssignableFrom(propertyElement.getValue().getClass()))
+                     throw new TraceSdkException("Field " + key + " of type " + field.getType()
+                           + " is not assignable from " + propertyElement.getValue().getClass());
+                  field.set(parent, propertyElement.getValue());
+               }
+            } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+               throw new TraceSdkException("Failed to set one or more fields on the data object", e);
+            }
+         }
+      }
+   }
+
 }

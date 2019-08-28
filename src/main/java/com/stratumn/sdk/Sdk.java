@@ -15,9 +15,13 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,12 +34,16 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.stratumn.chainscript.ChainscriptException;
 import com.stratumn.chainscript.Link;
 import com.stratumn.chainscript.utils.CryptoUtils;
 import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.graph.GraphQl;
+import com.stratumn.sdk.model.api.GraphResponse;
 import com.stratumn.sdk.model.client.PrivateKeySecret;
 import com.stratumn.sdk.model.client.Secret;
+import com.stratumn.sdk.model.file.MediaRecord;
+import com.stratumn.sdk.model.misc.Property;
 import com.stratumn.sdk.model.sdk.SdkConfig;
 import com.stratumn.sdk.model.sdk.SdkOptions;
 import com.stratumn.sdk.model.trace.AddTagsToTraceInput;
@@ -71,7 +79,33 @@ public class Sdk<TState> implements ISdk<TState> {
    public Sdk(SdkOptions opts) {
       this.opts = opts;
       this.client = new Client(opts);
-      JsonHelper.registerTypeAdapter(FileWrapper.class, new FileWrapperSerializer());
+      this.pingTrace();
+   }
+
+   private void pingTrace() {
+      try {
+         // ping trace to test network connectivity.
+         String url = String.format("%s/healthz", this.opts.getEndpoints().getTrace());
+         HttpURLConnection connection;
+         if (this.opts.getProxy() != null) {
+            connection = (HttpURLConnection) new URL(url).openConnection(this.opts.getProxy());
+         } else {
+            connection = (HttpURLConnection) new URL(url).openConnection();
+         }
+         int responseCode = connection.getResponseCode();
+         if (responseCode != 200) {
+            System.out.printf("Could not call Trace (%d)\n", responseCode);
+         }
+
+      } catch (Exception e) {
+         System.err.print("Could not call Trace");
+         e.printStackTrace();
+         return;
+      }
+
+      System.out.println("================================================================================");
+      System.out.println("                    Connection to trace established                             ");
+      System.out.println("================================================================================");
    }
 
    /**
@@ -83,32 +117,28 @@ public class Sdk<TState> implements ISdk<TState> {
     * 
     * @return the Sdk config object
     */
-   private SdkConfig getConfig() throws Exception {
+   private SdkConfig getConfig() throws TraceSdkException {
       // if the config already exists use it!
       if (this.config != null)
          return this.config;
 
       String workflowId = this.opts.getWorkflowId();
+      // execute graphql query
+      GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_CONFIG,
+            Collections.singletonMap("workflowId", workflowId), null, GraphResponse.class);
+      if (response.hasErrors())
+         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
+      JsonElement groupNodes = response.getData("workflow.groups.nodes");
+      if (groupNodes == null)
+         throw new TraceSdkException("Workflow.groups object not found:\n" + response.toString());
 
-      JsonObject jsonResponse = this.client.graphql(GraphQl.Query.QUERY_CONFIG,
-            Collections.singletonMap("workflowId", workflowId), null, JsonObject.class);
-      JsonObject jsonData = jsonResponse.get("data").getAsJsonObject();
-
-      // extract relevant info from the response
-      JsonObject workflow = jsonData.get("workflow").getAsJsonObject();
-      if (workflow == null || workflow.get("groups") == null) {
-         throw new Exception("Cannot find workflow " + workflowId);
-      }
-      JsonObject groups = jsonData.getAsJsonObject("workflow").get("groups").getAsJsonObject();
-      JsonObject jsonAccount = jsonData.getAsJsonObject("account");
-      JsonObject memberOf = jsonAccount.get("memberOf").getAsJsonObject();
-
-      String accountId = jsonAccount.get("accountId").getAsString();
-      String userId = jsonAccount.get("userId").getAsString();
+      JsonElement memberNodes = response.getData("account.memberOf.nodes");
+      String accountId = response.getData("account.accountId").getAsString();
+      String userId = response.getData("account.userId").getAsString();
 
       List<String> myAccounts = new ArrayList<String>();
       // get all the account ids I am a member of
-      Iterator<JsonElement> iteratorNodes = memberOf.get("nodes").getAsJsonArray().iterator();
+      Iterator<JsonElement> iteratorNodes = memberNodes.getAsJsonArray().iterator();
       while (iteratorNodes.hasNext()) {
          JsonElement element = iteratorNodes.next();
          myAccounts.add(element.getAsJsonObject().get("accountId").toString());
@@ -116,7 +146,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       List<JsonElement> myGroups = new ArrayList<JsonElement>();
       // get all the groups that are owned by one of my accounts
-      Iterator<JsonElement> iteratorGNodes = groups.get("nodes").getAsJsonArray().iterator();
+      Iterator<JsonElement> iteratorGNodes = groupNodes.getAsJsonArray().iterator();
       while (iteratorGNodes.hasNext()) {
          JsonElement group = iteratorGNodes.next();
          if (myAccounts.contains(group.getAsJsonObject().get("accountId").toString())) {
@@ -126,12 +156,12 @@ public class Sdk<TState> implements ISdk<TState> {
 
       // there must be at most one group!
       if (myGroups.size() > 1) {
-         throw new Exception("More than one group to choose from.");
+         throw new TraceSdkException("More than one group to choose from.");
       }
 
       // // there must be at least one group!
       if (myGroups.size() == 0) {
-         throw new Exception("No group to choose from.");
+         throw new TraceSdkException("No group to choose from.");
       }
 
       // extract info from my only group
@@ -139,21 +169,25 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String ownerId = myGroups.get(0).getAsJsonObject().get("accountId").getAsString();
       PrivateKey signingPrivateKey = null;
-      if (Secret.isPrivateKeySecret(opts.getSecret())) {
-         // if the secret is a PrivateKeySecret, use it!
-         final String privateKey = ((PrivateKeySecret) opts.getSecret()).getPrivateKey();
-         signingPrivateKey = CryptoUtils.decodePrivateKey(privateKey);
-      } else {
-         JsonObject signingKey = jsonAccount.getAsJsonObject("account").get("signingKey").getAsJsonObject();
-         JsonObject privateKey = signingKey.getAsJsonObject("privateKey");
-         Boolean passwordProtected = privateKey.get("passwordProtected").getAsBoolean();
-         String decrypted = privateKey.get("decrypted").getAsString();
-         if (!passwordProtected)
-            // otherwise use the key from the response
-            // if it's not password protected!
-            signingPrivateKey = CryptoUtils.decodePrivateKey(decrypted);
-         else
-            throw new Exception("Cannot get signing private key");
+      try {
+         if (Secret.isPrivateKeySecret(opts.getSecret())) {
+            // if the secret is a PrivateKeySecret, use it!
+            final String privateKey = ((PrivateKeySecret) opts.getSecret()).getPrivateKey();
+            signingPrivateKey = CryptoUtils.decodePrivateKey(privateKey);
+         } else {
+            JsonElement privateKeyElt = response.getData("account.signingKey.privateKey");
+            JsonObject privateKey = privateKeyElt.getAsJsonObject();
+            Boolean passwordProtected = privateKey.get("passwordProtected").getAsBoolean();
+            String decrypted = privateKey.get("decrypted").getAsString();
+            if (!passwordProtected)
+               // otherwise use the key from the response
+               // if it's not password protected!
+               signingPrivateKey = CryptoUtils.decodePrivateKey(decrypted);
+            else
+               throw new TraceSdkException("Cannot get signing private key");
+         }
+      } catch (InvalidKeySpecException ex) {
+         throw new TraceSdkException("Security key error", ex);
       }
 
       Map<String, String> actionNames = new HashMap<String, String>();
@@ -172,19 +206,23 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws IllegalArgumentException
     * @return the trace state
     */
-   private <TLinkData> TraceState<TState, TLinkData> makeTraceState(JsonObject trace)
-         throws IllegalArgumentException, Exception {
-
+   private <TLinkData> TraceState<TState, TLinkData> makeTraceState(JsonObject trace) throws TraceSdkException {
       String raw = trace.get("head").getAsJsonObject().get("raw").toString();
       JsonElement data = trace.get("head").getAsJsonObject().get("data");
 
       TraceLink<TLinkData> headLink = TraceLink.fromObject(raw, (TLinkData) data);
-
-      TraceState<TState, TLinkData> traceState = new TraceState<TState, TLinkData>(headLink.traceId(), headLink,
-            headLink.createdAt(), headLink.createdBy(), (TState) trace.get("state").getAsJsonObject().get("data"),
-            new String[0] // TODO parse this trace.tags || []
-      );
-
+      TraceState<TState, TLinkData> traceState;
+      try {
+         traceState = new TraceState<TState, TLinkData>(headLink.traceId(), headLink, headLink.createdAt(),
+               headLink.createdBy(), (TState) trace.get("state").getAsJsonObject().get("data"), new String[0] // TODO
+                                                                                                              // parse
+                                                                                                              // this
+                                                                                                              // trace.tags
+                                                                                                              // || []
+         );
+      } catch (ChainscriptException e) {
+         throw new TraceSdkException("Error constructing traceState ", e);
+      }
       return traceState;
    }
 
@@ -193,11 +231,13 @@ public class Sdk<TState> implements ISdk<TState> {
     * mutation.
     *
     * @param input the input argument to create the Link
+    * @throws TraceSdkException
+    * @throws ChainscriptException
     * @throws Exception
     * @return the new Trace
     */
    private <TLinkData> TraceState<TState, TLinkData> createLink(TraceLinkBuilder<TLinkData> linkBuilder)
-         throws Exception {
+         throws TraceSdkException, ChainscriptException {
       // extract signing key from config
       SdkConfig sdkConfig = this.getConfig();
 
@@ -211,20 +251,21 @@ public class Sdk<TState> implements ISdk<TState> {
 
       Map<String, Object> linkObj = JsonHelper.objectToMap(link.getLink());
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> dataObj = (Map<String, Object>) ((TraceLink<TLinkData>) link).formData();
+      Map<String, Object> dataObj = JsonHelper.objectToMap(((TraceLink<TLinkData>) link).formData());
 
       Map<String, Object> variables = new HashMap<String, Object>();
       variables.put("link", linkObj);
       variables.put("data", dataObj);
 
       // execute graphql query
-      JsonObject jsonResponse = this.client.graphql(GraphQl.Query.MUTATION_CREATELINK, variables, null,
-            JsonObject.class);
-      JsonObject trace = jsonResponse.get("data").getAsJsonObject().get("createLink").getAsJsonObject().get("trace")
-            .getAsJsonObject();
-
-      return this.makeTraceState(trace);
+      GraphResponse response = this.client.graphql(GraphQl.Query.MUTATION_CREATELINK, variables, null,
+            GraphResponse.class);
+      if (response.hasErrors())
+         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
+      JsonElement trace = response.getData("createLink.trace");
+      if (trace == null)
+         throw new TraceSdkException("Trace object not found:\n" + response.toString());
+      return this.makeTraceState(trace.getAsJsonObject());
    }
 
    /**
@@ -242,12 +283,14 @@ public class Sdk<TState> implements ISdk<TState> {
       // if prevLink was not provided
       if (headLink == null && input.getTraceId() != null) {
          // execute graphql query
-         JsonObject jsonResponse = this.client.graphql(GraphQl.Query.QUERY_GETHEADLINK,
-               Collections.singletonMap("traceId", input.getTraceId()), null, JsonObject.class);
-         JsonObject trace = jsonResponse.get("data").getAsJsonObject().get("trace").getAsJsonObject();
+         GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_GETHEADLINK,
+               Collections.singletonMap("traceId", input.getTraceId()), null, GraphResponse.class);
+         if (response.hasErrors())
+            throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
 
-         String raw = trace.get("head").getAsJsonObject().get("raw").toString();
-         TLinkData data = (TLinkData) trace.get("head").getAsJsonObject().get("data");
+         String raw = response.getData("trace.head.raw").toString();
+         JsonElement headData = response.getData("trace.head.data");
+         TLinkData data = (TLinkData) (headData != null ? headData.getAsJsonObject() : null);
 
          // convert the raw response to a link object
          headLink = new TraceLink<TLinkData>(Link.fromObject(raw), data);
@@ -274,11 +317,11 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws Exception
     */
    private <TLinkData> TracesState<TState, TLinkData> getTracesInStage(TraceStageType stageType,
-         PaginationInfo paginationInfo, String formId) throws Error, Exception {
+         PaginationInfo paginationInfo, String formId) throws TraceSdkException {
 
       // formId can only be set in ATTESTATION case
       if (stageType == TraceStageType.ATTESTATION && formId == null) {
-         throw new Exception("You must and can only provide formId when stageType is ATTESTATION");
+         throw new TraceSdkException("You must and can only provide formId when stageType is ATTESTATION");
       }
       // extract info from config
       SdkConfig sdkConfig = this.getConfig();
@@ -294,12 +337,12 @@ public class Sdk<TState> implements ISdk<TState> {
       variables.putAll(variablesPaginationInfo);
 
       // execute the graphql query
-      JsonObject jsonResponse = this.client.graphql(GraphQl.Query.QUERY_GETTRACESINSTAGE, variables, null,
-            JsonObject.class);
-
+      GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_GETTRACESINSTAGE, variables, null,
+            GraphResponse.class);
+      if (response.hasErrors())
+         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
       // extract relevant info from the response
-      JsonArray stages = jsonResponse.get("data").getAsJsonObject().get("group").getAsJsonObject().get("stages")
-            .getAsJsonObject().get("nodes").getAsJsonArray();
+      JsonArray stages = response.getData("group.stages.nodes").getAsJsonArray();
 
       // there must be exactly one stage
       if (stages.size() == 1) {
@@ -334,10 +377,10 @@ public class Sdk<TState> implements ISdk<TState> {
       }
       // throw if no stages were found if
       if (stages.size() == 0) {
-         throw new Exception("No " + stageDetail + " stage");
+         throw new TraceSdkException("No " + stageDetail + " stage");
       }
       // throw if multiple stages were found throw new
-      throw new Exception("Multiple " + stageDetail + " stages");
+      throw new TraceSdkException("Multiple " + stageDetail + " stages");
 
    }
 
@@ -349,27 +392,33 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws ExecutionException
     * @throws InterruptedException
     */
-   @SuppressWarnings("unchecked")
-   private <TLinkData> TLinkData uploadFilesInLinkData(TLinkData data)
+   private <TLinkData> void uploadFilesInLinkData(TLinkData data)
          throws InterruptedException, ExecutionException, TraceSdkException {
+      // extract all FileWrappers from the data.
+      Map<String, Property<FileWrapper>> fileWrapperMap = Helpers.extractFileWrappers(data);
+      if (fileWrapperMap.size() == 0)
+         return;
 
-      Map<String, FileWrapper> map = Helpers.extractFileWrappers(data);
-
-      uploadFiles(map);
-
-      return data;
-   }
-
-   private Map<String, FileRecord> uploadFiles(Map<String, FileWrapper> idToFileWrapperMap)
-         throws InterruptedException, ExecutionException, TraceSdkException {
-      // if the map is empty return an empty map
-      if (idToFileWrapperMap.size() == 0) {
-         return new HashMap<String, FileRecord>();
+      List<FileWrapper> fileList = new ArrayList<FileWrapper>();
+      for (Property<FileWrapper> fileProperty : fileWrapperMap.values()) {
+         FileWrapper fileWrapper = fileProperty.getValue();
+         fileList.add(fileWrapper);
       }
+      MediaRecord[] mediaRecords = client.uploadFiles(fileList);
 
-      client.uploadFiles(idToFileWrapperMap.values().toArray(new FileWrapper[idToFileWrapperMap.size()]));
+      List<Property<FileRecord>> fileRecordList = new ArrayList<>(fileWrapperMap.size());
+      // find the filewrapper and build filerecord
+      for (int i = 0; i < mediaRecords.length; i++) {
+         MediaRecord mediaRecord = mediaRecords[i];
+         // get the fileWrapper property by index of file in the list uploaded.
+         Property<FileWrapper> fileWrapperProp = fileWrapperMap.get(fileList.get(i).getId());
+         // build FileRecord property
+         Property<FileRecord> fileRecordProp = fileWrapperProp
+               .transform((fileWrapper) -> new FileRecord(mediaRecord, fileWrapper.info()));
+         fileRecordList.add(fileRecordProp);
+      }
+      Helpers.assignObjects(fileRecordList);
 
-      return null;
    }
 
    /**
@@ -379,14 +428,13 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return
     */
    public <TData> TData downloadFilesInObject(TData data) throws TraceSdkException, HttpError {
-      Map<String, FileRecord> idToFileRecordMap = Helpers.extractFileRecords(data);
+      Map<String, Property<FileRecord>> idToFileRecordMap = Helpers.extractFileRecords(data);
 
-      Map<String, FileWrapper> idFileWrapperMap = this.downloadFiles(idToFileRecordMap);
+      List<Property<FileWrapper>> fileWrapperList = this.downloadFiles(idToFileRecordMap);
       // replace filerecords with fileWrappers
+      Helpers.assignObjects(fileWrapperList);
 
-      TData newData = data;
-
-      return newData;
+      return data;
    }
 
    /***
@@ -395,20 +443,20 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws HttpError
     * @throws TraceSdkException
     */
-   private Map<String, FileWrapper> downloadFiles(Map<String, FileRecord> idToFileRecordMap)
+   private List<Property<FileWrapper>> downloadFiles(Map<String, Property<FileRecord>> idToFileRecordMap)
          throws TraceSdkException, HttpError {
-      Map<String, FileWrapper> fileWrapperMap = new HashMap<String, FileWrapper>();
+      List<Property<FileWrapper>> fileWrapperList = new ArrayList<Property<FileWrapper>>();
       if (idToFileRecordMap.size() == 0) {
-         return fileWrapperMap;
+         return fileWrapperList;
       }
 
-      for (Entry<String, FileRecord> fileRecordElement : idToFileRecordMap.entrySet()) {
-         FileRecord fileRecord = fileRecordElement.getValue();
+      for (Entry<String, Property<FileRecord>> fileRecordElt : idToFileRecordMap.entrySet()) {
+         FileRecord fileRecord = fileRecordElt.getValue().getValue();
          ByteBuffer file = client.downloadFile(fileRecord);
-         FileWrapper fWrapper = FileWrapper.fromFileBlob(file, fileRecord.getFileInfo());
-         fileWrapperMap.put(fileRecordElement.getKey(), fWrapper);
+         fileWrapperList.add(
+               fileRecordElt.getValue().transform((T) -> FileWrapper.fromFileBlob(file, fileRecord.getFileInfo())));
       }
-      return fileWrapperMap;
+      return fileWrapperList;
    }
 
    /**
@@ -423,18 +471,17 @@ public class Sdk<TState> implements ISdk<TState> {
 
       Map<String, Object> getTraceDetailsInput = JsonHelper.objectToMap(input);
       // execute graphql query
-      JsonObject jsonResponse = this.client.graphql(GraphQl.Query.QUERY_GETTRACEDETAILS, getTraceDetailsInput, null,
-            JsonObject.class);
+      GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_GETTRACEDETAILS, getTraceDetailsInput, null,
+            GraphResponse.class);
+      if (response.hasErrors())
+         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
 
-      JsonObject trace = jsonResponse.get("data").getAsJsonObject().get("trace").getAsJsonObject();
-
-      JsonObject info = trace.get("links").getAsJsonObject().get("info").getAsJsonObject();
-      int totalCount = trace.get("links").getAsJsonObject().get("totalCount").getAsInt();
+      JsonObject info = response.getData("trace.links.info").getAsJsonObject();
+      int totalCount = response.getData("trace.links.totalCount").getAsInt();
       List<TraceLink<TLinkData>> links = new ArrayList<TraceLink<TLinkData>>();
 
       // get all the groups that are owned by one of my accounts
-      Iterator<JsonElement> iteratorNodes = trace.get("links").getAsJsonObject().get("nodes").getAsJsonArray()
-            .iterator();
+      Iterator<JsonElement> iteratorNodes = response.getData("trace.links.nodes").getAsJsonArray().iterator();
 
       while (iteratorNodes.hasNext()) {
          JsonObject node = (JsonObject) iteratorNodes.next();
@@ -451,9 +498,11 @@ public class Sdk<TState> implements ISdk<TState> {
    @Override
    public <TLinkData> TraceState<TState, TLinkData> getTraceState(GetTraceStateInput input) throws Exception {
       // create variables
-      JsonObject jsonResponse = this.client.graphql(GraphQl.Query.QUERY_GETTRACESTATE,
-            Collections.singletonMap("traceId", input.getTraceId()), null, JsonObject.class);
-      JsonObject trace = jsonResponse.get("data").getAsJsonObject().get("trace").getAsJsonObject();
+      GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_GETTRACESTATE,
+            Collections.singletonMap("traceId", input.getTraceId()), null, GraphResponse.class);
+      if (response.hasErrors())
+         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
+      JsonObject trace = response.getData("trace").getAsJsonObject();
 
       return this.makeTraceState(trace);
 
@@ -528,7 +577,7 @@ public class Sdk<TState> implements ISdk<TState> {
       String groupId = sdkConfig.getGroupId();
       Map<String, String> actionNames = sdkConfig.getActionNames();
       // upload files and transform data
-      TLinkData dataAfterFileUpload = this.uploadFilesInLinkData(data);
+      this.uploadFilesInLinkData(data);
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       cfg.setWorkflowId(workflowId);
@@ -537,7 +586,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilder<TLinkData> linkBuilder = new TraceLinkBuilder<TLinkData>(cfg);
 
       // this is an attestation
-      linkBuilder.forAttestation(formId, actionNames.get(formId), dataAfterFileUpload)
+      linkBuilder.forAttestation(formId, actionNames.get(formId), data)
             // add owner info
             .withOwner(ownerId)
             // add group info
@@ -684,15 +733,7 @@ public class Sdk<TState> implements ISdk<TState> {
          throws IllegalArgumentException, Exception {
       String traceId = input.getTraceId();
       String[] tags = input.getTags();
-
-      // execute the graphql mutation
-      // const rsp = await this.client.graphql<Response, Variables>(
-      // // the graphql document
-      // AddTagsToTraceMutation.document,
-      // // export the link as object
-      // { traceId, tags }
-      // );
-
+      // TODO implement
       // build and return the TraceState object
       return this.makeTraceState(null);// rsp.addTagsToTrace.trace);
    }
@@ -723,7 +764,7 @@ public class Sdk<TState> implements ISdk<TState> {
       String groupId = sdkConfig.getGroupId();
       Map<String, String> actionNames = sdkConfig.getActionNames();
       // upload files and transform data
-      TLinkData dataAfterFileUpload = this.uploadFilesInLinkData(data);
+      this.uploadFilesInLinkData(data);
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
@@ -735,7 +776,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilder<TLinkData> linkBuilder = new TraceLinkBuilder<TLinkData>(cfg);
 
       // this is an attestation
-      linkBuilder.forAttestation(formId, actionNames.get(formId), dataAfterFileUpload)
+      linkBuilder.forAttestation(formId, actionNames.get(formId), data)
             // add owner info
             .withOwner(ownerId)
             // add group info
@@ -791,10 +832,13 @@ public class Sdk<TState> implements ISdk<TState> {
     * Pull a trace from a group.
     *
     * @param input the pullTrace input argument
+    * @throws ChainscriptException
+    * @throws TraceSdkException
     * @return the Trace
     */
    @Override
-   public <TLinkData> TraceState<TState, TLinkData> pullTrace(PullTransferInput<TLinkData> input) throws Exception {
+   public <TLinkData> TraceState<TState, TLinkData> pullTrace(PullTransferInput<TLinkData> input)
+         throws ChainscriptException, TraceSdkException {
 
       // retrieve parent link
       TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(input.getTraceId(), null,

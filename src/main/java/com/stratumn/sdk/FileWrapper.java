@@ -66,33 +66,41 @@ public abstract class FileWrapper implements Identifiable {
    /***
     * @param data
     * @return
-    * @throws InvalidKeyException
-    * @throws IllegalBlockSizeException
-    * @throws BadPaddingException
+    * @throws TraceSdkException
     */
-   protected ByteBuffer encryptData(ByteBuffer data)
-         throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+   protected ByteBuffer encryptData(ByteBuffer data) throws TraceSdkException {
       if (this.key == null)
          return data;
-      data = key.encrypt(data);
+      try {
+         data = key.encrypt(data);
+      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+         throw new TraceSdkException("Failed to encrypt file data");
+      }
       return data;
    }
 
    /***
     * @param data
     * @return
-    * @throws InvalidKeyException
-    * @throws IllegalBlockSizeException
-    * @throws BadPaddingException
+    * @throws TraceSdkException
     */
-   protected ByteBuffer decryptData(ByteBuffer data)
-         throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+   protected ByteBuffer decryptData(ByteBuffer data) throws TraceSdkException {
       if (this.key == null)
          return data;
-      data = key.decrypt(data);
+      try {
+         data = key.decrypt(data);
+      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+         throw new TraceSdkException("Failed to encrypt file data");
+      }
       return data;
    }
 
+   /***
+    * Add the key info to the filewrapper
+    * 
+    * @param info
+    * @return
+    */
    protected FileInfo addKeyToFileInfo(FileInfo info) {
       if (this.key == null) {
          return info;
@@ -106,14 +114,13 @@ public abstract class FileWrapper implements Identifiable {
    /**
     * Get the file info. This method is async as in the NodeJs case, the info is
     * retrieved asynchronously using the statAsync function.
-    * 
-    * @throws TraceSdkException
     */
-   public abstract FileInfo info() throws TraceSdkException;
+   public abstract FileInfo info();
 
    /**
     * The actual file data.
     * 
+    * @throws TraceSdkException
     */
    public abstract ByteBuffer encryptedData() throws TraceSdkException;
 
@@ -154,6 +161,11 @@ public abstract class FileWrapper implements Identifiable {
     */
    public static Boolean isFileWrapper(Object obj) {
       return obj instanceof FileWrapper;
+   }
+
+   @Override
+   public String toString() {
+      return "FileWrapper [id=" + id + ", key=" + key + "]";
    }
 
 }

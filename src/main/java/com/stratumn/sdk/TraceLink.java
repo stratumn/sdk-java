@@ -19,6 +19,7 @@ import java.util.Date;
 
 import com.stratumn.chainscript.ChainscriptException;
 import com.stratumn.chainscript.Link;
+import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.trace.Account;
 import com.stratumn.sdk.model.trace.ITraceLink;
 import com.stratumn.sdk.model.trace.TraceLinkMetaData;
@@ -37,10 +38,9 @@ public class TraceLink<TLinkData> extends Link implements ITraceLink<TLinkData> 
     this.formData = formData;
   }
 
-  @SuppressWarnings("unchecked")
   public TLinkData formData() throws ChainscriptException {
 
-    return formData != null ? formData : (TLinkData) super.data();
+    return formData != null ? formData : (TLinkData) JsonHelper.toJson(super.data());
   }
 
   public String traceId() throws ChainscriptException {

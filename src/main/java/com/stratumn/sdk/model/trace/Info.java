@@ -23,18 +23,8 @@ public class Info {
     private String endCursor;
 
     public Info(boolean hasNext, boolean hasPrevious, String startCursor, String endCursor) throws IllegalArgumentException {
-        if (hasNext) {
-          throw new IllegalArgumentException("hasNext cannot be null in Info");
-        }
-        if (hasPrevious) {
-          throw new IllegalArgumentException("hasPrevious cannot be null in Info");
-        }
-        if (startCursor == null) {
-          throw new IllegalArgumentException("startCursor cannot be null in Info");
-        }
-        if (endCursor == null) {
-          throw new IllegalArgumentException("endCursor cannot be null in Info");
-        }
+       
+       
     
         this.hasNext = hasNext;
         this.hasPrevious = hasPrevious;

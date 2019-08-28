@@ -24,17 +24,28 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.stratumn.chainscript.utils.CryptoUtils;
+import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.graph.GraphQl;
-import com.stratumn.sdk.graph.GraphQlRequest;
+import com.stratumn.sdk.graph.GraphQlQuery;
 import com.stratumn.sdk.model.client.ClientOptions;
 import com.stratumn.sdk.model.client.CredentialSecret;
 import com.stratumn.sdk.model.client.Endpoints;
@@ -61,6 +72,8 @@ public class Client {
     */
    private static final GraphQLOptions DefaultGraphQLOptions = new GraphQLOptions(1);
 
+   private static final FetchOptions DefaultFetchOptions = new FetchOptions();
+
    /**
     * The endpoint urls for all the services
     */
@@ -76,10 +89,7 @@ public class Client {
 
    private Proxy proxy;
 
-   /***
-    * GSON object instance
-    */
-   private static final Gson gson = new Gson();
+   private RestTemplate restTemplate;
 
    /***
     * Constructs a new instance of the Client
@@ -91,6 +101,32 @@ public class Client {
       this.proxy = opts.getProxy();
 
       this.secret = opts.getSecret();
+
+      initRestTemplate();
+
+   }
+
+   /***
+    * Initializes the restTemplate
+    */
+   private void initRestTemplate() {
+      restTemplate = new RestTemplate();
+      GsonHttpMessageConverter converter = null;
+      // find existing converter
+      Iterator<HttpMessageConverter<?>> convIterator = restTemplate.getMessageConverters().iterator();
+      while (convIterator.hasNext()) {
+         HttpMessageConverter<?> conv = convIterator.next();
+         if (conv instanceof GsonHttpMessageConverter) {
+            converter = (GsonHttpMessageConverter) conv;
+            break;
+         }
+      }
+      // create converter if not found
+      if (converter == null) {
+         converter = new GsonHttpMessageConverter();
+         restTemplate.getMessageConverters().add(converter);
+      }
+      converter.setGson(JsonHelper.getGson());
 
    }
 
@@ -116,16 +152,16 @@ public class Client {
     * @throws TraceSdkException
     */
    private String getAuthorizationHeader(FetchOptions opts) throws TraceSdkException {
-
       if (opts != null) {
          if (opts.getAuthToken() != null)
             return this.makeAuthorizationHeader(opts.getAuthToken());
-         if (opts.getSkipAuth() != null)
+         if (opts.getSkipAuth() != null && opts.getSkipAuth())
             return this.makeAuthorizationHeader(null);
       }
 
       this.login();
       return this.makeAuthorizationHeader(this.token);
+
    }
 
    /**
@@ -151,19 +187,15 @@ public class Client {
     * @throws HttpError
     * @return the responseContent
     */
-   @SuppressWarnings("unchecked")
-   private <T> T fetch(HttpHelpers request, int retry) throws HttpError {
-      T responseContent = null;
+   private String fetch(HttpHelpers request, int retry) throws HttpError {
+      String responseContent = null;
       try {
          request.sendData();
          HttpURLConnection con = request.getConnection();
+         // first check the status.
          int status = con.getResponseCode();
-         responseContent = (T) request.read();
-
-         // int status = con.getResponseCode();
          Boolean ok = (status < HttpURLConnection.HTTP_BAD_REQUEST)
                || (200 <= con.getResponseCode() && con.getResponseCode() <= 299);
-
          if (!ok) {
             // if 401 and retry > 0 then we can retry
             if (status == 401 && retry > 0) {
@@ -181,7 +213,7 @@ public class Client {
             // throw that new error
             throw new HttpError(status, errTxt);
          }
-
+         responseContent = (String) request.read();
       } catch (IOException ioe) {
          throw new HttpError(HttpURLConnection.HTTP_INTERNAL_ERROR, ioe.getLocalizedMessage());
       }
@@ -203,9 +235,8 @@ public class Client {
 
       String signedToken = Helpers.makeAuthPayload(privateKey);
 
-      String tokenResponse = this.<String>get(Service.ACCOUNT, "login", null,
-            new FetchOptions(signedToken, false, null));
-      JsonObject tokenJson = gson.fromJson(tokenResponse, JsonObject.class);
+      String tokenResponse = this.get(Service.ACCOUNT, "login", null, new FetchOptions(signedToken, false, null));
+      JsonObject tokenJson = JsonHelper.fromJson(tokenResponse, JsonObject.class);
       // finally set the new token
       this.setToken(tokenJson.get("token").getAsString());
    }
@@ -225,21 +256,21 @@ public class Client {
       Map<String, String> parameters = new HashMap<>();
       parameters.put("email", email);
 
-      String saltResponse = this.<String>get(Service.ACCOUNT, "salt", parameters, (new FetchOptions(null, true, 0)));
-      JsonObject saltJson = gson.fromJson(saltResponse, JsonObject.class);
+      String saltResponse = this.get(Service.ACCOUNT, "salt", parameters, (new FetchOptions(null, true, 0)));
+      JsonObject saltJson = JsonHelper.fromJson(saltResponse, JsonObject.class);
       String salt = saltJson.get("salt").getAsString();
 
       // hash the password with the salt
       String passwordHash = org.springframework.security.crypto.bcrypt.BCrypt.hashpw(password, salt);
 
       parameters.put("passwordHash", passwordHash);
-      String bodyJson = gson.toJson(parameters);
+      String bodyJson = JsonHelper.toJson(parameters);
 
       // post the login payload
       // use skipAuth = true to bypass authentication
       // POST /login is a public route!
-      String tokenResponse = this.<String>post(Service.ACCOUNT, "login", bodyJson, (new FetchOptions(null, true, 0)));
-      JsonObject tokenJson = gson.fromJson(tokenResponse, JsonObject.class);
+      String tokenResponse = this.post(Service.ACCOUNT, "login", bodyJson, (new FetchOptions(null, true, 0)));
+      JsonObject tokenJson = JsonHelper.fromJson(tokenResponse, JsonObject.class);
       // finally set the new token
       this.setToken(tokenJson.get("token").getAsString());
 
@@ -298,11 +329,11 @@ public class Client {
     * @throws TraceSdkException
     * @return the response body object
     */
-   public <T> T post(Service service, String route, String body, FetchOptions opts) throws TraceSdkException {
+   public String post(Service service, String route, String body, FetchOptions opts) throws TraceSdkException {
       try {
          // create default fetch options.
          if (opts == null)
-            opts = new FetchOptions();
+            opts = DefaultFetchOptions;
 
          // References: https://www.baeldung.com/java-http-request
          // https://juffalow.com/java/how-to-send-http-get-post-request-in-java
@@ -345,13 +376,13 @@ public class Client {
     * @throws TraceSdkException
     * @return the response body object
     */
-   public <T> T get(Service service, String route, Map<String, String> params, FetchOptions opts)
+   public String get(Service service, String route, Map<String, String> params, FetchOptions opts)
          throws TraceSdkException {
 
       try {
          // create default fetch options.
          if (opts == null)
-            opts = new FetchOptions();
+            opts = DefaultFetchOptions;
 
          String path = this.endpoints.getEndpoint(service) + '/' + route;
 
@@ -404,10 +435,9 @@ public class Client {
          opts = DefaultGraphQLOptions;
       }
       String gqlUrl = this.endpoints.getTrace() + "/graphql";
-
+      GraphQlQuery topologyQuery = new GraphQlQuery(variables, queryStr);
       // delegate the graphql request execution
-      ResponseEntity<T> response = GraphQlRequest.request(gqlUrl, this.getAuthorizationHeader(null), queryStr,
-            variables, tclass, this.proxy);
+      ResponseEntity<T> response = postForEntity(gqlUrl, topologyQuery, tclass);
       if (response.getStatusCode() == HttpStatus.OK) {
          // if the response is empty, throw.
          if (!response.hasBody())
@@ -434,35 +464,37 @@ public class Client {
    /**
     * Uploads an array of files to media-api.
     *
-    * @param files the file wrappers to upload
+    * @param fileWrapperList the file wrappers to upload
+    * @return the array of corresponding media records
     * @throws TraceSdkException
-    * @throws ExecutionException
-    * @throws InterruptedException
     */
-   public void uploadFiles(FileWrapper[] files) throws InterruptedException, ExecutionException, TraceSdkException {
+   public MediaRecord[] uploadFiles(List<FileWrapper> fileWrapperList) throws TraceSdkException {
 
-      Map<String, ByteBuffer> fileMap = new HashMap<String, ByteBuffer>();
-      for (FileWrapper fileW : files) {
-         FileInfo info = fileW.info();
-         fileMap.put(info.getName(), fileW.encryptedData());
-      }
+      if (fileWrapperList.size() == 0)
+         return new MediaRecord[0];
+
       String fileUrl = this.endpoints.getMedia() + "/files";
+      MediaRecord[] mediaRecords = uploadFiles(fileUrl, fileWrapperList, MediaRecord[].class);
 
-      GraphQlRequest.uploadFiles(fileUrl, this.getAuthorizationHeader(null), fileMap, MediaRecord[].class);
-
+      return mediaRecords;
    }
 
    /**
     * Downloads a file corresponding to a media record.
     *
-    * @param file the file record to download
+    * @param fileRecord the file record to download
     * @return the file data blob (Buffer)
     * @throws TraceSdkException
     * @throws HttpError
     */
-   public ByteBuffer downloadFile(FileRecord file) throws TraceSdkException, HttpError {
+   public ByteBuffer downloadFile(FileRecord fileRecord) throws TraceSdkException, HttpError {
+      String tokenResponse = this.get(Service.MEDIA, "files/" + fileRecord.getDigest() + "/info", null, null);
+      JsonObject tokenJson = JsonHelper.fromJson(tokenResponse, JsonObject.class);
+      // finally set the new token
+      String downloadURL = tokenJson.get("download_url").getAsString();
+
       final int BUFFER_SIZE = 4096;
-      String downloadURL = this.get(Service.MEDIA, "/files/" + file.getDigest() + "/info", null, null);
+
       ByteBuffer byteBuffer = null;
       try {
          URL url = new URL(downloadURL);
@@ -472,9 +504,9 @@ public class Client {
          } else {
             httpConn = (HttpURLConnection) url.openConnection();
          }
+         // does not need authorization header
          int status = httpConn.getResponseCode();
          String statusText = httpConn.getResponseMessage();
-
          // always check HTTP response code first
          if (status != HttpURLConnection.HTTP_OK) {
             throw new HttpError(status, statusText);
@@ -495,6 +527,68 @@ public class Client {
          throw new TraceSdkException(e);
       }
       return byteBuffer;
+   }
+
+   /**
+    * Executes the query and returns a responseEntity of type passed
+    * 
+    * @param url
+    * @param auth
+    * @param query
+    * @param Variables
+    * @param tClass
+    * @return
+    * @throws TraceSdkException
+    * 
+    */
+   private <T, R> ResponseEntity<T> postForEntity(String url, R requestBody, Class<T> tClass) throws TraceSdkException {
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      headers.set(HttpHeaders.AUTHORIZATION, this.getAuthorizationHeader(null));
+
+      HttpEntity<R> entity = new HttpEntity<R>(requestBody, headers);
+
+      // System.out.println (JsonHelper.toJson(entity));
+      ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass, this.proxy);
+
+      return resp;
+
+   }
+
+   /***
+    * Expects a list of fileWrappers, uploads the files encrypted and returns
+    * response
+    * 
+    * @param filesList
+    * @return
+    * @throws TraceSdkException
+    */
+   private <T> T uploadFiles(String url, List<FileWrapper> filesList, Class<T> tClass) throws TraceSdkException {
+
+      MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+      headers.set(HttpHeaders.AUTHORIZATION, this.getAuthorizationHeader(null));
+
+      for (FileWrapper file : filesList) {
+
+         FileInfo info = file.info();
+         // This nested HttpEntiy is important to create the correct
+         // Content-Disposition entry with metadata "name" and "filename"
+         MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+         ContentDisposition contentDisposition = ContentDisposition.builder("form-data").name(info.getName())
+               .filename(info.getName()).build();
+         fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+         HttpEntity<byte[]> fileEntity = new HttpEntity<>(file.encryptedData().array(), fileMap);
+
+         bodyMap.add("files", fileEntity);
+      }
+      HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(bodyMap, headers);
+
+      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass, this.proxy);
+
+      return response.getBody();
    }
 
 }

@@ -21,111 +21,97 @@ import java.io.RandomAccessFile;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.security.InvalidKeyException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 
 import com.stratumn.sdk.model.file.FileInfo;
 
-	/**
-   * The browser implementation of a FileWrapper.
-   * 
-   */
-  public class BrowserFileWrapper extends FileWrapper {
-	  
-    private File file;
+/**
+* The browser implementation of a FileWrapper.
+* 
+*/
+public class BrowserFileWrapper extends FileWrapper
+{
 
-    BrowserFileWrapper(File file) {
+   private File file;
+
+   BrowserFileWrapper(File file)
+   {
       super();
       this.file = file;
-    }
-    
-    public  FileInfo  info() throws TraceSdkException
-    {
+   }
 
-         if(!file.exists())
-       {
-          throw new TraceSdkException("Error while loading file " + file.getAbsolutePath());
-       }
+   public FileInfo info()  
+   {
 
-       if(!file.isFile())
-       {
-          throw new TraceSdkException(file.getAbsolutePath() + " is not a valid file");
-       }
+      if(!file.exists())
+      {
+         throw new IllegalArgumentException("Error while loading file " + file.getAbsolutePath());
+      }
 
-       final Long size = file.length(); 
-       final String mimetype = URLConnection.guessContentTypeFromName(file.getName());
-       final String name = file.getName();
+      if(!file.isFile())
+      {
+         throw new IllegalArgumentException(file.getAbsolutePath() + " is not a valid file");
+      }
 
-       FileInfo fileInfo = new FileInfo(name, size, mimetype, null);
+      final Long size = file.length();
+      final String mimetype = URLConnection.guessContentTypeFromName(file.getName());
+      final String name = file.getName();
 
-       return  addKeyToFileInfo(fileInfo) ;
+      FileInfo fileInfo = new FileInfo(name, size, mimetype, null);
 
-    }
-   
+      return addKeyToFileInfo(fileInfo);
 
-    public File getFile() {
-        return this.file;
-    }
+   }
 
-    public void setFile(File file) {
-       this.file = file;
-    }
+   public File getFile()
+   {
+      return this.file;
+   }
 
-    public  ByteBuffer data() throws IOException  
-    {
-       ByteBuffer buffer;
-       RandomAccessFile rFile = null;
-       FileChannel inChannel = null;
-       try 
-       {
-          rFile = new RandomAccessFile(file, "r");
-          inChannel = rFile.getChannel();
-          long fileSize = inChannel.size();
-          buffer = ByteBuffer.allocate((int) fileSize);
-          inChannel.read(buffer);
-          buffer.rewind();
-       }
-       finally
-       {
-          if (inChannel!=null)
-          inChannel.close();
-          if (rFile!=null)
-          rFile.close();
-       }
-       return  buffer  ;
-    }
+   public void setFile(File file)
+   {
+      this.file = file;
+   }
 
-    @Override
-    public ByteBuffer  decryptedData() throws TraceSdkException  
-    {
-       ByteBuffer buffer = null;
-       try
-       {
-          buffer = data() ;
-       }
-       catch(IOException   e)
-       { 
-          throw new TraceSdkException("Decryption failed ", e);
-       }
-       return  buffer ;
-    }
+   private ByteBuffer data() throws TraceSdkException
+   {
 
-    @Override
-    public  ByteBuffer  encryptedData () throws TraceSdkException  
-    { 
-       ByteBuffer buffer = null;
-       try
-       {
-          buffer = super.encryptData( data() )   ;
-       }
-       catch(IOException |   BadPaddingException | InvalidKeyException | IllegalBlockSizeException   e)
-       { 
-          throw new TraceSdkException("Encryption failed ", e);
-       }
-       return  buffer ;
-    }
+      if(!file.exists() || !file.isFile())
+      {
+         throw new TraceSdkException("File not found " + file.getAbsolutePath());
+      }
+      ByteBuffer buffer = null;
+      try (RandomAccessFile rFile = new RandomAccessFile(file, "r"); FileChannel inChannel = rFile.getChannel();)
+      {
+         long fileSize = inChannel.size();
+         buffer = ByteBuffer.allocate((int) fileSize);
+         inChannel.read(buffer);
+         buffer.rewind();
+      }
+      catch(IOException e)
+      {
+         throw new TraceSdkException("Error reading file ", e);
+      }
+      return buffer;
+   }
 
+   @Override
+   public ByteBuffer decryptedData() throws TraceSdkException
+   {
+      ByteBuffer buffer = null;
 
-  }
+      buffer = data();
+
+      return buffer;
+   }
+
+   @Override
+   public ByteBuffer encryptedData() throws TraceSdkException
+   {
+      ByteBuffer buffer = null;
+
+      buffer = super.encryptData(data());
+
+      return buffer;
+   }
+
+}

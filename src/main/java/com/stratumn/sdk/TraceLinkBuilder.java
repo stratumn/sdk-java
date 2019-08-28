@@ -56,10 +56,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * first of a new trace and priority is set to 1.
 	 *
 	 * @param cfg the config to instantiate the builder
-	 * @throws Exception
+	 * @throws ChainscriptException
 	 */
 
-	public TraceLinkBuilder(TraceLinkBuilderConfig<TLinkData> cfg) throws Exception {
+	public TraceLinkBuilder(TraceLinkBuilderConfig<TLinkData> cfg) throws ChainscriptException {
 
 		// trace id is either retrieved from parent link when it is provided
 		// or set to a new uuid.
@@ -106,12 +106,17 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * Set the data field to the hash of the object argument.
 	 *
 	 * @param obj the optional object to be hashed
-	 * @throws IOException
+	 * @throws TraceSdkException
 	 */
-	public TraceLinkBuilder<TLinkData> withHashedData(TLinkData obj) throws IOException {
+	public TraceLinkBuilder<TLinkData> withHashedData(TLinkData obj) throws TraceSdkException {
 		if (obj != null) {
 			String algo = "sha256";
-			String hash = Base64.getEncoder().encodeToString(CryptoUtils.sha256(CanonicalJson.stringify(obj).getBytes()));
+			String hash;
+			try {
+				hash = Base64.getEncoder().encodeToString(CryptoUtils.sha256(CanonicalJson.stringify(obj).getBytes()));
+			} catch (IOException e) {
+				throw new TraceSdkException("Failed to stringify object to json", e);
+			}
 
 			Map<String, Object> data = new HashMap<String, Object>();
 			data.put("algo", algo);
@@ -129,9 +134,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * @param formId the form id used for the attestation
 	 * @param action the name of the action associated with this form
 	 * @param data   the data of the attestation
-	 * @throws IOException
+	 * @throws TraceSdkException
 	 */
-	public TraceLinkBuilder<TLinkData> forAttestation(String formId, String action, TLinkData data) throws IOException {
+	public TraceLinkBuilder<TLinkData> forAttestation(String formId, String action, TLinkData data)
+			throws TraceSdkException {
 		String actionStr = action != null ? action : "Attestation";// TraceActionType.ATTESTATION.toString();
 		String typeStr = TraceLinkType.OWNED.toString();
 		this.withHashedData(data).withAction(actionStr).withProcessState(typeStr);
@@ -148,14 +154,14 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * @param action the action (_PUSH_OWNERSHIP_ or _PULL_OWNERSHIP_)
 	 * @param type   the type (PUSHING OR PULLING)
 	 * @param data   the optional data
-	 * @throws Exception
+	 * @throws ChainscriptException
+	 * @throws TraceSdkException
 	 */
 	public TraceLinkBuilder<TLinkData> forTransferRequest(String to, TraceActionType action, TraceLinkType type,
-			TLinkData data) throws Exception {
+			TLinkData data) throws ChainscriptException, TraceSdkException {
 		TraceLink<TLinkData> parent = this.getParentLink();
-		this.withOwner(parent.owner().getAccount()).withGroup(parent.group()).withHashedData(data)
+		this.withOwner(parent.owner().getAccount()).withHashedData(data).withGroup(parent.group())
 				.withAction(action.toString()).withProcessState(type.toString());
-
 		this.metadata.setInputs(new String[] { to });
 		this.metadata.setLastFormId(parent.form() != null ? parent.form() : parent.lastForm());
 		return this;
@@ -166,9 +172,11 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 *
 	 * @param to   the group to which the trace is pushed to
 	 * @param data the optional data
-	 * @throws Exception
+	 * @throws TraceSdkException
+	 * @throws ChainscriptException
 	 */
-	public TraceLinkBuilder<TLinkData> forPushTransfer(String to, TLinkData data) throws Exception {
+	public TraceLinkBuilder<TLinkData> forPushTransfer(String to, TLinkData data)
+			throws ChainscriptException, TraceSdkException {
 		return this.forTransferRequest(to, TraceActionType.PUSH_OWNERSHIP, TraceLinkType.PUSHING, data);
 	}
 
@@ -177,9 +185,11 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 *
 	 * @param to   the group to which the trace is pulled to
 	 * @param data the optional data
-	 * @throws Exception
+	 * @throws TraceSdkException
+	 * @throws ChainscriptException
 	 */
-	public TraceLinkBuilder<TLinkData> forPullTransfer(String to, TLinkData data) throws Exception {
+	public TraceLinkBuilder<TLinkData> forPullTransfer(String to, TLinkData data)
+			throws ChainscriptException, TraceSdkException {
 		return this.forTransferRequest(to, TraceActionType.PULL_OWNERSHIP, TraceLinkType.PULLING, data);
 	}
 
