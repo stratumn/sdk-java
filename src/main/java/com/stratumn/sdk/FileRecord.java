@@ -45,7 +45,7 @@ public class FileRecord implements Identifiable {
       this.digest = media.getDigest();
       this.mimetype = info.getMimetype();
       this.size = info.getSize();
-      this.key = info.getKey();
+      this.key = info.getKey() ;
    }
 
    public FileInfo getFileInfo() {
