@@ -135,7 +135,34 @@ public class Client
 
    }
 
- 
+   /***
+    * Initializes the restTemplate 
+    */
+   private void initRestTemplate()
+   { 
+      restTemplate = new RestTemplate();
+      GsonHttpMessageConverter converter = null;
+      //find existing converter
+      Iterator<HttpMessageConverter<?>> convIterator = restTemplate.getMessageConverters().iterator();
+      while(convIterator.hasNext())
+      {
+         HttpMessageConverter<?> conv = convIterator.next();
+         if(conv instanceof GsonHttpMessageConverter)
+         {
+            converter = (GsonHttpMessageConverter) conv ;
+            break;
+         } 
+      }
+      //create converter if not found
+      if (converter ==null)
+      {  converter = new GsonHttpMessageConverter(); 
+         restTemplate.getMessageConverters().add(converter);
+      }
+      converter.setGson(JsonHelper.getGson());
+       
+   }
+
+
    /**
     * Compute the bearer Authorization header of format "Bearer my_token". If the
     * token is undefined, the return header is an empty string "".
@@ -168,6 +195,7 @@ public class Client
 
       this.login();
       return this.makeAuthorizationHeader(this.token);
+      
    }
 
    /**
