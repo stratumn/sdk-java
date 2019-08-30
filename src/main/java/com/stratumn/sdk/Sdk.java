@@ -368,7 +368,7 @@ public class Sdk<TState> implements ISdk<TState> {
          tracesList.setInfo(gson.fromJson(info, Info.class));
          return tracesList;
       }
-
+      
       // compute detail for error
       String stageDetail = stageType.toString() + (formId != null ? formId : "");
       if (formId != null) {
@@ -403,7 +403,7 @@ public class Sdk<TState> implements ISdk<TState> {
          FileWrapper fileWrapper = fileProperty.getValue();
          fileList.add(fileWrapper);
       }
-      MediaRecord[] mediaRecords = client.uploadFiles(fileList);
+      MediaRecord[] mediaRecords = client.uploadFiles(fileList );
 
       List<Property<FileRecord>> fileRecordList = new ArrayList<>(fileWrapperMap.size());
       // find the filewrapper and build filerecord
