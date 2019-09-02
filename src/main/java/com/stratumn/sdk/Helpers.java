@@ -27,6 +27,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,8 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.stratumn.chainscript.Constants;
 import com.stratumn.chainscript.utils.CryptoUtils;
