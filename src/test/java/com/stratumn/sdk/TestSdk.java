@@ -20,6 +20,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,9 +33,11 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.client.Endpoints;
 import com.stratumn.sdk.model.client.Secret;
+import com.stratumn.sdk.model.misc.Property;
 import com.stratumn.sdk.model.sdk.SdkOptions;
 import com.stratumn.sdk.model.trace.AppendLinkInput;
 import com.stratumn.sdk.model.trace.GetTraceDetailsInput;
@@ -77,7 +84,7 @@ import com.stratumn.sdk.model.trace.TransferResponseInput;
 public class TestSdk
 {
 
-   private static Gson gson = new Gson();
+   private static Gson gson = JsonHelper.getGson();
    private static final String ACCOUNT_RELEASE_URL = "https://account-api.staging.stratumn.com";
    private static final String TRACE_RELEASE_URL = "https://trace-api.staging.stratumn.com";
    private static final String MEDIA_RELEASE_URL = "https://media-api.staging.stratumn.com";
@@ -97,7 +104,9 @@ public class TestSdk
          Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY);
          SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
          opts.setEndpoints(new Endpoints(ACCOUNT_RELEASE_URL, TRACE_RELEASE_URL, MEDIA_RELEASE_URL));
+         opts.setEnableDebuging(true);
          sdk = new Sdk<Object>(opts);
+         
       }
       return sdk;
    }
@@ -118,7 +127,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
 
@@ -140,7 +149,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -158,7 +167,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -176,7 +185,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -194,7 +203,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -212,7 +221,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -256,20 +265,12 @@ public class TestSdk
          data.put("valid", true);
          data.put("operators", new String[]{"1", "2" });
          data.put("operation", "my new operation 1");
-        data.put("Certificate" , FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png")));
-//         data.put("Certificates",new Identifiable[] {
-//                         FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png"))
-//         } );
-//         class Pojo
-//         {
-//            public Pojo(Identifiable f)
-//            {
-//               this.f = f;
-//            }
-//            private Identifiable f;
-//         }
-//         data.put("pojofile", new Pojo(FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")) ));
-         
+         data.put("Certificate" , FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png")));
+         data.put("Certificate2" , FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")));
+//          data.put("Certificates",new Identifiable[] {
+//                         FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt"))
+//         } ); 
+ 
          NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
 
          TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
@@ -319,7 +320,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -339,7 +340,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -378,7 +379,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -390,12 +391,16 @@ public class TestSdk
       {
          PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
          TracesState<Object, Object> tracesIn = getSdk().getIncomingTraces(paginationInfo);
-         someTraceState = tracesIn.getTraces().get(0);
-         String traceId = someTraceState.getTraceId();
+         
+         String traceId = null;
          if (tracesIn.getTotalCount()==0)
          { 
             pushTraceToMyGroupTest();
             traceId = someTraceState.getTraceId(); 
+         }
+         else {
+        	 someTraceState = tracesIn.getTraces().get(0);
+        	 traceId=someTraceState.getTraceId();
          }
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(traceId, null, null);
          TraceState<Object, Object> stateReject = getSdk().rejectTransfer(trInput);
@@ -422,7 +427,7 @@ public class TestSdk
       }
       catch(Exception ex)
       {
-
+         ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
@@ -430,19 +435,62 @@ public class TestSdk
    @Test
    public void downloadFilesInObjectTest()
    {
-      try
-      { 
-//         newTraceUploadTest();
-         TraceState<Object, Object> state = getSdk().getTraceState(new GetTraceStateInput("0754f74d-a265-4039-92ac-231d766a79a8"));
-         Object dataWithRecords = state/*someTraceState*/.getHeadLink().formData();
-         Object dataWithFiles = getSdk().downloadFilesInObject(dataWithRecords);
+       try
+      {
+          TraceState<Object, Object> state;
+         try
+         {
+            state = getSdk().getTraceState(new GetTraceStateInput("dee0dd04-5d58-4c4e-a72d-a759e37ae337"));
+         }
+         catch(Exception e)
+         {  //trace not found
+            newTraceUploadTest();
+            state = someTraceState;
+         }
 
+         Object dataWithRecords = state.getHeadLink().formData();
+         JsonObject dataWithFiles =(JsonObject) getSdk().downloadFilesInObject(dataWithRecords);
+         Map<String, Property<FileWrapper>> fileWrappers = Helpers.extractFileWrappers(dataWithFiles);
+         
+         for ( Property<FileWrapper> fileWrapperProp: fileWrappers.values())
+         {  writeFileToDisk(fileWrapperProp.getValue());
+            //assert files are equal
+         }
       }
       catch(Exception ex)
       { 
          ex.printStackTrace();
          fail(ex.getMessage());
       }
+   }
+   
+   
+   private void writeFileToDisk(FileWrapper fWrapper) throws TraceSdkException
+   { 
+      
+     ByteBuffer buffer= fWrapper.decryptedData();
+     
+     File file = Paths.get("src/test/resources/out/" + fWrapper.info().getName()).toFile();
+     if (!file.getParentFile().exists())
+        file.getParentFile().mkdirs();
+      if(!file.exists()) try
+      {
+         file.createNewFile();
+      }
+      catch(IOException e1)
+      {
+         throw new TraceSdkException("Failed to create output file");
+      }
+     try(FileOutputStream outputStream=new FileOutputStream(file, false);FileChannel channel =outputStream.getChannel())
+     {
+      
+        // Writes a sequence of bytes to this channel from the given buffer.
+        channel.write( buffer);
+     }
+     catch (Exception e)
+     {
+        throw new TraceSdkException(e);
+     }
    }
 
    public static void main(String[] args) throws Exception
