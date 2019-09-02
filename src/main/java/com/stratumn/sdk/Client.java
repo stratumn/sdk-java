@@ -100,6 +100,8 @@ public class Client
    private Proxy proxy;
 
    private RestTemplate restTemplate;
+      
+   private ClientOptions options ;
 
    /***
     * Constructs a new instance of the Client
@@ -111,30 +113,6 @@ public class Client
        
       this.options = opts;
       initRestTemplate();
-
-   }
-
-   /***
-    * Initializes the restTemplate
-    */
-   private void initRestTemplate() {
-      restTemplate = new RestTemplate();
-      GsonHttpMessageConverter converter = null;
-      // find existing converter
-      Iterator<HttpMessageConverter<?>> convIterator = restTemplate.getMessageConverters().iterator();
-      while (convIterator.hasNext()) {
-         HttpMessageConverter<?> conv = convIterator.next();
-         if (conv instanceof GsonHttpMessageConverter) {
-            converter = (GsonHttpMessageConverter) conv;
-            break;
-         }
-      }
-      // create converter if not found
-      if (converter == null) {
-         converter = new GsonHttpMessageConverter();
-         restTemplate.getMessageConverters().add(converter);
-      }
-      converter.setGson(JsonHelper.getGson());
 
    }
 
@@ -678,6 +656,53 @@ public class Client
       ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass, this.proxy);
 
       return response.getBody();
+   }
+      
+   /***
+    *  Interceptor to provide logging information of the restTemplate request and response 
+    *
+    */
+   public class LoggingRequestInterceptor implements ClientHttpRequestInterceptor
+   {
+
+      @Override
+      public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException
+      {
+         traceRequest(request, body);
+         ClientHttpResponse response = execution.execute(request, body);
+         traceResponse(response);
+         return response;
+      }
+
+      private void traceRequest(HttpRequest request, byte[] body) throws IOException
+      {
+         System.out.println("===========================request begin================================================");
+         System.out.println("URI         : " + request.getURI());
+         System.out.println("Method      : " + request.getMethod());
+         System.out.println("Headers     : " + request.getHeaders());
+         System.out.println("Request body: " + new String(body, "UTF-8"));
+         System.out.println("==========================request end================================================");
+      }
+
+      private void traceResponse(ClientHttpResponse response) throws IOException
+      {
+         StringBuilder inputStringBuilder = new StringBuilder();
+         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getBody(), "UTF-8"));
+         String line = bufferedReader.readLine();
+         while(line != null)
+         {
+            inputStringBuilder.append(line);
+            inputStringBuilder.append('\n');
+            line = bufferedReader.readLine();
+         }
+         System.out.println("============================response begin==========================================");
+         System.out.println("Status code  : " + response.getStatusCode());
+         System.out.println("Status text  : " + response.getStatusText());
+         System.out.println("Headers      : " + response.getHeaders());
+         System.out.println("Response body: " + inputStringBuilder.toString());
+         System.out.println("=======================response end=================================================");
+      }
+
    }
 
 }
