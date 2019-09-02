@@ -27,6 +27,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import com.google.gson.JsonObject;
+import com.stratumn.canonicaljson.CanonicalJson;
+import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.file.FileInfo;
 import com.stratumn.sdk.model.misc.Identifiable;
 
@@ -42,7 +45,7 @@ public abstract class FileWrapper implements Identifiable {
     */
    private String id = UUID.randomUUID().toString();
 
-   private AesWrapper key;
+   private String key;
 
    @Override
    public String getId() {
@@ -153,7 +156,18 @@ public abstract class FileWrapper implements Identifiable {
    public static FileBlobWrapper fromFileBlob(ByteBuffer blob, FileInfo fileInfo) {
       return new FileBlobWrapper(blob, fileInfo);
    }
-
+   
+   /**
+    * Creates a FileWrapper from an object.
+    *
+    * @param obj the object record + info
+    * @throws IOException 
+    */
+   public static FileWrapper fromObject(Object obj) 
+   { 
+      
+      return JsonHelper.objectToObject(obj,  FileWrapper.class)  ;
+   }
    /**
     * Tests that an object is a FileWrapper.
     *
