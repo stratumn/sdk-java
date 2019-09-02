@@ -19,7 +19,6 @@ import java.util.Date;
 
 import com.stratumn.chainscript.ChainscriptException;
 import com.stratumn.chainscript.Link;
-import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.trace.Account;
 import com.stratumn.sdk.model.trace.ITraceLink;
 import com.stratumn.sdk.model.trace.TraceLinkMetaData;
