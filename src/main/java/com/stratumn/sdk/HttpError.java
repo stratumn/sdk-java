@@ -20,10 +20,10 @@ public class HttpError extends Exception {
     * 
     */
    private static final long serialVersionUID = -1942318828228006196L;
-   private Number status;
+   private int status;
     private String message;
   
-    public HttpError(Number status, String message) {
+    public HttpError(int status, String message) {
       this.status = status;
       this.message = message;
     }
@@ -32,10 +32,10 @@ public class HttpError extends Exception {
         return "Http error [ Status : " + this.status + " Message : "+message+" ]";
      }
 
-     public void setSatus(Number status){
+     public void setSatus(int status){
         this.status = status;
      }
-     public Number getSatus(){
+     public int getSatus(){
          return this.status;
     }
 
