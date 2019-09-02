@@ -18,6 +18,7 @@ package com.stratumn.sdk;
 import java.io.IOException;
 
 import com.google.gson.JsonObject;
+import com.stratumn.canonicaljson.CanonicalJson;
 import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.file.FileInfo;
 import com.stratumn.sdk.model.file.MediaRecord;
