@@ -18,6 +18,7 @@ package com.stratumn.sdk;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -38,6 +39,9 @@ import com.stratumn.chainscript.ChainscriptException;
 import com.stratumn.chainscript.Link;
 import com.stratumn.chainscript.utils.CryptoUtils;
 import com.stratumn.chainscript.utils.JsonHelper;
+import com.stratumn.sdk.adapters.ByteBufferGsonAdapter;
+import com.stratumn.sdk.adapters.FileWrapperGsonAdapter;
+import com.stratumn.sdk.adapters.PathGsonAdapter;
 import com.stratumn.sdk.graph.GraphQl;
 import com.stratumn.sdk.model.api.GraphResponse;
 import com.stratumn.sdk.model.client.PrivateKeySecret;
@@ -500,9 +504,10 @@ public class Sdk<TState> implements ISdk<TState> {
             Collections.singletonMap("traceId", input.getTraceId()), null, GraphResponse.class);
       if (response.hasErrors())
          throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
-      JsonObject trace = response.getData("trace").getAsJsonObject();
-
-      return this.makeTraceState(trace);
+      
+      JsonElement traceElt = response.getData("trace");
+      if (traceElt==null)  throw new TraceSdkException("Trace " + input.getTraceId() + " not found." );
+      return this.makeTraceState(traceElt.getAsJsonObject());
 
    }
 
