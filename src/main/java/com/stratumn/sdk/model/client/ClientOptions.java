@@ -23,20 +23,22 @@ import java.net.Proxy;
  */
 public class ClientOptions {
    /**
-    * To configure the endpoints. Can be a short tag like 'release' or 'staging'.
+   * To configure the endpoints. Can be a short tag like 'release' or 'staging'.
     * Can also be a struct to configure each service endpoint, eg: { trace:
     * 'https://...' .. }. Defaults to release endpoints.
-    */
+   */
    private Endpoints endpoints;
 
    /**
     * The secret used to authenticate the input. Can be a signing key or a username
     * + password.
-    */
+   */
    private Secret secret;
 
    private Proxy proxy;
-
+   
+   private boolean enableDebuging=false;
+   
    public ClientOptions(Endpoints endpoints, Secret secret) throws IllegalArgumentException {
       this.endpoints = endpoints;
       this.secret = secret;
@@ -71,6 +73,16 @@ public class ClientOptions {
 
    public Proxy getProxy() {
       return this.proxy;
+   }
+
+   public boolean isEnableDebuging()
+   {
+      return enableDebuging;
+   }
+
+   public void setEnableDebuging(boolean enableDebuging)
+   {
+      this.enableDebuging = enableDebuging;
    }
 
 }
