@@ -32,15 +32,14 @@ import com.google.gson.JsonObject;
 import com.stratumn.canonicaljson.CanonicalJson;
 import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.file.FileInfo;
-import com.stratumn.sdk.model.misc.Identifiable; 
+import com.stratumn.sdk.model.misc.Identifiable;
 
 /**
  * A file wrapper is a file representation on the platform. This class is
  * abstract and has various concrete implementation depending on the platform
  * (Browser, NodeJs).
  */
-public abstract class FileWrapper implements Identifiable
-{
+public abstract class FileWrapper implements Identifiable {
    /**
     * A unique identifier of the file wrapper. Satisfies the Identifiable
     * constraint.
@@ -50,114 +49,95 @@ public abstract class FileWrapper implements Identifiable
    private String key;
 
    @Override
-   public String getId()
-   {
+   public String getId() {
       return this.id;
    }
 
-   public FileWrapper()
-   {
-      this(true,null); 
+   public FileWrapper() {
+      this(true, null);
    }
-   
-   
-   public FileWrapper(boolean disableEncryption, String key)
-   {
-      if(!disableEncryption)
-      {
-         this.key = key; 
+
+   public FileWrapper(boolean disableEncryption, String key) {
+      if (!disableEncryption) {
+         this.key = key;
       }
    }
-   
-   /*** 
+
+   /***
     * @param data
     * @return
-    * @throws TraceSdkException 
-    * @throws InvalidKeyException
-    * @throws IllegalBlockSizeException
-    * @throws BadPaddingException
+    * @throws TraceSdkException
     */
-   protected ByteBuffer encryptData(ByteBuffer data) throws TraceSdkException  
-   {
+   protected ByteBuffer encryptData(ByteBuffer data) throws TraceSdkException {
       if (this.key == null)
          return data;
-      try
-      {
-          
-         AesWrapper aeskey = new AesWrapper(key); 
-         data  = aeskey.encrypt(data);
-      }
-      catch(InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException e)
-      {
+      try {
+
+         AesWrapper aeskey = new AesWrapper(key);
+         data = aeskey.encrypt(data);
+      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException
+            | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new TraceSdkException("Failed to encrypt file data");
       }
       return data;
    }
-   
-   /*** 
+
+   /***
     * @param data
     * @return
-    * @throws TraceSdkException 
-    * @throws InvalidKeyException
-    * @throws IllegalBlockSizeException
-    * @throws BadPaddingException
+    * @throws TraceSdkException
     */
-   protected ByteBuffer decryptData(ByteBuffer data) throws TraceSdkException  
-   {
+   protected ByteBuffer decryptData(ByteBuffer data) throws TraceSdkException {
       if (this.key == null)
          return data;
-      try
-      {
-         AesWrapper aeskey = new AesWrapper(key); 
-          
-         data  = aeskey.decrypt(data);
-      }
-      catch(InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException e)
-      {
+      try {
+         AesWrapper aeskey = new AesWrapper(key);
+
+         data = aeskey.decrypt(data);
+      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException
+            | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new TraceSdkException("Failed to encrypt file data");
       }
       return data;
    }
-   
+
    /***
     * Add the key info to the filewrapper
+    * 
     * @param info
     * @return
     */
-   protected FileInfo addKeyToFileInfo(  FileInfo info) {
-      if ( this.key == null) {
-        return info;
+   protected FileInfo addKeyToFileInfo(FileInfo info) {
+      if (this.key == null) {
+         return info;
       }
-      String keyEx  =  this.key ;
-      
-       info.setKey(keyEx);
-       return info;
-    }
-   
+      String keyEx = this.key;
+
+      info.setKey(keyEx);
+      return info;
+   }
 
    /**
     * Get the file info. This method is async as in the NodeJs case, the info is
     * retrieved asynchronously using the statAsync function.
-    * @throws IOException 
-    * @throws TraceSdkException 
     */
-   public abstract  FileInfo  info()  ;
+   public abstract FileInfo info();
 
    /**
     * The actual file data.
-    * @throws IOException 
+    * 
+    * @throws TraceSdkException
     */
-   public abstract  ByteBuffer  encryptedData() throws TraceSdkException ;
-   
-   public abstract  ByteBuffer  decryptedData() throws TraceSdkException ;
+   public abstract ByteBuffer encryptedData() throws TraceSdkException;
+
+   public abstract ByteBuffer decryptedData() throws TraceSdkException;
 
    /**
     * Creates a FileWrapper from a browser file representation.
     *
     * @param file the browser File object
     */
-   public static FileWrapper fromBrowserFile(File file)
-   {
+   public static FileWrapper fromBrowserFile(File file) {
       return new BrowserFileWrapper(file);
    }
 
@@ -166,8 +146,7 @@ public abstract class FileWrapper implements Identifiable
     *
     * @param fp the file path
     */
-   public static FileWrapper fromFilePath(Path fp)
-   {
+   public static FileWrapper fromFilePath(Path fp) {
       return new FilePathWrapper(fp);
    }
 
@@ -177,69 +156,56 @@ public abstract class FileWrapper implements Identifiable
     * @param blob     the blob data
     * @param fileInfo the file info
     */
-   public static FileBlobWrapper fromFileBlob(ByteBuffer blob, FileInfo fileInfo)
-   {
+   public static FileBlobWrapper fromFileBlob(ByteBuffer blob, FileInfo fileInfo) {
       return new FileBlobWrapper(blob, fileInfo);
    }
-   
+
    /**
     * Creates a FileWrapper from an object.
     *
     * @param obj the object record + info
-    * @throws IOException 
     */
-   public static FileWrapper fromObject(Object obj) 
-   { 
-      
-      return JsonHelper.objectToObject(obj,  FileWrapper.class)  ;
+   public static FileWrapper fromObject(Object obj) {
+
+      return JsonHelper.objectToObject(obj, FileWrapper.class);
    }
+
    /**
     * Tests that an object is a FileWrapper.
     *
     * @param obj the object to test.
     */
-   public static Boolean isFileWrapper(Object obj)
-   {
+   public static Boolean isFileWrapper(Object obj) {
 
       String json = null;
       boolean isFileWrapper = false;
-      try
-      {
+      try {
 
-         if(obj instanceof FileWrapper) 
+         if (obj instanceof FileWrapper)
             isFileWrapper = true;
-         else
-            if(obj != null)
-            {
-               if(obj instanceof JsonObject)
-                  json =   JsonHelper.toCanonicalJson(obj) ;
-               else
-                  if(obj instanceof String)//assume json
-                     json = CanonicalJson.canonizalize((String) obj);
-                  else
-                     json = JsonHelper.toCanonicalJson(obj);
-               if(json != null)
-               {
-                  //attempt to generate FileWrapper from json.
-                  Object ob = JsonHelper.fromJson(json, FileWrapper.class);
-                  String json2 = JsonHelper.toCanonicalJson(ob);
-                  if (json2.equalsIgnoreCase(json))
-                     isFileWrapper = true; 
-               } 
+         else if (obj != null) {
+            if (obj instanceof JsonObject)
+               json = JsonHelper.toCanonicalJson(obj);
+            else if (obj instanceof String)// assume json
+               json = CanonicalJson.canonizalize((String) obj);
+            else
+               json = JsonHelper.toCanonicalJson(obj);
+            if (json != null) {
+               // attempt to generate FileWrapper from json.
+               Object ob = JsonHelper.fromJson(json, FileWrapper.class);
+               String json2 = JsonHelper.toCanonicalJson(ob);
+               if (json2.equalsIgnoreCase(json))
+                  isFileWrapper = true;
             }
-      }
-      catch(Exception ex)
-      { //ignore
+         }
+      } catch (Exception ex) { // ignore
       }
       return isFileWrapper;
    }
 
    @Override
-   public String toString()
-   {
+   public String toString() {
       return "FileWrapper [id=" + id + ", key=" + key + "]";
    }
-   
-   
 
 }

@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
   limitations under the License.
 */
 package com.stratumn.sdk;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.DataOutputStream;
@@ -33,43 +34,42 @@ public class HttpHelpers {
 
     private String body = null;
 
-    public HttpHelpers(HttpURLConnection con){
+    public HttpHelpers(HttpURLConnection con) {
         this.con = con;
     }
 
-    public String getBody(){
+    public String getBody() {
         return this.body;
     }
 
-    public void setBody(String body){
+    public void setBody(String body) {
         this.body = body;
-    } 
+    }
 
-    public HttpURLConnection getConnection(){
+    public HttpURLConnection getConnection() {
         return this.con;
     }
 
-    public void setConnection(HttpURLConnection con){
+    public void setConnection(HttpURLConnection con) {
         this.con = con;
     }
 
     public void sendData() throws IOException {
-    	
-    	if(this.body == null) {
-    		  return;
-    	  }
-    	
+
+        if (this.body == null) {
+            return;
+        }
+
         DataOutputStream wr = null;
 
         try {
             wr = new DataOutputStream(con.getOutputStream());
-           
-	            wr.writeBytes(this.body);
-	            wr.flush();
-	            wr.close();   
-          
-            
-        } catch(IOException exception) {
+
+            wr.writeBytes(this.body);
+            wr.flush();
+            wr.close();
+
+        } catch (IOException exception) {
             throw exception;
         } finally {
             this.closeQuietly(wr);
@@ -81,7 +81,7 @@ public class HttpHelpers {
         String inputLine;
         StringBuilder body;
         try {
-             InputStream ins = con.getInputStream();
+            InputStream ins = con.getInputStream();
             in = new BufferedReader(new InputStreamReader(ins));
 
             body = new StringBuilder();
@@ -92,7 +92,7 @@ public class HttpHelpers {
             in.close();
 
             return body.toString();
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw ioe;
         } finally {
             this.closeQuietly(in);
@@ -104,18 +104,18 @@ public class HttpHelpers {
         String inputLine;
         StringBuilder body;
         try {
-        	InputStream ins = this.con.getErrorStream();
+            InputStream ins = this.con.getErrorStream();
             br = new BufferedReader(new InputStreamReader(ins));
-            body  = new StringBuilder();
-           
+            body = new StringBuilder();
+
             while ((inputLine = br.readLine()) != null) {
                 body.append(inputLine);
             }
             br.close();
             return body.toString();
-        } catch(Exception ioe) {
-        	return ioe.getMessage();
-            //throw ioe;
+        } catch (Exception ioe) {
+            return ioe.getMessage();
+            // throw ioe;
         } finally {
             this.closeQuietly(br);
         }
@@ -123,40 +123,38 @@ public class HttpHelpers {
 
     public void closeQuietly(Closeable closeable) {
         try {
-            if( closeable != null ) {
+            if (closeable != null) {
                 closeable.close();
             }
-        } catch(IOException ex) {
+        } catch (IOException ex) {
 
         }
     }
+
     /**
-     * Adding Request Parameters
-     * Example: param1=value&param2=value
-     * @throws IOException 
+     * Adding Request Parameters Example: param1=value&amp;param2=value
+     * 
+     * @throws IOException
      */
-    public void setParams(Map<String, String> parameters) throws IOException{
+    public void setParams(Map<String, String> parameters) throws IOException {
         DataOutputStream out = new DataOutputStream(this.con.getOutputStream());
         out.writeBytes(HttpHelpers.getParamsString(parameters));
         out.flush();
         out.close();
     }
 
-    public static String getParamsString(Map<String, String> params) 
-    throws UnsupportedEncodingException{
+    public static String getParamsString(Map<String, String> params) throws UnsupportedEncodingException {
 
-      StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder();
 
-      for (Map.Entry<String, String> entry : params.entrySet()) {
-        result.append(URLEncoder.encode(entry.getKey(), Constants.UTF8.name()));
-        result.append("=");
-        result.append(URLEncoder.encode(entry.getValue(), Constants.UTF8.name()));
-        result.append("&");
-      }
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            result.append(URLEncoder.encode(entry.getKey(), Constants.UTF8.name()));
+            result.append("=");
+            result.append(URLEncoder.encode(entry.getValue(), Constants.UTF8.name()));
+            result.append("&");
+        }
 
-      String resultString = result.toString();
-      return resultString.length() > 0
-        ? resultString.substring(0, resultString.length() - 1)
-        : resultString;
-  }
+        String resultString = result.toString();
+        return resultString.length() > 0 ? resultString.substring(0, resultString.length() - 1) : resultString;
+    }
 }

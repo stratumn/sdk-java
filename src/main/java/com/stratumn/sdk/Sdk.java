@@ -124,7 +124,7 @@ public class Sdk<TState> implements ISdk<TState>
     * 
     * @throws Exception
     * 
-    * @returns the Sdk config object
+    * @return the Sdk config object
     */
    private SdkConfig getConfig() throws TraceSdkException
    {
@@ -226,7 +226,7 @@ public class Sdk<TState> implements ISdk<TState>
     *            the trace fragment response
     * @throws Exception
     * @throws IllegalArgumentException
-    * @returns the trace state
+    * @return the trace state
     */
    private <TLinkData> TraceState<TState, TLinkData> makeTraceState(JsonObject trace) throws  TraceSdkException
    { 
@@ -256,7 +256,7 @@ public class Sdk<TState> implements ISdk<TState>
     * @throws TraceSdkException 
     * @throws ChainscriptException 
     * @throws Exception
-    * @returns the new Trace
+    * @return the new Trace
     */
    private <TLinkData> TraceState<TState, TLinkData> createLink(TraceLinkBuilder<TLinkData> linkBuilder) throws TraceSdkException, ChainscriptException   
    {
@@ -595,7 +595,7 @@ public class Sdk<TState> implements ISdk<TState>
     * Creates a new Trace.
     *
     * @param input  the newTrace input argument
-    * @returns the new Trace
+    * @return the new Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> newTrace(NewTraceInput<TLinkData> input) throws Exception
@@ -638,7 +638,7 @@ public class Sdk<TState> implements ISdk<TState>
     * Accept a transfer of ownership
     *
     * @param input the acceptTransfer input argument
-    * @returns the Trace
+    * @return the Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> acceptTransfer(TransferResponseInput<TLinkData> input) throws Exception
@@ -682,7 +682,7 @@ public class Sdk<TState> implements ISdk<TState>
     * Reject a transfer of ownership
     *
     * @param input the rejectTransfer input argument
-    * @returns the Trace
+    * @return the Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> rejectTransfer(TransferResponseInput<TLinkData> input) throws Exception
@@ -721,7 +721,7 @@ public class Sdk<TState> implements ISdk<TState>
     * Cancel a transfer of ownership
     *
     * @param input the cancelTransfer input argument
-    * @returns the Trace
+    * @return the Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> cancelTransfer(TransferResponseInput<TLinkData> input) throws Exception
@@ -762,7 +762,7 @@ public class Sdk<TState> implements ISdk<TState>
     * @param input  the input argument
     * @throws Exception 
     * @throws IllegalArgumentException 
-    * @returns the Trace
+    * @return the Trace
     */
    public <TLinkData> TraceState<TState, TLinkData>  addTagsToTrace (AddTagsToTraceInput input) throws IllegalArgumentException, Exception {
        String traceId = input.getTraceId();
@@ -776,7 +776,7 @@ public class Sdk<TState> implements ISdk<TState>
     * Appends a new Link to a Trace.
     *
     * @param input  the appendLink input argument
-    * @returns the Trace
+    * @return the Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> appendLink(AppendLinkInput<TLinkData> input) throws Exception
@@ -826,7 +826,7 @@ public class Sdk<TState> implements ISdk<TState>
     * Push a trace to a recipient group.
     *
     * @param input the pushTrace input argument
-    * @returns the Trace
+    * @return the Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> pushTrace(PushTransferInput<TLinkData> input) throws Exception
@@ -868,7 +868,7 @@ public class Sdk<TState> implements ISdk<TState>
     * @param input the pullTrace input argument
     * @throws ChainscriptException 
     * @throws TraceSdkException 
-    * @returns the Trace
+    * @return the Trace
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> pullTrace(PullTransferInput<TLinkData> input) throws ChainscriptException, TraceSdkException 
