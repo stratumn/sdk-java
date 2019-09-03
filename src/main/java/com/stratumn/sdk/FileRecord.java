@@ -29,78 +29,95 @@ import com.stratumn.sdk.model.misc.Identifiable;
  * information (MediaRecord). It corresponds to a file stored in the Media
  * service.
  */
-public class FileRecord implements Identifiable {
+public class FileRecord implements Identifiable
+{
 
    private String name;
    private String digest;
    private String mimetype;
    private Long size;
    private String key;
+    
 
-   public FileRecord() {
+   public FileRecord()
+   {
       super();
    }
 
-   public FileRecord(MediaRecord media, FileInfo info) {
+   public FileRecord(MediaRecord media, FileInfo info)
+   {
       this.name = media.getName();
       this.digest = media.getDigest();
       this.mimetype = info.getMimetype();
       this.size = info.getSize();
       this.key = info.getKey() ;
    }
-
-   public FileInfo getFileInfo() {
-      return new FileInfo(name, size, mimetype, key);
+   
+   public FileInfo getFileInfo()
+   {
+      return new FileInfo(name,size,mimetype,key);
    }
-
-   public MediaRecord getMediaRecord() {
-      return new MediaRecord(name, digest);
+   
+   public MediaRecord getMediaRecord()
+   {
+      return new MediaRecord(name,digest);
    }
 
    /**
     * This getter implements the Identifiable interface.
     */
-   public String getId() {
+   public String getId()
+   {
       return this.digest;
    }
 
-   public String getName() {
+   public String getName()
+   {
       return name;
    }
 
-   public void setName(String name) {
+   public void setName(String name)
+   {
       this.name = name;
    }
 
-   public String getDigest() {
+   public String getDigest()
+   {
       return digest;
    }
 
-   public void setDigest(String digest) {
+   public void setDigest(String digest)
+   {
       this.digest = digest;
    }
 
-   public String getMimetype() {
+   public String getMimetype()
+   {
       return mimetype;
    }
 
-   public void setMimetype(String mimetype) {
+   public void setMimetype(String mimetype)
+   {
       this.mimetype = mimetype;
    }
 
-   public Number getSize() {
+   public Long getSize()
+   {
       return size;
    }
 
-   public void setSize(Long size) {
+   public void setSize(Long size)
+   {
       this.size = size;
    }
 
-   public String getKey() {
+   public String getKey()
+   {
       return key;
    }
 
-   public void setKey(String key) {
+   public void setKey(String key)
+   {
       this.key = key;
    }
 
@@ -108,50 +125,62 @@ public class FileRecord implements Identifiable {
     * Creates a FileRecord from an object.
     *
     * @param obj the object record + info
+    * @throws IOException 
     */
-   public static FileRecord fromObject(Object obj) {
-
-      return JsonHelper.objectToObject(obj, FileRecord.class);
+   public static FileRecord fromObject(Object obj) 
+   { 
+      
+      return JsonHelper.objectToObject(obj,  FileRecord.class)  ;
    }
 
    /**
-    * Test if the object is a FileRecord it is a FileRecord if it is an instance of
-    * FileRecord or if It can be converted to a FileRecord .
-    * 
+    * Test if the object is a FileRecord
+    * it is a FileRecord if it is an instance of FileRecord 
+    * or if It can be converted to a FileRecord .
     * @param obj the object to test.
     */
-   public static Boolean isFileRecord(Object obj) {
+   public static Boolean isFileRecord(Object obj)
+   {
 
       String json = null;
       boolean isFileRecord = false;
-      try {
+      try
+      {
 
-         if (obj instanceof FileRecord)
+         if(obj instanceof FileRecord) 
             isFileRecord = true;
-         else if (obj != null) {
-            if (obj instanceof JsonObject)
-               json = obj.toString();
-            else if (obj instanceof String)// assume json
-               json = (String) obj;
-            else
-               json = JsonHelper.toCanonicalJson(obj);
-            if (json != null) {
-               // attempt to generate FileRecord from json.
-               Object ob = JsonHelper.fromJson(json, FileRecord.class);
-               String json2 = JsonHelper.toCanonicalJson(ob);
-               if (json2.equalsIgnoreCase(json))
-                  isFileRecord = true;
+         else
+            if(obj != null)
+            {
+               if(obj instanceof JsonObject)
+                  json =   JsonHelper.toCanonicalJson(obj) ;
+               else
+                  if(obj instanceof String)//assume json
+                     json = CanonicalJson.canonizalize((String) obj);
+                  else
+                     json = JsonHelper.toCanonicalJson(obj);
+               if(json != null)
+               {
+                  //attempt to generate FileRecord from json.
+                  Object ob = JsonHelper.fromJson(json, FileRecord.class);
+                  String json2 = JsonHelper.toCanonicalJson(ob);
+                  if (json2.equalsIgnoreCase(json))
+                     isFileRecord = true; 
+               } 
             }
-         }
-      } catch (Exception ex) { // ignore
+      }
+      catch(Exception ex)
+      { //ignore
       }
       return isFileRecord;
    }
 
    @Override
-   public String toString() {
-      return "FileRecord [name=" + name + ", digest=" + digest + ", mimetype=" + mimetype + ", size=" + size + ", key="
-            + key + "]";
+   public String toString()
+   {
+      return "FileRecord [name=" + name + ", digest=" + digest + ", mimetype=" + mimetype + ", size=" + size + ", key=" + key + "]";
    }
+   
+   
 
 }

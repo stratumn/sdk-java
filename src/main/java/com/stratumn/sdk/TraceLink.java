@@ -23,105 +23,108 @@ import com.stratumn.sdk.model.trace.Account;
 import com.stratumn.sdk.model.trace.ITraceLink;
 import com.stratumn.sdk.model.trace.TraceLinkMetaData;
 import com.stratumn.sdk.model.trace.TraceLinkType;
-
 /**
- * A TraceLink is an extension of a Chainscript Link that provides useful
- * methods
+ * A TraceLink is an extension of a Chainscript Link
+ * that provides useful methods
  */
 public class TraceLink<TLinkData> extends Link implements ITraceLink<TLinkData> {
 
   private TLinkData formData;
-
-  public TraceLink(Link link, TLinkData formData) {
+  
+  public TraceLink(Link link,TLinkData formData) {
     super(link.getLink());
-    this.formData = formData;
+    this.formData=formData;
+  }
+ 
+  @SuppressWarnings("unchecked")
+public  TLinkData formData() throws ChainscriptException  {
+     
+    return formData!=null?formData: (TLinkData) super.data() ;
   }
 
-  public TLinkData formData() throws ChainscriptException {
-
-    return formData != null ? formData : (TLinkData) JsonHelper.toJson(super.data());
+  public String traceId() throws ChainscriptException { 
+   return super.mapId();
   }
 
-  public String traceId() throws ChainscriptException {
-    return super.mapId();
-  }
+  public String workflowId() throws ChainscriptException  {
+	   return super.process().getName();
+	  }
 
-  public String workflowId() throws ChainscriptException {
-    return super.process().getName();
-  }
-
-  public TraceLinkType type() throws ChainscriptException {
+	    
+  public TraceLinkType type() throws ChainscriptException  {
     return TraceLinkType.valueOf(super.process().getState());
   }
 
   public TraceLinkMetaData metadata() throws ChainscriptException {
-    TraceLinkMetaData traceLinkMd = super.metadata(TraceLinkMetaData.class);
-    return traceLinkMd;
+	  TraceLinkMetaData traceLinkMd= super.metadata(TraceLinkMetaData.class); 
+	    return traceLinkMd;
   }
 
-  public Account createdBy() throws ChainscriptException {
-    return new Account(this.metadata().getCreatedById());
+  public Account createdBy() throws ChainscriptException   {
+   return new Account(this.metadata().getCreatedById());
   }
 
-  public Date createdAt() throws ChainscriptException {
-    return this.metadata().getCreatedAt();
+  public Date createdAt() throws ChainscriptException   {
+	  return  this.metadata().getCreatedAt();
   }
+  
 
-  public Account owner() throws ChainscriptException {
-    return new Account(this.metadata().getOwnerId());
+  public Account owner() throws ChainscriptException  {
+   return new Account(this.metadata().getOwnerId());
   }
-
+  
   /**
    * The id of the group under which the trace is.
-   * 
-   * @throws ChainscriptException
+ * @throws ChainscriptException 
+ * @throws Exception 
    *
-   * @return the group id
+   * @returns the group id
    */
-  public String group() throws ChainscriptException {
-    return this.metadata().getGroupId();
+  public String group() throws ChainscriptException   {
+      return this.metadata().getGroupId();
   }
-
   /**
    * The id of the form that was used to create the link.
-   * 
-   * @throws ChainscriptException
+ * @throws ChainscriptException 
+ * @throws Exception 
    *
-   * @return the form id
+   * @returns the form id
    */
-  public String form() throws ChainscriptException {
-    return this.metadata().getFormId();
+  public String form() throws ChainscriptException   {
+      return this.metadata().getFormId();
   }
-
   /**
    * The id of the form that was last used to create the link.
-   * 
-   * @throws ChainscriptException
+ * @throws ChainscriptException 
+ * @throws Exception 
    *
-   * @return the last form id
+   * @returns the last form id
    */
-  public String lastForm() throws ChainscriptException {
-    return this.metadata().getLastFormId();
+  public String lastForm() throws ChainscriptException   {
+      return this.metadata().getLastFormId();
   }
-
   /**
    * The inputs of the link, used for transfer of ownership.
-   * 
-   * @throws ChainscriptException
+ * @throws ChainscriptException 
+ * @throws Exception 
    *
-   * @return the inputs (array)
+   * @returns the inputs (array)
    */
-  public String[] inputs() throws ChainscriptException {
-    return this.metadata().getInputs();
+  public String[] inputs() throws ChainscriptException  {
+      return this.metadata().getInputs();
   }
-
+  
+  
   /**
    * Convert a plain object to a TraceLink.
-   * 
    * @param rawLink plain object.
    */
-  public static <TLinkData> TraceLink<TLinkData> fromObject(String rawLink, TLinkData formData) {
-    return new TraceLink<TLinkData>(Link.fromObject(rawLink), formData);
+  public static <TLinkData> TraceLink<TLinkData> fromObject(String rawLink, TLinkData formData)
+  {
+     return new TraceLink<TLinkData>(Link.fromObject( rawLink), formData);
   }
+  
+
+
 
 }

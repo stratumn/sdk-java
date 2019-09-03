@@ -82,8 +82,7 @@ public class Client
     * The default GraphQL options:
     * - retry once
     */
-   private static final GraphQLOptions  DefaultGraphQLOptions =new GraphQLOptions(1);
-  
+   private static final GraphQLOptions DefaultGraphQLOptions = new GraphQLOptions(1);
 
    private static final FetchOptions DefaultFetchOptions = new FetchOptions();
 
@@ -96,13 +95,10 @@ public class Client
     * The token received from account service after authentication
     */
    private String token;
-
-   private Proxy proxy;
+ 
 
    private RestTemplate restTemplate;
-      
    private ClientOptions options ;
-
    /***
     * Constructs a new instance of the Client
     * @param opts
@@ -175,12 +171,12 @@ public class Client
     * @param opts.skipAuth  optional flag to bypass authentication
     * @throws TraceSdkException  
     */
-   private String getAuthorizationHeader(FetchOptions opts) throws TraceSdkException {
-      if (opts != null) {
-         if (opts.getAuthToken() != null)
-            return this.makeAuthorizationHeader(opts.getAuthToken());
-         if (opts.getSkipAuth() != null && opts.getSkipAuth())
-            return this.makeAuthorizationHeader(null);
+   private String getAuthorizationHeader(FetchOptions opts) throws TraceSdkException
+   {
+      if(opts != null)
+      {
+         if(opts.getAuthToken() != null) return this.makeAuthorizationHeader(opts.getAuthToken());
+         if(opts.getSkipAuth() != null && opts.getSkipAuth()) return this.makeAuthorizationHeader(null);
       }
 
       this.login();
@@ -211,18 +207,20 @@ public class Client
     *
     * @param request its instance from HttpHelpers
     * @throws HttpError
-    * @return the responseContent
+    * @returns the responseContent
     */
-   private String fetch(HttpHelpers request, int retry) throws HttpError {
+   private String fetch(HttpHelpers request, int retry) throws HttpError
+   {
       String responseContent = null;
-      try {
+      try
+      {
          request.sendData();
          HttpURLConnection con = request.getConnection();
-         // first check the status.
+         //first check the status.
          int status = con.getResponseCode();
-         Boolean ok = (status < HttpURLConnection.HTTP_BAD_REQUEST)
-               || (200 <= con.getResponseCode() && con.getResponseCode() <= 299);
-         if (!ok) {
+         Boolean ok = (status < HttpURLConnection.HTTP_BAD_REQUEST) || (200 <= con.getResponseCode() && con.getResponseCode() <= 299);
+         if(!ok)
+         {
             // if 401 and retry > 0 then we can retry
             if(status == 401 && retry > 0)
             {
@@ -241,7 +239,9 @@ public class Client
             throw new HttpError(status, errTxt);
          }
          responseContent = (String) request.read();
-      } catch (IOException ioe) {
+      }
+      catch(IOException ioe)
+      {
          throw new HttpError(HttpURLConnection.HTTP_INTERNAL_ERROR, ioe.getLocalizedMessage());
       }
 
@@ -249,6 +249,7 @@ public class Client
       return responseContent;
 
    }
+
    /**
     * Authenticate using a signed message via the GET /login route.
     *
@@ -368,14 +369,15 @@ public class Client
     * @param route   the route on the target service
     * @param body    the POST body object
     * @param opts    additional fetch options
-    * @throws TraceSdkException
-    * @return the response body object
+    * @throws TraceSdkException 
+    * @returns the response body object
     */
-   public String post(Service service, String route, String body, FetchOptions opts) throws TraceSdkException {
-      try {
-         // create default fetch options.
-         if (opts == null)
-            opts = DefaultFetchOptions;
+   public String post(Service service, String route, String body, FetchOptions opts) throws TraceSdkException
+   {
+      try
+      {
+         //create default fetch options.
+         if(opts == null) opts = DefaultFetchOptions;
 
          // References: https://www.baeldung.com/java-http-request
          // https://juffalow.com/java/how-to-send-http-get-post-request-in-java
@@ -420,16 +422,16 @@ public class Client
     * @param route   the route on the target service
     * @param params  the query parameters
     * @param opts    additional fetch options
-    * @throws TraceSdkException
-    * @return the response body object
+    * @throws TraceSdkException 
+    * @returns the response body object
     */
-   public String get(Service service, String route, Map<String, String> params, FetchOptions opts)
-         throws TraceSdkException {
+   public String get(Service service, String route, Map<String, String> params, FetchOptions opts) throws TraceSdkException
+   {
 
-      try {
-         // create default fetch options.
-         if (opts == null)
-            opts = DefaultFetchOptions;
+      try
+      {
+         //create default fetch options.
+         if(opts == null) opts = DefaultFetchOptions;
 
          String path = this.endpoints.getEndpoint(service) + '/' + route;
 
@@ -493,9 +495,10 @@ public class Client
       }
       String gqlUrl = this.endpoints.getTrace() + "/graphql";
       GraphQlQuery topologyQuery = new GraphQlQuery(variables, queryStr);
-      // delegate the graphql request execution
+      // delegate the graphql request execution 
       ResponseEntity<T> response = postForEntity(gqlUrl, topologyQuery, tclass);
-      if (response.getStatusCode() == HttpStatus.OK) {
+      if(response.getStatusCode() == HttpStatus.OK)
+      {
          // if the response is empty, throw.
          if(!response.hasBody()) throw new TraceSdkException("The graphql response is empty.");
       }
@@ -523,14 +526,18 @@ public class Client
    /**
     * Uploads an array of files to media-api.
     *
-    * @param fileWrapperList the file wrappers to upload
+    * @param collection the file wrappers to upload
+    * @return 
+    * @return 
     * @return the array of corresponding media records
-    * @throws TraceSdkException
+    * @throws TraceSdkException 
+    * @throws ExecutionException 
+    * @throws InterruptedException 
     */
-   public MediaRecord[] uploadFiles(List<FileWrapper> fileWrapperList) throws TraceSdkException {
+   public MediaRecord[] uploadFiles(List<FileWrapper> fileWrapperList) throws TraceSdkException
+   {
 
-      if (fileWrapperList.size() == 0)
-         return new MediaRecord[0];
+      if(fileWrapperList.size() == 0) return new MediaRecord[0];
 
       String fileUrl = this.endpoints.getMedia() + "/files";
       MediaRecord[] mediaRecords = uploadFiles(fileUrl, fileWrapperList, MediaRecord[].class);
@@ -546,7 +553,8 @@ public class Client
     * @throws TraceSdkException 
     * @throws HttpError 
     */
-   public ByteBuffer downloadFile(FileRecord fileRecord) throws TraceSdkException, HttpError {
+   public ByteBuffer downloadFile(FileRecord fileRecord) throws TraceSdkException, HttpError
+   {
       String tokenResponse = this.get(Service.MEDIA, "files/" + fileRecord.getDigest() + "/info", null, null);
       JsonObject tokenJson = JsonHelper.fromJson(tokenResponse, JsonObject.class);
       // finally set the new token
@@ -567,7 +575,7 @@ public class Client
          {
             httpConn = (HttpURLConnection) url.openConnection();
          }
-         // does not need authorization header
+         //does not need authorization header
          int status = httpConn.getResponseCode();
          String statusText = httpConn.getResponseMessage();
          // always check HTTP response code first
@@ -597,18 +605,18 @@ public class Client
    }
 
    /**
-    * Executes the query and returns a responseEntity of type passed
-    * 
+    * Executes the query and returns a responseEntity of type passed 
     * @param url
     * @param auth
     * @param query
     * @param Variables
     * @param tClass
     * @return
-    * @throws TraceSdkException
-    * 
+    * @throws TraceSdkException 
+    *  
     */
-   private <T, R> ResponseEntity<T> postForEntity(String url, R requestBody, Class<T> tClass) throws TraceSdkException {
+   private <T, R> ResponseEntity<T> postForEntity(String url, R requestBody, Class<T> tClass) throws TraceSdkException
+   {
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
@@ -616,36 +624,35 @@ public class Client
 
       HttpEntity<R> entity = new HttpEntity<R>(requestBody, headers);
 
-      // System.out.println (JsonHelper.toJson(entity));
-      ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass, this.proxy);
+      //System.out.println (JsonHelper.toJson(entity));
+      ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass, options.getProxy());
 
       return resp;
 
    }
 
    /***
-    * Expects a list of fileWrappers, uploads the files encrypted and returns
-    * response
-    * 
+    * Expects a list of fileWrappers, uploads the files encrypted and returns response 
     * @param filesList
-    * @return
-    * @throws TraceSdkException
+    * @return 
+    * @throws TraceSdkException 
     */
-   private <T> T uploadFiles(String url, List<FileWrapper> filesList, Class<T> tClass) throws TraceSdkException {
+   private <T> T uploadFiles(String url, List<FileWrapper> filesList, Class<T> tClass) throws TraceSdkException
+   {
 
       MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.MULTIPART_FORM_DATA);
       headers.set(HttpHeaders.AUTHORIZATION, this.getAuthorizationHeader(null));
 
-      for (FileWrapper file : filesList) {
+      for(FileWrapper file : filesList)
+      {
 
          FileInfo info = file.info();
          // This nested HttpEntiy is important to create the correct
          // Content-Disposition entry with metadata "name" and "filename"
          MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
-         ContentDisposition contentDisposition = ContentDisposition.builder("form-data").name(info.getName())
-               .filename(info.getName()).build();
+         ContentDisposition contentDisposition = ContentDisposition.builder("form-data").name(info.getName()).filename(info.getName()).build();
          fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
          HttpEntity<byte[]> fileEntity = new HttpEntity<>(file.encryptedData().array(), fileMap);
 
@@ -653,11 +660,11 @@ public class Client
       }
       HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(bodyMap, headers);
 
-      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass, this.proxy);
+      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass, options.getProxy());
 
       return response.getBody();
    }
-      
+
    /***
     *  Interceptor to provide logging information of the restTemplate request and response 
     *
