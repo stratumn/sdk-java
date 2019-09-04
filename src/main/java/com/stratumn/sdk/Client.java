@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpEntity;
@@ -46,6 +45,9 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.JsonObject;
@@ -107,16 +109,47 @@ public class Client {
 
    }
 
+   class MyErrorHandler extends DefaultResponseErrorHandler {
+      @Override
+      public void handleError(ClientHttpResponse httpResponse) throws IOException {
+
+         StringBuilder inputStringBuilder = new StringBuilder();
+         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpResponse.getBody(), "UTF-8"));
+         String line = bufferedReader.readLine();
+         while (line != null) {
+            inputStringBuilder.append(line);
+            inputStringBuilder.append('\n');
+            line = bufferedReader.readLine();
+         }
+
+         if (httpResponse.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR) {
+            // handle SERVER_ERROR
+            throw new HttpServerErrorException(httpResponse.getStatusCode(), inputStringBuilder.toString());
+         } else if (httpResponse.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR) {
+            // handle CLIENT_ERROR
+            throw new HttpClientErrorException(httpResponse.getStatusCode(), inputStringBuilder.toString());
+         }
+      }
+
+   }
+
    /***
     * Initializes the restTemplate
     */
    private void initRestTemplate() {
+      SimpleClientHttpRequestFactory clientHttpReq = new SimpleClientHttpRequestFactory();
+      if (this.options.getProxy() != null) {
+         clientHttpReq.setProxy(this.options.getProxy());
+      }
+
       if (options.isEnableDebuging()) {
-         restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
+         restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(clientHttpReq));
          restTemplate.getInterceptors().add(new LoggingRequestInterceptor());
 
       } else
-         restTemplate = new RestTemplate();
+         restTemplate = new RestTemplate(clientHttpReq);
+
+      restTemplate.setErrorHandler(new MyErrorHandler());
 
       GsonHttpMessageConverter converter = null;
       // find existing converter
@@ -444,7 +477,9 @@ public class Client {
       String gqlUrl = this.endpoints.getTrace() + "/graphql";
       GraphQlQuery topologyQuery = new GraphQlQuery(variables, queryStr);
       // delegate the graphql request execution
-      ResponseEntity<T> response = postForEntity(gqlUrl, topologyQuery, tclass);
+      ResponseEntity<T> response;
+      // ResponseEntity<T> response = postForEntity(gqlUrl, topologyQuery, tclass);
+      response = postForEntity(gqlUrl, topologyQuery, tclass);
       if (response.getStatusCode() == HttpStatus.OK) {
          // if the response is empty, throw.
          if (!response.hasBody())
@@ -557,7 +592,7 @@ public class Client {
       HttpEntity<R> entity = new HttpEntity<R>(requestBody, headers);
 
       // System.out.println (JsonHelper.toJson(entity));
-      ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass, options.getProxy());
+      ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass);
 
       return resp;
 
@@ -593,7 +628,7 @@ public class Client {
       }
       HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(bodyMap, headers);
 
-      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass, options.getProxy());
+      ResponseEntity<T> response = restTemplate.postForEntity(url, requestEntity, tClass);
 
       return response.getBody();
    }

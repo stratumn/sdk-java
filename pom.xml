@@ -64,7 +64,7 @@
     <connection>scm:git://github.com/stratumn/sdk-java.git</connection>
     <url>https://github.com/stratumn/sdk-java</url>
     <developerConnection>scm:git://github.com/stratumn/sdk-java</developerConnection>
-    <tag>HEAD</tag>
+    <tag>sdk-0.0.13</tag>
   </scm>
 
   <developers>

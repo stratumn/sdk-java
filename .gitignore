@@ -27,3 +27,4 @@ target
 .classpath
 release.properties
 pom.xml.releaseBackup
+src/test/resources/out/

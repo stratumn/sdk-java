@@ -15,8 +15,6 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk;
 
-import java.io.IOException;
-
 import com.google.gson.JsonObject;
 import com.stratumn.canonicaljson.CanonicalJson;
 import com.stratumn.chainscript.utils.JsonHelper;

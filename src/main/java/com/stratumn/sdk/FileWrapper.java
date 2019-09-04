@@ -16,7 +16,6 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
