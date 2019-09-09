@@ -213,10 +213,8 @@ public class TestSdk
          data.put("weight", "123");
          data.put("valid", true);
          data.put("operators", new String[]{"1", "2" });
-         data.put("operation", "my new operation 1");
-
-         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
-
+         data.put("operation", "my new operation 1"); 
+         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data); 
          TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
          someTraceState = state;
@@ -287,7 +285,9 @@ public class TestSdk
          newTraceTest();
          assertNotNull(someTraceState);
          Map<String, Object> data =new HashMap<String, Object>( Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>(someTraceState.getTraceId(), "86", data, null);
+         PushTransferInput<Object> push = new PushTransferInput<Object>(   "86", data, someTraceState.getTraceId());
+         
+         
          someTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
@@ -307,7 +307,7 @@ public class TestSdk
          newTraceTest();
          assertNotNull(someTraceState);
          Map<String, Object> data =new HashMap<String, Object>(  Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>(someTraceState.getTraceId(), MY_GROUP, data, null);
+         PushTransferInput<Object> push = new PushTransferInput<Object>(MY_GROUP, data, someTraceState.getTraceId());
          someTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
@@ -327,7 +327,7 @@ public class TestSdk
          rejectTransferTest();
 
          Map<String, Object> data =new HashMap<String, Object>(  Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PullTransferInput<Object> pull = new PullTransferInput<Object>(someTraceState.getTraceId(), data, null);
+         PullTransferInput<Object> pull = new PullTransferInput<Object>( data, someTraceState.getTraceId());
          TraceState<Object, Object> statepul = getSdk().pullTrace(pull);
          // System.out.println("pullTrace:" + "\r\n" + statepul);
          assertNotNull(statepul.getTraceId());
@@ -346,7 +346,7 @@ public class TestSdk
       try
       {
          pushTraceToMyGroupTest();
-         TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(someTraceState.getTraceId(), null, null);
+         TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null,someTraceState.getTraceId());
          TraceState<Object, Object> stateAccept = getSdk().acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
@@ -376,7 +376,7 @@ public class TestSdk
         	 someTraceState = tracesIn.getTraces().get(0);
         	 traceId=someTraceState.getTraceId();
          }
-         TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(traceId, null, null);
+         TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null,traceId);
          TraceState<Object, Object> stateReject = getSdk().rejectTransfer(trInput);
          // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
          assertNotNull(stateReject.getTraceId());
@@ -394,7 +394,7 @@ public class TestSdk
       try
       {
          pushTraceTest();
-         TransferResponseInput<Object> responseInput = new TransferResponseInput<Object>(someTraceState.getTraceId(), null, null);
+         TransferResponseInput<Object> responseInput = new TransferResponseInput<Object>(null,someTraceState.getTraceId());
          TraceState<Object, Object> statecancel = sdk.cancelTransfer(responseInput);
          // System.out.println("cancelTransfer:" + "\r\n" + statecancel);
          assertNotNull(statecancel.getTraceId());
@@ -505,35 +505,35 @@ public class TestSdk
 
       //push to cancel
       data = new HashMap<String, Object>(  Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      PushTransferInput<Object> push = new PushTransferInput<Object>(state.getTraceId(), "86", data, null);
+      PushTransferInput<Object> push = new PushTransferInput<Object>( "86", data, state.getTraceId());
       TraceState<Object, Object> statepsh = sdk.pushTrace(push);
       // System.out.println("pushTrace:" + "\r\n" + statepsh);
 
-      TransferResponseInput<Object> responseInput = new TransferResponseInput<Object>(statepsh.getTraceId(), null, null);
+      TransferResponseInput<Object> responseInput = new TransferResponseInput<Object>(null, statepsh.getTraceId());
       TraceState<Object, Object> statecancel = sdk.cancelTransfer(responseInput);
       // System.out.println("cancelTransfer:" + "\r\n" + statecancel);
 
       //push to accept
       data =new HashMap<String, Object>(  Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      push = new PushTransferInput<Object>(state.getTraceId(), MY_GROUP, data, null);
+      push = new PushTransferInput<Object>(  MY_GROUP, data, state.getTraceId());
       statepsh = sdk.pushTrace(push);
 
-      responseInput = new TransferResponseInput<Object>(statepsh.getTraceId(), null, null);
+      responseInput = new TransferResponseInput<Object>(null, statepsh.getTraceId());
       TraceState<Object, Object> stateAccept = sdk.acceptTransfer(responseInput);
       // System.out.println("acceptTransfer:" + "\r\n" + stateAccept);
 
       //push to reject then pull 
       data =new HashMap<String, Object>(  Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      push = new PushTransferInput<Object>(state.getTraceId(), MY_GROUP, data, null);
+      push = new PushTransferInput<Object>(MY_GROUP, data, state.getTraceId());
       statepsh = sdk.pushTrace(push);
 
       data =new HashMap<String, Object>(  Collections.singletonMap("why", "No way!"));
-      responseInput = new TransferResponseInput<Object>(statepsh.getTraceId(), null, null);
+      responseInput = new TransferResponseInput<Object>(null, statepsh.getTraceId());
       TraceState<Object, Object> stateReject = sdk.rejectTransfer(responseInput);
       // System.out.println("acceptTransfer:" + "\r\n" + stateReject);
 
       data =new HashMap<String, Object>(  Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      PullTransferInput<Object> pull = new PullTransferInput<Object>(statepsh.getTraceId(), data, null);
+      PullTransferInput<Object> pull = new PullTransferInput<Object>( data, statepsh.getTraceId());
       TraceState<Object, Object> statepul = getSdk().pullTrace(pull);
       // System.out.println("pullTrace:" + "\r\n" + statepul);
 

@@ -62,7 +62,7 @@ class SomeClass {
    public Identifiable[] certificates; 
 }
 
-class StateExample extends HashMap<String, Object> {
+class StateExample   {
    public String f1;
    public SomeClass data ;
    
@@ -82,9 +82,9 @@ public class TestSdkPojo
 {
 
    private static Gson gson = JsonHelper.getGson();
-   private static final String ACCOUNT_RELEASE_URL = "https://account-api.staging.stratumn.com";
-   private static final String TRACE_RELEASE_URL = "https://trace-api.staging.stratumn.com";
-   private static final String MEDIA_RELEASE_URL = "https://media-api.staging.stratumn.com";
+   private static final String ACCOUNT_STAGING_URL = "https://account-api.staging.stratumn.com";
+   private static final String TRACE_STAGING_URL = "https://trace-api.staging.stratumn.com";
+   private static final String MEDIA_STAGING_URL = "https://media-api.staging.stratumn.com";
 
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
@@ -100,9 +100,9 @@ public class TestSdkPojo
       {
          Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY);
          SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ACCOUNT_RELEASE_URL, TRACE_RELEASE_URL, MEDIA_RELEASE_URL));
+         opts.setEndpoints(new Endpoints("https://account-api.staging.stratumn.com", "https://trace-api.staging.stratumn.com", "https://media-api.staging.stratumn.com"));
          opts.setEnableDebuging(true);
-         sdk = new Sdk<StateExample>(opts, StateExample.class);
+         Sdk<StateExample> sdk = new Sdk<StateExample>(opts, StateExample.class);
          
       }
       return sdk;
@@ -321,7 +321,7 @@ public class TestSdkPojo
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", " + "    customsCheck: true, "
             + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToObject( json, OperationClass.class);
-         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>(someTraceState.getTraceId(), "86", data, null);
+         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>("86", data, someTraceState.getTraceId());
          anotherTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
@@ -344,7 +344,7 @@ public class TestSdkPojo
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", " + "    customsCheck: true, "
             + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToObject( json, OperationClass.class);
-         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>(someTraceState.getTraceId(), MY_GROUP, data, null);
+         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>(MY_GROUP, data, someTraceState.getTraceId());
          anotherTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
@@ -366,7 +366,7 @@ public class TestSdkPojo
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", " + "    customsCheck: true, "
             + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToObject( json, OperationClass.class);
-         PullTransferInput<OperationClass> pull = new PullTransferInput<OperationClass>(someTraceState.getTraceId(), data, null);
+         PullTransferInput<OperationClass> pull = new PullTransferInput<OperationClass>(data, someTraceState.getTraceId());
          TraceState<StateExample, OperationClass> statepul = getSdk().pullTrace(pull);
          // System.out.println("pullTrace:" + "\r\n" + statepul);
          assertNotNull(statepul.getTraceId());
@@ -397,7 +397,7 @@ public class TestSdkPojo
              someTraceState = tracesIn.getTraces().get(0);
              traceId=someTraceState.getTraceId();
          }
-         TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(someTraceState.getTraceId(), null, null);
+         TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null,someTraceState.getTraceId());
          TraceState<StateExample, SomeClass> stateAccept = getSdk().acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
@@ -427,7 +427,7 @@ public class TestSdkPojo
         	 someTraceState = tracesIn.getTraces().get(0);
         	 traceId=someTraceState.getTraceId();
          }
-         TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(traceId, null, null);
+         TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null,traceId);
          TraceState<StateExample, SomeClass> stateReject = getSdk().rejectTransfer(trInput);
          // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
          assertNotNull(stateReject.getTraceId());
@@ -445,7 +445,7 @@ public class TestSdkPojo
       try
       {
          pushTraceTest();
-         TransferResponseInput<SomeClass> responseInput = new TransferResponseInput<SomeClass>(someTraceState.getTraceId(), null, null);
+         TransferResponseInput<SomeClass> responseInput = new TransferResponseInput<SomeClass>(null,someTraceState.getTraceId());
          TraceState<StateExample, SomeClass> statecancel = sdk.cancelTransfer(responseInput);
          // System.out.println("cancelTransfer:" + "\r\n" + statecancel);
          assertNotNull(statecancel.getTraceId());

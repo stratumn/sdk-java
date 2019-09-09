@@ -103,22 +103,30 @@ public class Sdk<TState> implements ISdk<TState>
       this.pingTrace();
    }
 
-   private void pingTrace() {
-      try {
+   private void pingTrace()
+   {
+      try
+      {
          // ping trace to test network connectivity.
          String url = String.format("%s/healthz", this.opts.getEndpoints().getTrace());
          HttpURLConnection connection;
-        if (this.opts.getProxy() != null) {
+         if(this.opts.getProxy() != null)
+         {
             connection = (HttpURLConnection) new URL(url).openConnection(this.opts.getProxy());
-        } else {
+         }
+         else
+         {
             connection = (HttpURLConnection) new URL(url).openConnection();
          }
          int responseCode = connection.getResponseCode();
-        if (responseCode != 200) {
+         if(responseCode != 200)
+         {
             System.out.printf("Could not call Trace (%d)\n", responseCode);
          }
 
-      } catch (Exception e) {
+      }
+      catch(Exception e)
+      {
          System.err.print("Could not call Trace");
          e.printStackTrace();
          return;
@@ -228,14 +236,12 @@ public class Sdk<TState> implements ISdk<TState>
 
    }
 
-   /**
-    * Builds the TraceState object from the TraceState fragment response
-    *
+   /***
+    * Builds the TraceState object form the TraceState fragement response for a specifc type 
     * @param trace
-    *            the trace fragment response
-    * @throws Exception
-    * @throws IllegalArgumentException
-    * @returns the trace state
+    * @param classOfTLinkData
+    * @return
+    * @throws TraceSdkException
     */
    private <TLinkData> TraceState<TState, TLinkData> makeTraceState(JsonObject trace, Class<TLinkData> classOfTLinkData) throws TraceSdkException
    {
@@ -267,8 +273,8 @@ public class Sdk<TState> implements ISdk<TState>
       return traceState;
    }
 
-   /**
-    * Creates a new Link from the given builder, signs it and executes the GraphQL
+   /***
+    * * Creates a new Link from the given builder, signs it and executes the GraphQL
     * mutation.
     * @param linkBuilder
     * @param classOfTLinkData
@@ -507,6 +513,7 @@ public class Sdk<TState> implements ISdk<TState>
     * @param input the getTraceDetails input
     * @return the trace details
     * @throws TraceSdkException 
+    * @throws Exception
     */
    @Override
    public <TLinkData> TraceDetails<TLinkData> getTraceDetails(GetTraceDetailsInput input) throws TraceSdkException
@@ -791,7 +798,7 @@ public class Sdk<TState> implements ISdk<TState>
    {
 
       // retrieve parent link
-      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(input.getTraceId(), null, null);
+      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(null,input.getTraceId());
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       TLinkData data = input.getData();
@@ -838,7 +845,8 @@ public class Sdk<TState> implements ISdk<TState>
     */
    @Override
    public <TLinkData> TraceState<TState, TLinkData> cancelTransfer(TransferResponseInput<TLinkData> input) throws TraceSdkException
-   { 
+   {
+    
       return cancelTransfer(input, null);
       
    }
@@ -855,7 +863,7 @@ public class Sdk<TState> implements ISdk<TState>
    {
 
       // retrieve parent link
-      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(input.getTraceId(), null, null);
+      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(null,input.getTraceId() );
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       TLinkData data = input.getData();
@@ -922,7 +930,7 @@ public class Sdk<TState> implements ISdk<TState>
    {
 
       // retrieve parent link
-      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(input.getTraceId(), null, null);
+      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(null,input.getTraceId());
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       //extract info from input
@@ -984,7 +992,7 @@ public class Sdk<TState> implements ISdk<TState>
    {
 
       // retrieve parent link
-      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(input.getTraceId(), null, null);
+      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(null,input.getTraceId());
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       //extract info from input
@@ -1036,7 +1044,7 @@ public class Sdk<TState> implements ISdk<TState>
    {
 
       // retrieve parent link
-      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(input.getTraceId(), null, null);
+      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(null,input.getTraceId());
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       TLinkData data = input.getData();

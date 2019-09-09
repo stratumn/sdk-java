@@ -22,9 +22,21 @@ public class PushTransferInput<TLinkData> extends ParentLink<TLinkData> {
   private String recipient;
   private TLinkData data; 
 
-  public PushTransferInput(String traceId, String recipient, TLinkData data, TraceLink<TLinkData> prevLink)
+  public PushTransferInput(String recipient, TLinkData data,String traceId)
+     throws IllegalArgumentException {
+    super(traceId);
+    if (recipient == null) {
+     throw new IllegalArgumentException("recipient cannot be null in PushTransferInput");
+   }
+   
+    
+   this.data = data; 
+   this.recipient = recipient;
+ }
+  
+  public PushTransferInput(String recipient, TLinkData data, TraceLink<TLinkData> prevLink)
       throws IllegalArgumentException {
-     super(traceId, prevLink);
+     super(  prevLink);
      if (recipient == null) {
       throw new IllegalArgumentException("recipient cannot be null in PushTransferInput");
     }

@@ -41,14 +41,13 @@ public class AppendLinkInput<TLinkData> {
     this.traceId = traceId;
   }
 
-  public AppendLinkInput(String formId, TLinkData data, String traceId, TraceLink<TLinkData> prevLink)
+  public AppendLinkInput(String formId, TLinkData data,   TraceLink<TLinkData> prevLink)
       throws IllegalArgumentException {
     if (formId == null) {
       throw new IllegalArgumentException("formId cannot be null in AppendLinkInput");
     }
     this.formId = formId;
-    this.data = data;
-    this.traceId = traceId;
+    this.data = data; 
     this.prevLink = prevLink;
   }
 

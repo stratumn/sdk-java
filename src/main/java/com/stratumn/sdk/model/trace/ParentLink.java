@@ -27,14 +27,22 @@ public class ParentLink<TLinkData>
    private String traceId;
    private TraceLink<TLinkData> prevLink;
 
-   public ParentLink(String traceId, TraceLink<TLinkData> prevLink)
+   public ParentLink(String traceId )
    {
-      if (traceId == null && prevLink == null) {
+      if (traceId == null  ) {
          throw new IllegalArgumentException("TraceId and PrevLink cannot be both null");
        }
-      this.traceId = traceId;
+      this.traceId = traceId; 
+   }
+   
+   public ParentLink(  TraceLink<TLinkData> prevLink)
+   {
+      if (  prevLink == null) {
+         throw new IllegalArgumentException("TraceId and PrevLink cannot be both null");
+       } 
       this.prevLink = prevLink;
    }
+
 
    public String getTraceId()
    {
