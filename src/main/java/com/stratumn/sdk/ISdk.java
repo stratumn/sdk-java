@@ -29,30 +29,47 @@ import com.stratumn.sdk.model.trace.TransferResponseInput;
  
 public interface ISdk<TState> {
 
-  public  <TLinkData> TraceState<TState,TLinkData>newTrace( NewTraceInput<TLinkData> input) throws Exception;
+  public  <TLinkData> TraceState<TState,TLinkData>newTrace( NewTraceInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>appendLink(AppendLinkInput<TLinkData> input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>appendLink(AppendLinkInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>pushTrace(PushTransferInput<TLinkData> input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>pushTrace(PushTransferInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>pullTrace(PullTransferInput<TLinkData> input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>pullTrace(PullTransferInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>acceptTransfer(TransferResponseInput<TLinkData> input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>acceptTransfer(TransferResponseInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>rejectTransfer(TransferResponseInput<TLinkData> input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>rejectTransfer(TransferResponseInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>cancelTransfer(TransferResponseInput<TLinkData> input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>cancelTransfer(TransferResponseInput<TLinkData> input) throws TraceSdkException ;
 
-  public <TLinkData> TraceState<TState,TLinkData>getTraceState(GetTraceStateInput input) throws Exception;
+  public <TLinkData> TraceState<TState,TLinkData>getTraceState(GetTraceStateInput input) throws TraceSdkException  ;
 
-  public   <TLinkData> TraceDetails<TLinkData> getTraceDetails(GetTraceDetailsInput input) throws Exception;
+  public   <TLinkData> TraceDetails<TLinkData> getTraceDetails(GetTraceDetailsInput input) throws TraceSdkException ;
 
-  public <TLinkData>  TracesState<TState,TLinkData> getIncomingTraces(PaginationInfo paginationInfo) throws Exception;
+  public <TLinkData>  TracesState<TState,TLinkData> getIncomingTraces(PaginationInfo paginationInfo) throws TraceSdkException ;
 
-  public  <TLinkData>  TracesState<TState,TLinkData> getOutgoingTraces(PaginationInfo paginationInfo) throws   Exception;
+  public  <TLinkData>  TracesState<TState,TLinkData> getOutgoingTraces(PaginationInfo paginationInfo) throws TraceSdkException ;
 
-  public <TLinkData>  TracesState<TState,TLinkData>  getBacklogTraces(PaginationInfo paginationInfo) throws Exception;
+  public <TLinkData>  TracesState<TState,TLinkData>  getBacklogTraces(PaginationInfo paginationInfo) throws TraceSdkException ;
 
   public <TLinkData>  TracesState<TState,TLinkData>  getAttestationTraces(String formId, PaginationInfo paginationInfo)
 		throws   Exception;
+
+  public <TLinkData>  TracesState<TState, TLinkData> getAttestationTraces(String formId, PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData)
+   throws TraceSdkException;
+
+  public <TLinkData> TracesState<TState, TLinkData> getIncomingTraces(PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException;
+
+  public <TLinkData>  TracesState<TState, TLinkData> getOutgoingTraces(PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException;
+
+  public <TLinkData>TracesState<TState, TLinkData> getBacklogTraces(PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException;
+
+  public <TLinkData>TraceState<TState, TLinkData> getTraceState(GetTraceStateInput input, Class<TLinkData> classOfTLinkData) throws TraceSdkException ;
+
+  public <TLinkData> TraceState<TState, TLinkData> rejectTransfer(TransferResponseInput<TLinkData> input, Class<TLinkData> classOfTLinkData) throws TraceSdkException;
+
+  public <TLinkData> TraceState<TState, TLinkData> acceptTransfer(TransferResponseInput<TLinkData> input, Class<TLinkData> classOfTLinkData) throws TraceSdkException;
+
+  public <TLinkData> TraceState<TState, TLinkData> cancelTransfer(TransferResponseInput<TLinkData> input, Class<TLinkData> classOfTLinkData) throws TraceSdkException;
 }
