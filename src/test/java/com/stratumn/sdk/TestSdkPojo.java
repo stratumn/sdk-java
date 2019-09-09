@@ -102,7 +102,7 @@ public class TestSdkPojo
          SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
          opts.setEndpoints(new Endpoints("https://account-api.staging.stratumn.com", "https://trace-api.staging.stratumn.com", "https://media-api.staging.stratumn.com"));
          opts.setEnableDebuging(true);
-         Sdk<StateExample> sdk = new Sdk<StateExample>(opts, StateExample.class);
+         sdk = new Sdk<StateExample>(opts, StateExample.class);
          
       }
       return sdk;
