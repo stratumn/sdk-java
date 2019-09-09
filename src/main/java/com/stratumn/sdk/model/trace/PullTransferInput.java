@@ -21,13 +21,17 @@ public class PullTransferInput<TLinkData> extends ParentLink<TLinkData>{
  
   private TLinkData data; 
 
-  public PullTransferInput(String traceId, TLinkData data, TraceLink<TLinkData> prevLink) throws IllegalArgumentException {
+  public PullTransferInput( TLinkData data, String traceId) throws IllegalArgumentException {
     
-    super(traceId, prevLink);
+    super(traceId);
     this.data = data; 
   }
 
- 
+  public PullTransferInput(  TLinkData data, TraceLink<TLinkData> prevLink) throws IllegalArgumentException {
+     
+     super(prevLink);
+     this.data = data; 
+   }
   public TLinkData getData() {
     return this.data;
   }

@@ -199,9 +199,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * are calculated from parent link. Parent link must have been provided!
 	 *
 	 * @param data the optional data
-	 * @throws Exception
+	 * @throws TraceSdkException 
+	 * @throws ChainscriptException 
 	 */
-	public TraceLinkBuilder<TLinkData> forCancelTransfer(TLinkData data) throws Exception {
+	public TraceLinkBuilder<TLinkData> forCancelTransfer(TLinkData data) throws TraceSdkException, ChainscriptException   {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.CANCEL_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
@@ -215,9 +216,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * are calculated from parent link. Parent link must have been provided!
 	 *
 	 * @param data the optional data
-	 * @throws Exception
+	 * @throws TraceSdkException  
+	 * @throws ChainscriptException 
 	 */
-	public TraceLinkBuilder<TLinkData> forRejectTransfer(TLinkData data) throws Exception {
+	public TraceLinkBuilder<TLinkData> forRejectTransfer(TLinkData data) throws TraceSdkException, ChainscriptException  {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.REJECT_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
@@ -232,9 +234,9 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * provided! User must still set owner, group and createdBy separately.
 	 *
 	 * @param data the optional data
-	 * @throws Exception
+	 * @throws TraceSdkException  
 	 */
-	public TraceLinkBuilder<TLinkData> forAcceptTransfer(TLinkData data) throws Exception {
+	public TraceLinkBuilder<TLinkData> forAcceptTransfer(TLinkData data) throws TraceSdkException   {
 		// call parent link to assert it was set
 		this.getParentLink();
 		String action = TraceActionType.ACCEPT_TRANSFER.toString();

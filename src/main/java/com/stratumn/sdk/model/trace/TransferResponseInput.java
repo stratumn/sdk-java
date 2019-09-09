@@ -22,9 +22,15 @@ public class TransferResponseInput<TLinkData> extends ParentLink<TLinkData>
 
    private TLinkData data;
 
-   public TransferResponseInput(String traceId, TLinkData data, TraceLink<TLinkData> prevLink)
+   public TransferResponseInput( TLinkData data ,String traceId)
    {
-      super(traceId, prevLink);
+      super(traceId);
+      this.data = data;
+   }
+   
+   public TransferResponseInput( TLinkData data, TraceLink<TLinkData> prevLink)
+   {
+      super( prevLink);
       this.data = data;
    }
 

@@ -80,6 +80,10 @@ public class ClientOptions {
       return enableDebuging;
    }
 
+   /***
+    * Enable low level http debug to system output
+    * @param enableDebuging
+    */
    public void setEnableDebuging(boolean enableDebuging)
    {
       this.enableDebuging = enableDebuging;
