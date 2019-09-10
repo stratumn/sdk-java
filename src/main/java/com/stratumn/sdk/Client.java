@@ -25,7 +25,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -153,18 +152,23 @@ public class Client {
 
       GsonHttpMessageConverter converter = null;
       // find existing converter
-      Iterator<HttpMessageConverter<?>> convIterator = restTemplate.getMessageConverters().iterator();
-      while (convIterator.hasNext()) {
-         HttpMessageConverter<?> conv = convIterator.next();
-         if (conv instanceof GsonHttpMessageConverter) {
-            converter = (GsonHttpMessageConverter) conv;
+      List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+      for (int i = 0; i < converters.size(); i ++) {
+         HttpMessageConverter<?> c = converters.get(i);
+         if (c instanceof GsonHttpMessageConverter) {
+            // Move converter to head of list.
+            // When Jackson is in the classpath, a default Jackson converter is added to this list. 
+            // We move the gson converter to the head so that it gets selected before.
+            converter = (GsonHttpMessageConverter) c;
+            converters.remove(i);
+            converters.add(0, c);
             break;
          }
       }
       // create converter if not found
       if (converter == null) {
          converter = new GsonHttpMessageConverter();
-         restTemplate.getMessageConverters().add(converter);
+         restTemplate.getMessageConverters().add(0, converter);
       }
       converter.setGson(JsonHelper.getGson());
 
