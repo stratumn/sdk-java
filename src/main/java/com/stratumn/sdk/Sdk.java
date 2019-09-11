@@ -15,8 +15,6 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.security.PrivateKey;
@@ -42,7 +40,6 @@ import com.stratumn.sdk.adapters.ByteBufferGsonAdapter;
 import com.stratumn.sdk.adapters.FileWrapperGsonAdapter;
 import com.stratumn.sdk.adapters.IdentifiableGsonAdapter;
 import com.stratumn.sdk.adapters.PathGsonAdapter;
-import com.stratumn.sdk.adapters.RuntimeTypeAdapterFactory;
 import com.stratumn.sdk.graph.GraphQl;
 import com.stratumn.sdk.model.api.GraphResponse;
 import com.stratumn.sdk.model.client.PrivateKeySecret;

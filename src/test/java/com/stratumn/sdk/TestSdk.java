@@ -414,7 +414,7 @@ public class TestSdk
           TraceState<Object, Object> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("dee0dd04-5d58-4c4e-a72d-a759e37ae337"));
+            state = getSdk().getTraceState(new GetTraceStateInput("6c0f4c3e-9757-4a39-8ad4-6d3a6941129a"));
          }
          catch(Exception e)
          {  //trace not found

@@ -476,7 +476,7 @@ public class TestSdkPojo
           TraceState<StateExample, Step> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("5cd59d4c-0b59-4cfc-9cbe-4b6aa2ad0cc4"));
+            state = getSdk().getTraceState(new GetTraceStateInput("6c0f4c3e-9757-4a39-8ad4-6d3a6941129a"));
          }
          catch(Exception e)
          {  //trace not found
