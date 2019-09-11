@@ -78,6 +78,20 @@ class OperationClass{
    public String eta;
 }
 
+
+  class Step
+{
+
+    public StepData data;
+}
+
+  class StepData
+{
+    public Identifiable[] stp_form_section;
+}
+
+
+
 public class TestSdkPojo
 {
 
@@ -228,7 +242,8 @@ public class TestSdkPojo
    //used to pass the trace from one test method to another
    private TraceState<StateExample, SomeClass> someTraceState;
    private TraceState<StateExample,OperationClass> anotherTraceState;
-
+    private TraceState<StateExample, Step> uploadState;
+    
    @Test
    public void newTraceTest()
    {
@@ -264,23 +279,19 @@ public class TestSdkPojo
       try
       {
          Sdk<StateExample> sdk = getSdk();
-         Map<String, Object> dataMap = new HashMap<String, Object>();
-         dataMap.put("weight", "123");
-         dataMap.put("valid", true);
-         dataMap.put("operators", new String[]{"1", "2" });
-         dataMap.put("operation", "my new operation 1");
-//         dataMap.put("Certificate" , FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png")));
-         dataMap.put("Certificate2" , FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")));
-          dataMap.put("Certificates",new Identifiable[] {
-                         FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")) 
-         } ); 
-        //quickly convert existing map to object but the object can be created any way
-          SomeClass data= JsonHelper.mapToObject(dataMap, SomeClass.class);
-         NewTraceInput<SomeClass> newTraceInput = new NewTraceInput<SomeClass>(FORM_ID, data);
+        
+         Step s = new Step();
+         s.data = new StepData();
+ 
+         //This fails on Identifiable deserialzation 
+         s.data.stp_form_section =new Identifiable[] { FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")) };
 
-         TraceState<StateExample, SomeClass> state = sdk.newTrace(newTraceInput);
+         NewTraceInput<Step> newTraceInput = new NewTraceInput<Step>(FORM_ID, s);
+ 
+
+         TraceState<StateExample, Step> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
-         someTraceState = state;
+        
       }
       catch(Exception ex)
       {
@@ -462,15 +473,15 @@ public class TestSdkPojo
    {
        try
       {
-          TraceState<StateExample, SomeClass> state;
+          TraceState<StateExample, Step> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("dee0dd04-5d58-4c4e-a72d-a759e37ae337"));
+            state = getSdk().getTraceState(new GetTraceStateInput("5cd59d4c-0b59-4cfc-9cbe-4b6aa2ad0cc4"));
          }
          catch(Exception e)
          {  //trace not found
             newTraceUploadTest();
-            state = someTraceState;
+            state = uploadState;
          }
 
          Object dataWithRecords = state.getHeadLink().formData();
@@ -478,7 +489,8 @@ public class TestSdkPojo
          Map<String, Property<FileWrapper>> fileWrappers = Helpers.extractFileWrappers(dataWithFiles);
          
          for ( Property<FileWrapper> fileWrapperProp: fileWrappers.values())
-         {  writeFileToDisk(fileWrapperProp.getValue());
+         {  
+            writeFileToDisk(fileWrapperProp.getValue());
             //assert files are equal
          }
       }
@@ -489,7 +501,11 @@ public class TestSdkPojo
       }
    }
    
-   
+   /***
+    * Writes the files to the output folder
+    * @param fWrapper
+    * @throws TraceSdkException
+    */
    private void writeFileToDisk(FileWrapper fWrapper) throws TraceSdkException
    { 
       
@@ -517,6 +533,9 @@ public class TestSdkPojo
         throw new TraceSdkException(e);
      }
    }
+   
+   
  
+
 
 }
