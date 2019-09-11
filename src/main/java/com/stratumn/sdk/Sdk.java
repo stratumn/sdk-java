@@ -40,12 +40,15 @@ import com.stratumn.chainscript.utils.CryptoUtils;
 import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.adapters.ByteBufferGsonAdapter;
 import com.stratumn.sdk.adapters.FileWrapperGsonAdapter;
+import com.stratumn.sdk.adapters.IdentifiableGsonAdapter;
 import com.stratumn.sdk.adapters.PathGsonAdapter;
+import com.stratumn.sdk.adapters.RuntimeTypeAdapterFactory;
 import com.stratumn.sdk.graph.GraphQl;
 import com.stratumn.sdk.model.api.GraphResponse;
 import com.stratumn.sdk.model.client.PrivateKeySecret;
 import com.stratumn.sdk.model.client.Secret;
 import com.stratumn.sdk.model.file.MediaRecord;
+import com.stratumn.sdk.model.misc.Identifiable;
 import com.stratumn.sdk.model.misc.Property;
 import com.stratumn.sdk.model.sdk.SdkConfig;
 import com.stratumn.sdk.model.sdk.SdkOptions;
@@ -100,6 +103,8 @@ public class Sdk<TState> implements ISdk<TState> {
       JsonHelper.registerTypeHierarchyAdapter(ByteBuffer.class, new ByteBufferGsonAdapter());
       JsonHelper.registerTypeHierarchyAdapter(Path.class, new PathGsonAdapter());
       JsonHelper.registerTypeAdapter(FileWrapper.class, new FileWrapperGsonAdapter());
+      JsonHelper.registerTypeAdapter(Identifiable.class, new IdentifiableGsonAdapter());
+     
    }
 
    /**
