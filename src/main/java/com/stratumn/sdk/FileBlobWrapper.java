@@ -43,17 +43,14 @@ public class FileBlobWrapper extends FileWrapper {
    @Override
    public ByteBuffer encryptedData() throws TraceSdkException
    { 
-         ByteBuffer data = super.encryptData(this.blob);
-         return data;
+            return super.encryptData(this.blob);
       
    }
 
    @Override
    public  ByteBuffer  decryptedData() throws TraceSdkException
    {
- 
-         return  this.blob ;
-      
+            return super.decryptData(this.blob);
    }
 
 }

@@ -135,6 +135,8 @@ public class FileRecord implements Identifiable {
                json = JsonHelper.toCanonicalJson(obj);
             if (json != null) {
                // attempt to generate FileRecord from json.
+               json = removeAdditionalFields(json);
+               
                Object ob = JsonHelper.fromJson(json, FileRecord.class);
                String json2 = JsonHelper.toCanonicalJson(ob);
                if (json2.equalsIgnoreCase(json))
@@ -144,6 +146,19 @@ public class FileRecord implements Identifiable {
       } catch (Exception ex) { // ignore
       }
       return isFileRecord;
+   }
+
+   // Since we do a canonicalized JSON string comparison to check if the object is a 
+   // FileRecord above, we need to remove the additional fields that can be added
+   // by the media API.
+   private static String removeAdditionalFields(String json) {
+      JsonObject o = JsonHelper.fromJson(json, JsonObject.class);
+
+      o.remove("createdAt");
+      o.remove("id");
+
+      return JsonHelper.toJson(o);
+
    }
 
    @Override

@@ -22,6 +22,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +41,7 @@ import com.stratumn.sdk.adapters.ByteBufferGsonAdapter;
 import com.stratumn.sdk.adapters.FileWrapperGsonAdapter;
 import com.stratumn.sdk.adapters.IdentifiableGsonAdapter;
 import com.stratumn.sdk.adapters.PathGsonAdapter;
+import com.stratumn.sdk.adapters.TimestampAdapter;
 import com.stratumn.sdk.graph.GraphQl;
 import com.stratumn.sdk.model.api.GraphResponse;
 import com.stratumn.sdk.model.client.PrivateKeySecret;
@@ -101,6 +103,7 @@ public class Sdk<TState> implements ISdk<TState> {
       JsonHelper.registerTypeHierarchyAdapter(Path.class, new PathGsonAdapter());
       JsonHelper.registerTypeAdapter(FileWrapper.class, new FileWrapperGsonAdapter());
       JsonHelper.registerTypeAdapter(Identifiable.class, new IdentifiableGsonAdapter());
+      JsonHelper.registerTypeAdapter(Date.class, new TimestampAdapter());
      
    }
 

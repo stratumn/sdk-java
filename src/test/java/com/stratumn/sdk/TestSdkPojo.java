@@ -280,16 +280,16 @@ public class TestSdkPojo
       {
          Sdk<StateExample> sdk = getSdk();
         
-         Step s = new Step();
-         s.data = new StepData();
+         // Step s = new Step();
+         StepData s = new StepData();
  
          //This fails on Identifiable deserialzation 
-         s.data.stp_form_section =new Identifiable[] { FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")) };
+         s.stp_form_section =new Identifiable[] { FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) };
 
-         NewTraceInput<Step> newTraceInput = new NewTraceInput<Step>(FORM_ID, s);
+         NewTraceInput<StepData> newTraceInput = new NewTraceInput<StepData>(FORM_ID, s);
  
 
-         TraceState<StateExample, Step> state = sdk.newTrace(newTraceInput);
+         TraceState<StateExample, StepData> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
         
       }
@@ -476,7 +476,7 @@ public class TestSdkPojo
           TraceState<StateExample, Step> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("6c0f4c3e-9757-4a39-8ad4-6d3a6941129a"));
+            state = getSdk().getTraceState(new GetTraceStateInput("ae4ea9f8-ff94-48e2-941a-9af5d824311c"));
          }
          catch(Exception e)
          {  //trace not found
@@ -508,7 +508,7 @@ public class TestSdkPojo
     */
    private void writeFileToDisk(FileWrapper fWrapper) throws TraceSdkException
    { 
-      
+
      ByteBuffer buffer= fWrapper.decryptedData();
      
      File file = Paths.get("src/test/resources/out/" + fWrapper.info().getName()).toFile();
