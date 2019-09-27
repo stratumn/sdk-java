@@ -238,9 +238,9 @@ public class TestSdk
          data.put("operators", new String[]{"1", "2" });
          data.put("operation", "my new operation 1");
 //         data.put("Certificate" , FileWrapper.fromFilePath(Paths.get("src/test/resources/stratumn.png")));
-         data.put("Certificate2" , FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")));
+         data.put("Certificate2" , FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")));
           data.put("Certificates",new Identifiable[] {
-                         FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFile1.txt")) 
+                         FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) 
          } ); 
  
          NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
@@ -414,7 +414,8 @@ public class TestSdk
           TraceState<Object, Object> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("6c0f4c3e-9757-4a39-8ad4-6d3a6941129a"));
+            state = getSdk().getTraceState(new GetTraceStateInput("c63dc901-b4dc-417c-bd59-e58a03d7e389"));
+            // state = getSdk().getTraceState(new GetTraceStateInput("6c0f4c3e-9757-4a39-8ad4-6d3a6941129a"));
          }
          catch(Exception e)
          {  //trace not found

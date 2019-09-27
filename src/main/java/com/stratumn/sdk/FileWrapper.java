@@ -16,11 +16,14 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -45,7 +48,7 @@ public abstract class FileWrapper implements Identifiable {
     */
    private String id = UUID.randomUUID().toString();
 
-   private String key;
+   private AesKey key;
 
    @Override
    public String getId() {
@@ -53,12 +56,12 @@ public abstract class FileWrapper implements Identifiable {
    }
 
    public FileWrapper() {
-      this(true, null);
+      this(false, null);
    }
 
    public FileWrapper(boolean disableEncryption, String key) {
       if (!disableEncryption) {
-         this.key = key;
+         this.key = new AesKey(key);
       }
    }
 
@@ -70,11 +73,9 @@ public abstract class FileWrapper implements Identifiable {
    protected ByteBuffer encryptData(ByteBuffer data) throws TraceSdkException {
       if (this.key == null)
          return data;
-      try {
-
-         AesWrapper aeskey = new AesWrapper(key);
-         data = aeskey.encrypt(data);
-      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException
+      try {         
+         data = convertFromISO88591(this.key.encrypt(data));
+      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException 
             | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new TraceSdkException("Failed to encrypt file data");
       }
@@ -87,16 +88,18 @@ public abstract class FileWrapper implements Identifiable {
     * @throws TraceSdkException
     */
    protected ByteBuffer decryptData(ByteBuffer data) throws TraceSdkException {
+      // Convert the file content to ISO-8859-1 encoding
+      data = convertToISO88591(data);
+
       if (this.key == null)
          return data;
       try {
-         AesWrapper aeskey = new AesWrapper(key);
-
-         data = aeskey.decrypt(data);
-      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException
+         data = this.key.decrypt(data);
+      } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException |InvalidAlgorithmParameterException
             | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new TraceSdkException("Failed to encrypt file data");
       }
+
       return data;
    }
 
@@ -110,7 +113,7 @@ public abstract class FileWrapper implements Identifiable {
       if (this.key == null) {
          return info;
       }
-      String keyEx = this.key;
+      String keyEx = this.key.export();
 
       info.setKey(keyEx);
       return info;
@@ -205,6 +208,14 @@ public abstract class FileWrapper implements Identifiable {
    @Override
    public String toString() {
       return "FileWrapper [id=" + id + ", key=" + key + "]";
+   }
+
+   private static ByteBuffer convertToISO88591(ByteBuffer b) {
+      return ByteBuffer.wrap((new String(b.array())).getBytes(StandardCharsets.ISO_8859_1));
+   }
+
+   private static ByteBuffer convertFromISO88591(ByteBuffer b) {
+      return ByteBuffer.wrap((new String(b.array(), StandardCharsets.ISO_8859_1)).getBytes());
    }
 
 }

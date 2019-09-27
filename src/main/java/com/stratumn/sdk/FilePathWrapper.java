@@ -22,6 +22,8 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Base64;
 
 import com.stratumn.sdk.model.file.FileInfo;
 
@@ -93,27 +95,20 @@ public class FilePathWrapper extends FileWrapper
       catch (IOException e) { 
          throw new TraceSdkException("Error reading file " , e); 
       } 
+
       return buffer;
    }
 
    @Override
    public ByteBuffer decryptedData() throws TraceSdkException
    {
-      ByteBuffer buffer = null;
-
-      buffer = data();
-
-      return buffer;
+      return super.decryptData(data());
    }
 
    @Override
    public ByteBuffer encryptedData() throws TraceSdkException
    {
-      ByteBuffer buffer = null;
-
-      buffer = super.encryptData(data());
-
-      return buffer;
+      return super.encryptData(data());
    }
 
 }
