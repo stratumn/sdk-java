@@ -22,8 +22,6 @@ import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -77,7 +75,7 @@ public abstract class FileWrapper implements Identifiable {
          data = convertFromISO88591(this.key.encrypt(data));
       } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException 
             | NoSuchAlgorithmException | NoSuchPaddingException e) {
-         throw new TraceSdkException("Failed to encrypt file data");
+         throw new TraceSdkException("Failed to encrypt file data", e);
       }
       return data;
    }
@@ -97,7 +95,7 @@ public abstract class FileWrapper implements Identifiable {
          data = this.key.decrypt(data);
       } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException |InvalidAlgorithmParameterException
             | NoSuchAlgorithmException | NoSuchPaddingException e) {
-         throw new TraceSdkException("Failed to encrypt file data");
+         throw new TraceSdkException("Failed to decrypt file data", e);
       }
 
       return data;

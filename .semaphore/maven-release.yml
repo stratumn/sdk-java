@@ -27,7 +27,7 @@ blocks:
         - name: Publish
           commands:
             - mvn --batch-mode release:prepare
-            - mvn release:perform
+            - mvn -Dmaven.test.skip=true release:perform
             # the release creates commits with tags, we need to push them to github
             - git push origin master
 
