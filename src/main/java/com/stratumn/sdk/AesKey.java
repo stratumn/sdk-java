@@ -10,6 +10,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -114,10 +115,18 @@ public class AesKey
       byte[] ciphertext = new byte[bytes.remaining()];
       bytes.get(ciphertext);
 
+      System.out.println("=============== DECRYPT FILE ====================");
+      System.out.println(Arrays.toString(iv));
+      System.out.println(Arrays.toString(ciphertext).length());
+
 
       final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
       int tagLengthInBits = TAG_LENGTH * 8;
+
+      System.out.printf("Tag length is %d\n", TAG_LENGTH);
       cipher.init(Cipher.DECRYPT_MODE, this.secretKey, new GCMParameterSpec(tagLengthInBits, iv));
+
+      System.out.println("successfully initiated the cipher");
       
       return ByteBuffer.wrap(cipher.doFinal(ciphertext)); 
    }
