@@ -91,7 +91,7 @@ public class TestSdk
       try
       {
          Sdk<Object> sdk = getSdk();
-         String traceId = "a41257f9-2d9d-4d42-ab2a-fd0c83ea31df";
+         String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
          GetTraceDetailsInput input = new GetTraceDetailsInput(traceId, 5, null, null, null);
 
          TraceDetails<Object> details = sdk.getTraceDetails(input);
@@ -113,7 +113,7 @@ public class TestSdk
       try
       {
          Sdk<Object> sdk = getSdk();
-         String traceId = "a41257f9-2d9d-4d42-ab2a-fd0c83ea31df";
+         String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
          GetTraceStateInput input = new GetTraceStateInput(traceId);
          TraceState<Object, Object> state = sdk.getTraceState(input);
          //      // System.out.println("testTraceState" + gson.toJson(state));
@@ -414,8 +414,7 @@ public class TestSdk
           TraceState<Object, Object> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("c63dc901-b4dc-417c-bd59-e58a03d7e389"));
-            // state = getSdk().getTraceState(new GetTraceStateInput("6c0f4c3e-9757-4a39-8ad4-6d3a6941129a"));
+            state = getSdk().getTraceState(new GetTraceStateInput("9e8b9094-08aa-447d-87b9-a764db26b646"));
          }
          catch(Exception e)
          {  //trace not found

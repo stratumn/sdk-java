@@ -17,7 +17,6 @@ package com.stratumn.sdk;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -72,7 +71,7 @@ public abstract class FileWrapper implements Identifiable {
       if (this.key == null)
          return data;
       try {         
-         data = convertFromISO88591(this.key.encrypt(data));
+         data = this.key.encrypt(data);
       } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException 
             | NoSuchAlgorithmException | NoSuchPaddingException e) {
          throw new TraceSdkException("Failed to encrypt file data", e);
@@ -86,9 +85,6 @@ public abstract class FileWrapper implements Identifiable {
     * @throws TraceSdkException
     */
    protected ByteBuffer decryptData(ByteBuffer data) throws TraceSdkException {
-      // Convert the file content to ISO-8859-1 encoding
-      data = convertToISO88591(data);
-
       if (this.key == null)
          return data;
       try {
@@ -207,13 +203,4 @@ public abstract class FileWrapper implements Identifiable {
    public String toString() {
       return "FileWrapper [id=" + id + ", key=" + key + "]";
    }
-
-   private static ByteBuffer convertToISO88591(ByteBuffer b) {
-      return ByteBuffer.wrap((new String(b.array())).getBytes(StandardCharsets.ISO_8859_1));
-   }
-
-   private static ByteBuffer convertFromISO88591(ByteBuffer b) {
-      return ByteBuffer.wrap((new String(b.array(), StandardCharsets.ISO_8859_1)).getBytes());
-   }
-
 }

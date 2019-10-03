@@ -128,7 +128,7 @@ public class TestSdkPojo
       try
       {
          Sdk<StateExample> sdk = getSdk();
-         String traceId = "f2df1436-e162-4869-abce-ff116b25f391";
+         String traceId = "18014bb9-1c3c-402f-91f8-5cab2c23b292";
          GetTraceDetailsInput input = new GetTraceDetailsInput(traceId, 5, null, null, null);
 
          TraceDetails<Object> details = sdk.getTraceDetails(input);
@@ -150,7 +150,7 @@ public class TestSdkPojo
       try
       {
          Sdk<StateExample> sdk = getSdk();
-         String traceId = "f2df1436-e162-4869-abce-ff116b25f391";
+         String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
          GetTraceStateInput input = new GetTraceStateInput(traceId);
          TraceState<StateExample, SomeClass> state = sdk.getTraceState(input);
          //      // System.out.println("testTraceState" + gson.toJson(state));
@@ -476,7 +476,7 @@ public class TestSdkPojo
           TraceState<StateExample, Step> state;
          try
          {
-            state = getSdk().getTraceState(new GetTraceStateInput("ae4ea9f8-ff94-48e2-941a-9af5d824311c"));
+            state = getSdk().getTraceState(new GetTraceStateInput("9565be68-5a11-4262-9a55-bd3fe6bfa3f0"));
          }
          catch(Exception e)
          {  //trace not found
