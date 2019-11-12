@@ -28,77 +28,75 @@ import com.google.common.io.Resources;
 import com.stratumn.chainscript.Constants;
 
 /***
- * Class that defines all Graph QL objects  
+ * Class that defines all Graph QL objects
  *
  */
-public class GraphQl
-{
+public class GraphQl {
 
    public enum Query {
-      MUTATION_CREATELINK("/Mutations/CreateLink", ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE)),
+      MUTATION_ADDTAGSTOTRACE("/Mutations/AddTagsToTrace",
+            ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE)),
+      MUTATION_CREATELINK("/Mutations/CreateLink",
+            ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE)),
       QUERY_CONFIG("/Queries/Config"),
       QUERY_GETHEADLINK("/Queries/GetHeadLink", ImmutableMap.of("${HeadLinkFragment}", Fragment.FRAGMENT_HEADLINK)),
       QUERY_GETTRACEDETAILS("/Queries/GetTraceDetails",
-         ImmutableMap.of("${PaginationInfoOnLinksConnectionFragment}", Fragment.FRAGMENT_PAGINATIONINFO_ONLINKSCONNECTION)),
+            ImmutableMap.of("${PaginationInfoOnLinksConnectionFragment}",
+                  Fragment.FRAGMENT_PAGINATIONINFO_ONLINKSCONNECTION)),
       QUERY_GETTRACESINSTAGE("/Queries/GetTracesInStage",
-         ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE, "${PaginationInfoOnTracesConnectionFragment}",
-            Fragment.FRAGMENT_PAGINATIONINFO_ONTRACESCONNECTION)),
-      QUERY_GETTRACESTATE("/Queries/GetTraceState", ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE));
+            ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE,
+                  "${PaginationInfoOnTracesConnectionFragment}", Fragment.FRAGMENT_PAGINATIONINFO_ONTRACESCONNECTION)),
+      QUERY_GETTRACESTATE("/Queries/GetTraceState",
+            ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE)),
+      QUERY_SEARCHTRACES("/Queries/SearchTraces", ImmutableMap.of("${TraceStateFragment}", Fragment.FRAGMENT_TRACESTATE,
+            "${PaginationInfoOnTracesConnectionFragment}", Fragment.FRAGMENT_PAGINATIONINFO_ONTRACESCONNECTION));
 
       private String filePath;
-      //a map of key and frag file path
+      // a map of key and frag file path
       private Map<String, String> subQueriesMap;
 
-      public Map<String, String> getSubQueriesMap()
-      {
+      public Map<String, String> getSubQueriesMap() {
          return subQueriesMap;
       }
 
-      public String getFilePath()
-      {
+      public String getFilePath() {
          return filePath;
       }
 
-      Query(String filePath)
-      {
+      Query(String filePath) {
          this.filePath = filePath;
       }
 
-      Query(String filePath, Map<String, Fragment> subQueries)
-      {
+      Query(String filePath, Map<String, Fragment> subQueries) {
          this(filePath);
          this.subQueriesMap = new HashMap<String, String>();
-         for(Entry<String, Fragment> frag : subQueries.entrySet())
-         {
+         for (Entry<String, Fragment> frag : subQueries.entrySet()) {
             subQueriesMap.put(frag.getKey(), frag.getValue().getFilePath());
          }
 
       }
 
       /******** Query loading ****/
-      //cach queries for improved performance
+      // cach queries for improved performance
       private static ConcurrentMap<Query, String> cache = new ConcurrentHashMap<Query, String>();
 
       /***
        * Load the query and caches it
+       * 
        * @return
        * @throws IOException
        */
-      public String loadQuery() throws IOException
-      {
+      public String loadQuery() throws IOException {
          String document;
-         if((document = cache.get(this)) == null)
-         {
-            synchronized(this)
-            {
-               if((document = cache.get(this)) == null)
-               {
+         if ((document = cache.get(this)) == null) {
+            synchronized (this) {
+               if ((document = cache.get(this)) == null) {
                   document = loadDocument(this.getFilePath());
-                  if(this.getSubQueriesMap() != null) for(Entry<String, String> subQuery : this.getSubQueriesMap().entrySet())
-                  {
-                     String subDocument = loadDocument(subQuery.getValue());
-                     document = document.replace(subQuery.getKey(), subDocument);
-                  }
+                  if (this.getSubQueriesMap() != null)
+                     for (Entry<String, String> subQuery : this.getSubQueriesMap().entrySet()) {
+                        String subDocument = loadDocument(subQuery.getValue());
+                        document = document.replace(subQuery.getKey(), subDocument);
+                     }
                   cache.putIfAbsent(this, document);
                }
             }
@@ -108,13 +106,13 @@ public class GraphQl
       }
 
       /**
-      * Load the query from the specified file
-      * @param filePath
-      * @return
-      * @throws IOException
-      */
-      private String loadDocument(String filePath) throws IOException
-      {
+       * Load the query from the specified file
+       * 
+       * @param filePath
+       * @return
+       * @throws IOException
+       */
+      private String loadDocument(String filePath) throws IOException {
          URL url = Resources.getResource("graphql" + filePath + ".graphql");
          String sdl = Resources.toString(url, Constants.UTF8);
          return sdl;
@@ -123,28 +121,24 @@ public class GraphQl
    }
 
    /***
-    * Fragments are reusable entities  
+    * Fragments are reusable entities
     *
     */
    private enum Fragment {
-      FRAGMENT_HEADLINK("/Fragments/HeadLink"),
-      FRAGMENT_TRACESTATE("/Fragments/TraceState"),
+      FRAGMENT_HEADLINK("/Fragments/HeadLink"), FRAGMENT_TRACESTATE("/Fragments/TraceState"),
       FRAGMENT_PAGINATIONINFO_ONTRACESCONNECTION("/Fragments/PaginationInfo/OnTracesConnection"),
       FRAGMENT_PAGINATIONINFO_ONLINKSCONNECTION("/Fragments/PaginationInfo/OnLinksConnection");
 
       private String filePath;
 
-      public String getFilePath()
-      {
+      public String getFilePath() {
          return filePath;
       }
 
-      Fragment(String filePath)
-      {
+      Fragment(String filePath) {
          this.filePath = filePath;
       }
 
    }
 
-  
 }

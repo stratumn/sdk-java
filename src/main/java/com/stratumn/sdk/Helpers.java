@@ -213,19 +213,19 @@ public class Helpers {
             extractObjectsImpl(value, data, path + "[" + idx + "]", idToObjectMap, predicate, reviver);
             idx++;
          }
-      } else if (Collection.class.isAssignableFrom(data.getClass())) {
-         Collection<T> col = (Collection<T>) data;
-         // if it is a collection, iterate through each element extract objects
-         // recursively
-         int idx = 0;
-         for (T value : col) {
-            extractObjectsImpl(value, data, path + "(" + idx + ")", idToObjectMap, predicate, reviver);
-            idx++;
-         }
       } else if (data instanceof Map) {
          for (Entry<String, Object> element : ((Map<String, Object>) data).entrySet()) {
             extractObjectsImpl((T) element.getValue(), data,
                   path.isEmpty() ? element.getKey() : path + "." + element.getKey(), idToObjectMap, predicate, reviver);
+         }
+      } else if (List.class.isAssignableFrom(data.getClass())) {
+         List<T> list = (List<T>) data;
+         // if it is a list, iterate through each element extract objects
+         // recursively
+         int idx = 0;
+         for (T value : list) {
+            extractObjectsImpl(value, data, path + "[" + idx + "]", idToObjectMap, predicate, reviver);
+            idx++;
          }
       } else if (data instanceof Object && !data.getClass().getName().startsWith("java.")) {
          // if it is an object, iterate through each entry
@@ -284,6 +284,19 @@ public class Helpers {
                Array.set(parent, index, map);
             } else {
                Array.set(parent, index, propertyElement.getValue());
+            }
+         } else if (parent instanceof List){
+            int index = extractIndexFromKey(key);
+            // object could be an identifiable or it could be a deserialized map
+            if (
+               parent.getClass().getComponentType() != null && 
+               parent.getClass().getComponentType().isAssignableFrom(Map.class)
+            ) { // convert the value to map~
+               Map<?, ?> map = JsonHelper.objectToMap(propertyElement.getValue());
+               ((List<Object>) parent).add(index, map);
+            } else {
+               // Array.set(parent, index, propertyElement.getValue());
+               ((List<Object>) parent).add(index, propertyElement.getValue());
             }
          } else if (parent instanceof Object) {
             try {

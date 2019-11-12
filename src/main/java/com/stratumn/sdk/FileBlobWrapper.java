@@ -29,7 +29,7 @@ public class FileBlobWrapper extends FileWrapper {
 	private FileInfo fileInfo;
 
 	public FileBlobWrapper(ByteBuffer blob, FileInfo fileInfo) {
-		 super(fileInfo.getKey()==null,fileInfo.getKey());
+		 super(fileInfo.getKey()==null || fileInfo.getKey() == "", fileInfo.getKey());
 		this.blob = blob;
 		this.fileInfo = fileInfo;
 	}
