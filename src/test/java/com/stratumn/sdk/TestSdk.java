@@ -50,7 +50,6 @@ import com.stratumn.sdk.model.trace.GetTraceDetailsInput;
 import com.stratumn.sdk.model.trace.GetTraceStateInput;
 import com.stratumn.sdk.model.trace.NewTraceInput;
 import com.stratumn.sdk.model.trace.PaginationInfo;
-import com.stratumn.sdk.model.trace.PullTransferInput;
 import com.stratumn.sdk.model.trace.PushTransferInput;
 import com.stratumn.sdk.model.trace.SearchTracesFilter;
 import com.stratumn.sdk.model.trace.TraceDetails;
@@ -277,24 +276,6 @@ public class TestSdk {
    }
 
    @Test
-   public void pullTraceTest() {
-      try {
-         rejectTransferTest();
-
-         Map<String, Object> data = new HashMap<String, Object>(
-               Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PullTransferInput<Object> pull = new PullTransferInput<Object>(data, someTraceState.getTraceId());
-         TraceState<Object, Object> statepul = getSdk().pullTrace(pull);
-         // System.out.println("pullTrace:" + "\r\n" + statepul);
-         assertNotNull(statepul.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-
-   }
-
-   @Test
    public void acceptTransferTest() {
       try {
          pushTraceToMyGroupTest();
@@ -488,11 +469,6 @@ public class TestSdk {
       responseInput = new TransferResponseInput<Object>(null, statepsh.getTraceId());
       TraceState<Object, Object> stateReject = sdk.rejectTransfer(responseInput);
       // System.out.println("acceptTransfer:" + "\r\n" + stateReject);
-
-      data = new HashMap<String, Object>(Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      PullTransferInput<Object> pull = new PullTransferInput<Object>(data, statepsh.getTraceId());
-      TraceState<Object, Object> statepul = getSdk().pullTrace(pull);
-      // System.out.println("pullTrace:" + "\r\n" + statepul);
 
    }
 

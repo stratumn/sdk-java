@@ -59,7 +59,6 @@ import com.stratumn.sdk.model.trace.Info;
 import com.stratumn.sdk.model.trace.NewTraceInput;
 import com.stratumn.sdk.model.trace.PaginationInfo;
 import com.stratumn.sdk.model.trace.ParentLink;
-import com.stratumn.sdk.model.trace.PullTransferInput;
 import com.stratumn.sdk.model.trace.PushTransferInput;
 import com.stratumn.sdk.model.trace.SearchTracesFilter;
 import com.stratumn.sdk.model.trace.TraceDetails;
@@ -931,53 +930,6 @@ public class Sdk<TState> implements ISdk<TState> {
 
          // this is a push transfer
          linkBuilder.forPushTransfer(recipient, data)
-               // add creator info
-               .withCreatedBy(userId);
-         // try to read type from data else use the class parameter
-         @SuppressWarnings("unchecked")
-         Class<TLinkData> dataClass = data != null ? (Class<TLinkData>) data.getClass() : null;
-         // call createLink helper
-         return (TraceState<TState, TLinkData>) this.createLink(linkBuilder, dataClass);
-      } catch (ChainscriptException e) {
-         throw new TraceSdkException(e);
-      }
-   }
-
-   /**
-    * Pull a trace from a group.
-    *
-    * @param input the pullTrace input argument
-    * @throws TraceSdkException
-    * @return the Trace
-    */
-   @Override
-   public <TLinkData> TraceState<TState, TLinkData> pullTrace(PullTransferInput<TLinkData> input)
-         throws TraceSdkException {
-
-      // retrieve parent link
-      TransferResponseInput<TLinkData> headLinkInput = new TransferResponseInput<TLinkData>(null, input.getTraceId());
-      TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
-
-      TLinkData data = input.getData();
-
-      SdkConfig sdkConfig = this.getConfig();
-
-      String workflowId = sdkConfig.getWorkflowId();
-      String userId = sdkConfig.getUserId();
-      String groupId = sdkConfig.getGroupId();
-
-      TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
-      // provide workflow id
-      cfg.setWorkflowId(workflowId);
-      // and parent link to append to the existing trace
-      cfg.setParentLink(parentLink);
-      try {
-         // use a TraceLinkBuilder to create the first link
-         // only provide workflowId to initiate a new trace
-         TraceLinkBuilder<TLinkData> linkBuilder = new TraceLinkBuilder<TLinkData>(cfg);
-
-         // this is a push transfer
-         linkBuilder.forPullTransfer(groupId, data)
                // add creator info
                .withCreatedBy(userId);
          // try to read type from data else use the class parameter
