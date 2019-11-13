@@ -946,7 +946,6 @@ public class Sdk<TState> implements ISdk<TState> {
     * Add tags to an existing trace.
     *
     * @param input the input argument
-    * @throws Exception
     * @throws IllegalArgumentException
     * @return the Trace
     */
@@ -973,6 +972,10 @@ public class Sdk<TState> implements ISdk<TState> {
 
    /**
     * Search all the traces of the workflow
+    * 
+    * @param filter the filter to use in the search
+    * @throws TraceSdkException
+    * @return the list of traces
     */
    public <TLinkData> TracesState<TState, TLinkData> searchTraces(SearchTracesFilter filter,
          PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
