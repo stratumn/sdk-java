@@ -12,10 +12,9 @@ import org.junit.Test;
 public class TestAesKey {
 
   @Test
-  public void testEncrypt()
-  {
+  public void testEncrypt() {
     byte[] message = "coucou, tu veux voir mon message ?".getBytes();
-    
+
     AesKey k = new AesKey();
 
     try {
@@ -27,7 +26,7 @@ public class TestAesKey {
       byte[] b = new byte[bb.remaining()];
       bb.get(b);
       assertArrayEquals(message, b);
-      
+
     } catch (Exception e) {
       e.printStackTrace();
       fail(e.getMessage());
@@ -35,12 +34,12 @@ public class TestAesKey {
   }
 
   @Test
-  public void testDecrypt()
-  {
+  public void testDecrypt() {
     String key = "dXRdc1KYm8DVFFxc0Hq65ZVoZvHAD/PBx0GUgSMmPEw=";
-    byte[] ct = Base64.getDecoder().decode("FfogaZ5Wy4oDfCDqQQUtciiZf/6CsZxrBQr2ZHVswimxB7IwQw9Z8brNocu3O5q1DKYaP4cBmzcPi++1mE4=");
+    byte[] ct = Base64.getDecoder()
+        .decode("FfogaZ5Wy4oDfCDqQQUtciiZf/6CsZxrBQr2ZHVswimxB7IwQw9Z8brNocu3O5q1DKYaP4cBmzcPi++1mE4=");
     byte[] message = "coucou, tu veux voir mon message ?".getBytes();
-    
+
     AesKey k = new AesKey(key);
 
     try {
@@ -48,7 +47,7 @@ public class TestAesKey {
       byte[] b = new byte[bb.remaining()];
       bb.get(b);
       assertArrayEquals(message, b);
-      
+
     } catch (Exception e) {
       e.printStackTrace();
       fail(e.getMessage());

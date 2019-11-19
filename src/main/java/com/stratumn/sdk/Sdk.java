@@ -187,7 +187,17 @@ public class Sdk<TState> implements ISdk<TState> {
          throw new TraceSdkException("Security key error", ex);
       }
 
+      // Get the action names
+      JsonElement formNodes = response.getData("workflow.forms.nodes");
       Map<String, String> actionNames = new HashMap<String, String>();
+      if (formNodes != null) {
+         Iterator<JsonElement> iteratorFNodes = formNodes.getAsJsonArray().iterator();
+         while (iteratorFNodes.hasNext()) {
+            JsonElement form = iteratorFNodes.next();
+            actionNames.put(form.getAsJsonObject().get("formId").getAsString(),
+                  form.getAsJsonObject().get("stageName").getAsString());
+         }
+      }
       this.config = new SdkConfig(workflowId, userId, accountId, groupId, ownerId, actionNames, signingPrivateKey);
 
       // return the new config
