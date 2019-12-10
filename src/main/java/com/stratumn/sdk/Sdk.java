@@ -187,18 +187,7 @@ public class Sdk<TState> implements ISdk<TState> {
          throw new TraceSdkException("Security key error", ex);
       }
 
-      // Get the action names
-      JsonElement formNodes = response.getData("workflow.forms.nodes");
-      Map<String, String> actionNames = new HashMap<String, String>();
-      if (formNodes != null) {
-         Iterator<JsonElement> iteratorFNodes = formNodes.getAsJsonArray().iterator();
-         while (iteratorFNodes.hasNext()) {
-            JsonElement form = iteratorFNodes.next();
-            actionNames.put(form.getAsJsonObject().get("formId").getAsString(),
-                  form.getAsJsonObject().get("stageName").getAsString());
-         }
-      }
-      this.config = new SdkConfig(workflowId, userId, accountId, groupId, ownerId, actionNames, signingPrivateKey);
+      this.config = new SdkConfig(workflowId, userId, accountId, groupId, ownerId, signingPrivateKey);
 
       // return the new config
       return this.config;
@@ -322,22 +311,22 @@ public class Sdk<TState> implements ISdk<TState> {
    /**
     * Get the traces in a given stage (INCOMING, OUTGOING, BACKLOG, ATTESTATION)
     * When stageType=ATTESTATION, you must also provide the form id to identify the
-    * stage. If no stage correspond to the stageType x formId, it will throw. If
+    * stage. If no stage correspond to the stageType x actionKey, it will throw. If
     * more than one stage is found it will also throw.
     *
     * @param stageType      the stage type
     * @param paginationInfo the pagination info
-    * @param formId         (optional) the formId in case of ATTESTATION
+    * @param actionKey      (optional) the actionKey in case of ATTESTATION
     * @return the traces in a given stage
     * @throws Error
     * @throws Exception
     */
    private <TLinkData> TracesState<TState, TLinkData> getTracesInStage(TraceStageType stageType,
-         PaginationInfo paginationInfo, String formId, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
+         PaginationInfo paginationInfo, String actionKey, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
-      // formId can only be set in ATTESTATION case
-      if (stageType == TraceStageType.ATTESTATION && formId == null) {
-         throw new TraceSdkException("You must and can only provide formId when stageType is ATTESTATION");
+      // actionKey can only be set in ATTESTATION case
+      if (stageType == TraceStageType.ATTESTATION && actionKey == null) {
+         throw new TraceSdkException("You must and can only provide actionKey when stageType is ATTESTATION");
       }
       // extract info from config
       SdkConfig sdkConfig = this.getConfig();
@@ -348,7 +337,11 @@ public class Sdk<TState> implements ISdk<TState> {
       Map<String, Object> variables = new HashMap<String, Object>();
       variables.put("groupId", groupId);
       variables.put("stageType", stageType.toString());
-      variables.put("formId", formId);
+
+      if (actionKey != null) {
+         variables.put("actionKey", actionKey);
+      }
+
       Map<String, Object> variablesPaginationInfo = JsonHelper.objectToMap(paginationInfo);
       variables.putAll(variablesPaginationInfo);
 
@@ -387,9 +380,9 @@ public class Sdk<TState> implements ISdk<TState> {
       }
 
       // compute detail for error
-      String stageDetail = stageType.toString() + (formId != null ? formId : "");
-      if (formId != null) {
-         stageDetail += formId;
+      String stageDetail = stageType.toString() + (actionKey != null ? actionKey : "");
+      if (actionKey != null) {
+         stageDetail += actionKey;
       }
       // throw if no stages were found if
       if (stages.size() == 0) {
@@ -538,17 +531,17 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws TraceSdkException
     */
    @Override
-   public <TLinkData> TracesState<TState, TLinkData> getAttestationTraces(String formId, PaginationInfo paginationInfo)
-         throws TraceSdkException {
+   public <TLinkData> TracesState<TState, TLinkData> getAttestationTraces(String actionKey,
+         PaginationInfo paginationInfo) throws TraceSdkException {
 
-      return this.getTracesInStage(TraceStageType.ATTESTATION, paginationInfo, formId, null);
+      return this.getTracesInStage(TraceStageType.ATTESTATION, paginationInfo, actionKey, null);
    }
 
    @Override
-   public <TLinkData> TracesState<TState, TLinkData> getAttestationTraces(String formId, PaginationInfo paginationInfo,
-         Class<TLinkData> classOfTLinkData) throws TraceSdkException {
+   public <TLinkData> TracesState<TState, TLinkData> getAttestationTraces(String actionKey,
+         PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
-      return this.getTracesInStage(TraceStageType.ATTESTATION, paginationInfo, formId, classOfTLinkData);
+      return this.getTracesInStage(TraceStageType.ATTESTATION, paginationInfo, actionKey, classOfTLinkData);
    }
 
    @Override
@@ -614,7 +607,7 @@ public class Sdk<TState> implements ISdk<TState> {
    public <TLinkData> TraceState<TState, TLinkData> newTrace(NewTraceInput<TLinkData> input) throws TraceSdkException {
 
       // extract info from input
-      String formId = input.getFormId();
+      String action = input.getAction();
       TLinkData data = input.getData();
 
       SdkConfig sdkConfig = this.getConfig();
@@ -623,7 +616,6 @@ public class Sdk<TState> implements ISdk<TState> {
       String userId = sdkConfig.getUserId();
       String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
-      Map<String, String> actionNames = sdkConfig.getActionNames();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
 
@@ -639,7 +631,7 @@ public class Sdk<TState> implements ISdk<TState> {
       }
 
       // this is an attestation
-      linkBuilder.forAttestation(formId, actionNames.get(formId), data)
+      linkBuilder.forAttestation(action, data)
             // add owner info
             .withOwner(ownerId)
             // add group info
@@ -861,7 +853,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       // extract info from input
-      String formId = input.getFormId();
+      String action = input.getAction();
       TLinkData data = input.getData();
 
       SdkConfig sdkConfig = this.getConfig();
@@ -870,7 +862,6 @@ public class Sdk<TState> implements ISdk<TState> {
       String userId = sdkConfig.getUserId();
       String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
-      Map<String, String> actionNames = sdkConfig.getActionNames();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
 
@@ -885,7 +876,7 @@ public class Sdk<TState> implements ISdk<TState> {
          TraceLinkBuilder<TLinkData> linkBuilder = new TraceLinkBuilder<TLinkData>(cfg);
 
          // this is an attestation
-         linkBuilder.forAttestation(formId, actionNames.get(formId), data)
+         linkBuilder.forAttestation(action, data)
                // add owner info
                .withOwner(ownerId)
                // add group info

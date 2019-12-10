@@ -16,56 +16,49 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk.model.sdk;
 
 import java.security.PrivateKey;
-import java.util.Map;
 
 public class SdkConfig {
-	
-   /**
-    * The workflow id
-    */
-	  private String workflowId;
-	  /**
-	   * The user id
-	   */
-	  private String userId;
-	  /**
-	   * The account id
-	   */
-	  private String accountId;
-	  /**
-	   * The group id
-	   */
-	  private String groupId;
 
-	  /**
-	   * The owner id
-	   */
-	  private String ownerId;
-	  /**
-	   * The private key used for signing links
-	   */
-	  private PrivateKey signingPrivateKey;
-	  /**
-       * The actions names associated to each form
-       */
-	  private Map<String,String> actionNames;
-	   
-	  public SdkConfig() {
-	  }
+	/**
+	 * The workflow id
+	 */
+	private String workflowId;
+	/**
+	 * The user id
+	 */
+	private String userId;
+	/**
+	 * The account id
+	 */
+	private String accountId;
+	/**
+	 * The group id
+	 */
+	private String groupId;
 
-	  public SdkConfig(String workflowId, String userId, String accountId, String groupId, String ownerId,Map<String,String> actionNames,
-	     PrivateKey signingPrivateKey) {
-	    this.workflowId = workflowId;
-	    this.userId = userId;
-	    this.accountId = accountId;
-	    this.groupId = groupId;
-	    this.ownerId = ownerId;
-	    this.signingPrivateKey = signingPrivateKey;
-	    this.actionNames = actionNames;
-	  }
-	  
-	  
-  public String getWorkflowId() {
+	/**
+	 * The owner id
+	 */
+	private String ownerId;
+	/**
+	 * The private key used for signing links
+	 */
+	private PrivateKey signingPrivateKey;
+
+	public SdkConfig() {
+	}
+
+	public SdkConfig(String workflowId, String userId, String accountId, String groupId, String ownerId,
+			PrivateKey signingPrivateKey) {
+		this.workflowId = workflowId;
+		this.userId = userId;
+		this.accountId = accountId;
+		this.groupId = groupId;
+		this.ownerId = ownerId;
+		this.signingPrivateKey = signingPrivateKey;
+	}
+
+	public String getWorkflowId() {
 		return workflowId;
 	}
 
@@ -112,16 +105,5 @@ public class SdkConfig {
 	public void setSigningPrivateKey(PrivateKey signingPrivateKey) {
 		this.signingPrivateKey = signingPrivateKey;
 	}
-
-   public Map<String, String> getActionNames()
-   {
-      return actionNames;
-   }
-
-   public void setActionNames(Map<String, String> actionNames)
-   {
-      this.actionNames = actionNames;
-   }
-
 
 }

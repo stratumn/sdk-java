@@ -22,36 +22,29 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Base64;
 
 import com.stratumn.sdk.model.file.FileInfo;
 
 /**
- * The   implementation of a FileWrapper using a file path to point to the
- * actual file.
+ * The implementation of a FileWrapper using a file path to point to the actual
+ * file.
  */
-public class FilePathWrapper extends FileWrapper
-{
+public class FilePathWrapper extends FileWrapper {
 
    private Path filePath;
 
-   public FilePathWrapper(Path fp)
-   {
+   public FilePathWrapper(Path fp) {
       super();
       this.filePath = fp;
    }
 
-   public FileInfo info()  
-   {
+   public FileInfo info() {
       File file = filePath.toFile();
-      if(!file.exists())
-      {
+      if (!file.exists()) {
          throw new IllegalArgumentException("Error while loading file " + file.getAbsolutePath());
       }
 
-      if(!file.isFile())
-      {
+      if (!file.isFile()) {
          throw new IllegalArgumentException(file.getAbsolutePath() + " is not a valid file");
       }
 
@@ -65,49 +58,40 @@ public class FilePathWrapper extends FileWrapper
 
    }
 
-   public Path getFilePath()
-   {
+   public Path getFilePath() {
       return this.filePath;
    }
 
-   public void setFilePath(Path filePath)
-   {
+   public void setFilePath(Path filePath) {
       this.filePath = filePath;
    }
 
-   private ByteBuffer data() throws TraceSdkException
-   {
+   private ByteBuffer data() throws TraceSdkException {
       File file = filePath.toFile();
-      if(!file.exists() || !file.isFile())
-      {
+      if (!file.exists() || !file.isFile()) {
          throw new IllegalArgumentException("File not found " + file.getAbsolutePath());
       }
-      ByteBuffer buffer = null;  
-      try(RandomAccessFile rFile = new RandomAccessFile(filePath.toFile(), "r");
-         FileChannel inChannel = rFile.getChannel();
-         )
-      { 
+      ByteBuffer buffer = null;
+      try (RandomAccessFile rFile = new RandomAccessFile(filePath.toFile(), "r");
+            FileChannel inChannel = rFile.getChannel();) {
          long fileSize = inChannel.size();
          buffer = ByteBuffer.allocate((int) fileSize);
          inChannel.read(buffer);
          buffer.rewind();
+      } catch (IOException e) {
+         throw new TraceSdkException("Error reading file ", e);
       }
-      catch (IOException e) { 
-         throw new TraceSdkException("Error reading file " , e); 
-      } 
 
       return buffer;
    }
 
    @Override
-   public ByteBuffer decryptedData() throws TraceSdkException
-   {
+   public ByteBuffer decryptedData() throws TraceSdkException {
       return super.decryptData(data());
    }
 
    @Override
-   public ByteBuffer encryptedData() throws TraceSdkException
-   {
+   public ByteBuffer encryptedData() throws TraceSdkException {
       return super.encryptData(data());
    }
 

@@ -18,57 +18,65 @@ package com.stratumn.sdk.model.trace;
 import com.stratumn.sdk.TraceLink;
 
 /**
- * Interface used as argument to append a new link to a trace.
- * User must provide the trace id, form id and form data.
- * User can optionally provide the previous link hash, if not it will be fetched
- * from the API first.
- * The key difference with the NewTraceInput is that the trace id must be provided.
+ * Interface used as argument to append a new link to a trace. User must provide
+ * the trace id, form id and form data. User can optionally provide the previous
+ * link hash, if not it will be fetched from the API first. The key difference
+ * with the NewTraceInput is that the trace id must be provided.
  */
 public class AppendLinkInput<TLinkData> {
 
-  private String formId;
+  private String action;
   private TLinkData data;
   private String traceId;
   private ITraceLink<TLinkData> prevLink;
 
-  public AppendLinkInput(String formId, TLinkData data, String traceId) throws IllegalArgumentException {
-    if (formId == null) {
-      throw new IllegalArgumentException("formId cannot be null in AppendLinkInput");
+  public AppendLinkInput(String action, TLinkData data, String traceId) throws IllegalArgumentException {
+    if (action == null) {
+      throw new IllegalArgumentException("action cannot be null in AppendLinkInput");
     }
 
-    this.formId = formId;
+    this.action = action;
     this.data = data;
     this.traceId = traceId;
   }
 
-  public AppendLinkInput(String formId, TLinkData data,   TraceLink<TLinkData> prevLink)
-      throws IllegalArgumentException {
-    if (formId == null) {
-      throw new IllegalArgumentException("formId cannot be null in AppendLinkInput");
+  public AppendLinkInput(String action, TLinkData data, TraceLink<TLinkData> prevLink) throws IllegalArgumentException {
+    if (action == null) {
+      throw new IllegalArgumentException("action cannot be null in AppendLinkInput");
     }
-    this.formId = formId;
-    this.data = data; 
+    this.action = action;
+    this.data = data;
     this.prevLink = prevLink;
   }
 
   public String getFormId() {
-    return this.formId;
+    return this.action;
   }
 
-  public void setFormId(String formId) {
-      this.formId = formId;
+  public void setFormId(String action) {
+    this.action = action;
+  }
+
+  public String getAction() {
+    return this.action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
   }
 
   public TLinkData getData() {
     return this.data;
   }
+
   public void setData(TLinkData data) {
     this.data = data;
   }
 
   public String getTraceId() {
     return this.traceId;
-  } 
+  }
+
   public void setTraceId(String traceId) {
     this.traceId = traceId;
   }
@@ -76,6 +84,7 @@ public class AppendLinkInput<TLinkData> {
   public ITraceLink<TLinkData> getPrevLink() {
     return this.prevLink;
   }
+
   public void setPrevLink(ITraceLink<TLinkData> prevLink) {
     this.prevLink = prevLink;
   }

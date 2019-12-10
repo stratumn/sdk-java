@@ -60,16 +60,26 @@ import com.stratumn.sdk.model.trace.TransferResponseInput;
 public class TestSdk {
 
    private static Gson gson = JsonHelper.getGson();
+   // private static final String ACCOUNT_RELEASE_URL =
+   // "http://account-api.local.stratumn.com:4200";
+   // private static final String TRACE_RELEASE_URL =
+   // "http://trace-api.local.stratumn.com:4100";
+   // private static final String MEDIA_RELEASE_URL =
+   // "http://media-api.local.stratumn.com:4500";
    private static final String ACCOUNT_RELEASE_URL = "https://account-api.staging.stratumn.com";
    private static final String TRACE_RELEASE_URL = "https://trace-api.staging.stratumn.com";
    private static final String MEDIA_RELEASE_URL = "https://media-api.staging.stratumn.com";
 
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
-   private static String FORM_ID = "8209";
+   private static String FORM_ID = "action1";
    private static String MY_GROUP = "1744";
 
+   private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAWotrb1jJokHr7AVQTS6f6W7dFYnKpVy+DV++sG6x\nlExB4rtrKpCAEPt5q7oT6/lcF4brFSNiCxLPnHqiSjcyVw==\n-----END ED25519 PRIVATE KEY-----\n";
+   private static String OTHER_GROUP = "1785";
+
    private static Sdk<Object> sdk;
+   private static Sdk<Object> otherSdk;
 
    public static Sdk<Object> getSdk() {
 
@@ -82,6 +92,19 @@ public class TestSdk {
 
       }
       return sdk;
+   }
+
+   public static Sdk<Object> getOtherGroupSdk() {
+
+      if (otherSdk == null) {
+         Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY_2);
+         SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
+         opts.setEndpoints(new Endpoints(ACCOUNT_RELEASE_URL, TRACE_RELEASE_URL, MEDIA_RELEASE_URL));
+         opts.setEnableDebuging(true);
+         otherSdk = new Sdk<Object>(opts);
+
+      }
+      return otherSdk;
    }
 
    @Test
@@ -178,7 +201,6 @@ public class TestSdk {
    // used to pass the trace from one test method to another
    private TraceState<Object, Object> someTraceState;
 
-   @Test
    public void newTraceTest() {
       try {
          Sdk<Object> sdk = getSdk();
@@ -246,26 +268,9 @@ public class TestSdk {
          newTraceTest();
          assertNotNull(someTraceState);
          Map<String, Object> data = new HashMap<String, Object>(
-               Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>("86", data, someTraceState.getTraceId());
+               Collections.singletonMap("why", "because im testing the pushTrace"));
+         PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, data, someTraceState.getTraceId());
 
-         someTraceState = getSdk().pushTrace(push);
-         // System.out.println("test pushTrace " + gson.toJson(someTraceState));
-         assertNotNull(push.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void pushTraceToMyGroupTest() {
-      try {
-         newTraceTest();
-         assertNotNull(someTraceState);
-         Map<String, Object> data = new HashMap<String, Object>(
-               Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>(MY_GROUP, data, someTraceState.getTraceId());
          someTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
@@ -278,9 +283,9 @@ public class TestSdk {
    @Test
    public void acceptTransferTest() {
       try {
-         pushTraceToMyGroupTest();
+         pushTraceTest();
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null, someTraceState.getTraceId());
-         TraceState<Object, Object> stateAccept = getSdk().acceptTransfer(trInput);
+         TraceState<Object, Object> stateAccept = getOtherGroupSdk().acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
       } catch (Exception ex) {
@@ -297,14 +302,14 @@ public class TestSdk {
 
          String traceId = null;
          if (tracesIn.getTotalCount() == 0) {
-            pushTraceToMyGroupTest();
+            pushTraceTest();
             traceId = someTraceState.getTraceId();
          } else {
             someTraceState = tracesIn.getTraces().get(0);
             traceId = someTraceState.getTraceId();
          }
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null, traceId);
-         TraceState<Object, Object> stateReject = getSdk().rejectTransfer(trInput);
+         TraceState<Object, Object> stateReject = getOtherGroupSdk().rejectTransfer(trInput);
          // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
          assertNotNull(stateReject.getTraceId());
       } catch (Exception ex) {
@@ -443,7 +448,7 @@ public class TestSdk {
 
       // push to cancel
       data = new HashMap<String, Object>(Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      PushTransferInput<Object> push = new PushTransferInput<Object>("86", data, state.getTraceId());
+      PushTransferInput<Object> push = new PushTransferInput<Object>("1783", data, state.getTraceId());
       TraceState<Object, Object> statepsh = sdk.pushTrace(push);
       // System.out.println("pushTrace:" + "\r\n" + statepsh);
 

@@ -47,7 +47,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.JsonObject;
@@ -154,11 +153,12 @@ public class Client {
       GsonHttpMessageConverter converter = null;
       // find existing converter
       List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-      for (int i = 0; i < converters.size(); i ++) {
+      for (int i = 0; i < converters.size(); i++) {
          HttpMessageConverter<?> c = converters.get(i);
          if (c instanceof GsonHttpMessageConverter) {
             // Move converter to head of list.
-            // When Jackson is in the classpath, a default Jackson converter is added to this list. 
+            // When Jackson is in the classpath, a default Jackson converter is added to
+            // this list.
             // We move the gson converter to the head so that it gets selected before.
             converter = (GsonHttpMessageConverter) c;
             converters.remove(i);
