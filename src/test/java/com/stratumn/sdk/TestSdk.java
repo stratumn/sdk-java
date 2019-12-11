@@ -60,12 +60,6 @@ import com.stratumn.sdk.model.trace.TransferResponseInput;
 public class TestSdk {
 
    private static Gson gson = JsonHelper.getGson();
-   // private static final String ACCOUNT_RELEASE_URL =
-   // "http://account-api.local.stratumn.com:4200";
-   // private static final String TRACE_RELEASE_URL =
-   // "http://trace-api.local.stratumn.com:4100";
-   // private static final String MEDIA_RELEASE_URL =
-   // "http://media-api.local.stratumn.com:4500";
    private static final String ACCOUNT_RELEASE_URL = "https://account-api.staging.stratumn.com";
    private static final String TRACE_RELEASE_URL = "https://trace-api.staging.stratumn.com";
    private static final String MEDIA_RELEASE_URL = "https://media-api.staging.stratumn.com";
