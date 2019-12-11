@@ -381,9 +381,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       // compute detail for error
       String stageDetail = stageType.toString() + (actionKey != null ? actionKey : "");
-      if (actionKey != null) {
-         stageDetail += actionKey;
-      }
+
       // throw if no stages were found if
       if (stages.size() == 0) {
          throw new TraceSdkException("No " + stageDetail + " stage");

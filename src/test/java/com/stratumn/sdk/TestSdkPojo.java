@@ -95,7 +95,7 @@ public class TestSdkPojo {
 
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
-   private static String FORM_ID = "action1";
+   private static String ACTION_KEY = "action1";
 
    private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAWotrb1jJokHr7AVQTS6f6W7dFYnKpVy+DV++sG6x\nlExB4rtrKpCAEPt5q7oT6/lcF4brFSNiCxLPnHqiSjcyVw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String OTHER_GROUP = "1785";
@@ -197,7 +197,7 @@ public class TestSdkPojo {
       try {
          Sdk<StateExample> sdk = getSdk();
          PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> state = sdk.getAttestationTraces(FORM_ID, paginationInfo);
+         TracesState<StateExample, SomeClass> state = sdk.getAttestationTraces(ACTION_KEY, paginationInfo);
          // System.out.println("testBacklog " + gson.toJson(state));
          assertFalse(gson.toJson(state).contains("Error"));
       } catch (Exception ex) {
@@ -236,7 +236,7 @@ public class TestSdkPojo {
          dataMap.put("operation", "my new operation 1");
          // quickly convert existing map to object but the object can be created any way
          SomeClass data = JsonHelper.mapToObject(dataMap, SomeClass.class);
-         NewTraceInput<SomeClass> newTraceInput = new NewTraceInput<SomeClass>(FORM_ID, data);
+         NewTraceInput<SomeClass> newTraceInput = new NewTraceInput<SomeClass>(ACTION_KEY, data);
 
          TraceState<StateExample, SomeClass> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
@@ -260,7 +260,7 @@ public class TestSdkPojo {
          s.stp_form_section = new Identifiable[] {
                FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) };
 
-         NewTraceInput<StepData> newTraceInput = new NewTraceInput<StepData>(FORM_ID, s);
+         NewTraceInput<StepData> newTraceInput = new NewTraceInput<StepData>(ACTION_KEY, s);
 
          TraceState<StateExample, StepData> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
@@ -280,7 +280,7 @@ public class TestSdkPojo {
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
                + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToObject(json, OperationClass.class);
-         AppendLinkInput<OperationClass> appLinkInput = new AppendLinkInput<OperationClass>(FORM_ID, data,
+         AppendLinkInput<OperationClass> appLinkInput = new AppendLinkInput<OperationClass>(ACTION_KEY, data,
                someTraceState.getTraceId());
          TraceState<StateExample, OperationClass> state = getSdk().appendLink(appLinkInput);
          assertNotNull(state.getTraceId());
