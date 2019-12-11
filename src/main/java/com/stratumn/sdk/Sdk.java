@@ -747,6 +747,8 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String userId = sdkConfig.getUserId();
+      String ownerId = sdkConfig.getOwnerId();
+      String groupId = sdkConfig.getGroupId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
@@ -760,6 +762,10 @@ public class Sdk<TState> implements ISdk<TState> {
 
          // this is a push transfer
          linkBuilder.forRejectTransfer(data)
+               // add owner info
+               .withOwner(ownerId)
+               // add group info
+               .withGroup(groupId)
                // add creator info
                .withCreatedBy(userId);
          // try to read the type from the data otherwise use the parameter
