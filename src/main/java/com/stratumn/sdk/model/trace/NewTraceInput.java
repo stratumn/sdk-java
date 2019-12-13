@@ -14,30 +14,38 @@ See the License for the specific language governing permissions and
   limitations under the License.
 */
 package com.stratumn.sdk.model.trace;
+
 /**
- * Interface used as argument to create a new trace.
- * User must provide the form id to use and the form data.
+ * Interface used as argument to create a new trace. User must provide the form
+ * id to use and the form data.
  */
 public class NewTraceInput<TLinkData> {
 
-  private String formId;
+  private String action;
   private TLinkData data;
 
-  public NewTraceInput(String formId, TLinkData data) throws IllegalArgumentException {
-    if (formId == null) {
-      throw new IllegalArgumentException("formId cannot be null in NewTraceInput");
+  public NewTraceInput(String action, TLinkData data) throws IllegalArgumentException {
+    if (action == null) {
+      throw new IllegalArgumentException("action cannot be null in NewTraceInput");
     }
-    this.formId = formId;
+    this.action = action;
     this.data = data;
   }
 
-
   public String getFormId() {
-    return this.formId;
+    return this.action;
   }
 
-  public void setFormId(String formId) {
-      this.formId = formId;
+  public void setFormId(String action) {
+    this.action = action;
+  }
+
+  public String getAction() {
+    return this.action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
   }
 
   public TLinkData getData() {
@@ -47,5 +55,5 @@ public class NewTraceInput<TLinkData> {
   public void setData(TLinkData data) {
     this.data = data;
   }
-  
+
 }

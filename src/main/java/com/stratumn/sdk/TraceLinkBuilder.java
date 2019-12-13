@@ -132,17 +132,15 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * Helper method used to configure a link for an attestation. User must still
 	 * set owner, group and createdBy separately.
 	 *
-	 * @param formId the form id used for the attestation
+	 * @param action the action key used for the attestation
 	 * @param action the name of the action associated with this form
 	 * @param data   the data of the attestation
 	 * @throws TraceSdkException
 	 */
-	public TraceLinkBuilder<TLinkData> forAttestation(String formId, String action, TLinkData data)
-			throws TraceSdkException {
-		String actionStr = action != null ? action : "Attestation";// TraceActionType.ATTESTATION.toString();
+	public TraceLinkBuilder<TLinkData> forAttestation(String action, TLinkData data) throws TraceSdkException {
 		String typeStr = TraceLinkType.OWNED.toString();
-		this.withHashedData(data).withAction(actionStr).withProcessState(typeStr);
-		this.metadata.setFormId(formId);
+		this.withHashedData(data).withAction(action).withProcessState(typeStr);
+		this.metadata.setFormId(action);
 		return this;
 	}
 
@@ -199,10 +197,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * are calculated from parent link. Parent link must have been provided!
 	 *
 	 * @param data the optional data
-	 * @throws TraceSdkException 
-	 * @throws ChainscriptException 
+	 * @throws TraceSdkException
+	 * @throws ChainscriptException
 	 */
-	public TraceLinkBuilder<TLinkData> forCancelTransfer(TLinkData data) throws TraceSdkException, ChainscriptException   {
+	public TraceLinkBuilder<TLinkData> forCancelTransfer(TLinkData data) throws TraceSdkException, ChainscriptException {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.CANCEL_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
@@ -216,10 +214,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * are calculated from parent link. Parent link must have been provided!
 	 *
 	 * @param data the optional data
-	 * @throws TraceSdkException  
-	 * @throws ChainscriptException 
+	 * @throws TraceSdkException
+	 * @throws ChainscriptException
 	 */
-	public TraceLinkBuilder<TLinkData> forRejectTransfer(TLinkData data) throws TraceSdkException, ChainscriptException  {
+	public TraceLinkBuilder<TLinkData> forRejectTransfer(TLinkData data) throws TraceSdkException, ChainscriptException {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.REJECT_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
@@ -234,9 +232,9 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * provided! User must still set owner, group and createdBy separately.
 	 *
 	 * @param data the optional data
-	 * @throws TraceSdkException  
+	 * @throws TraceSdkException
 	 */
-	public TraceLinkBuilder<TLinkData> forAcceptTransfer(TLinkData data) throws TraceSdkException   {
+	public TraceLinkBuilder<TLinkData> forAcceptTransfer(TLinkData data) throws TraceSdkException {
 		// call parent link to assert it was set
 		this.getParentLink();
 		String action = TraceActionType.ACCEPT_TRANSFER.toString();

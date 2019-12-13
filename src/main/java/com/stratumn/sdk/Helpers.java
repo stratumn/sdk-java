@@ -27,7 +27,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -285,13 +284,11 @@ public class Helpers {
             } else {
                Array.set(parent, index, propertyElement.getValue());
             }
-         } else if (parent instanceof List){
+         } else if (parent instanceof List) {
             int index = extractIndexFromKey(key);
             // object could be an identifiable or it could be a deserialized map
-            if (
-               parent.getClass().getComponentType() != null && 
-               parent.getClass().getComponentType().isAssignableFrom(Map.class)
-            ) { // convert the value to map~
+            if (parent.getClass().getComponentType() != null
+                  && parent.getClass().getComponentType().isAssignableFrom(Map.class)) { // convert the value to map~
                Map<?, ?> map = JsonHelper.objectToMap(propertyElement.getValue());
                ((List<Object>) parent).add(index, map);
             } else {

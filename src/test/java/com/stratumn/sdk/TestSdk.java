@@ -66,10 +66,14 @@ public class TestSdk {
 
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
-   private static String FORM_ID = "8209";
+   private static String ACTION_KEY = "action1";
    private static String MY_GROUP = "1744";
 
+   private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAWotrb1jJokHr7AVQTS6f6W7dFYnKpVy+DV++sG6x\nlExB4rtrKpCAEPt5q7oT6/lcF4brFSNiCxLPnHqiSjcyVw==\n-----END ED25519 PRIVATE KEY-----\n";
+   private static String OTHER_GROUP = "1785";
+
    private static Sdk<Object> sdk;
+   private static Sdk<Object> otherSdk;
 
    public static Sdk<Object> getSdk() {
 
@@ -82,6 +86,19 @@ public class TestSdk {
 
       }
       return sdk;
+   }
+
+   public static Sdk<Object> getOtherGroupSdk() {
+
+      if (otherSdk == null) {
+         Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY_2);
+         SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
+         opts.setEndpoints(new Endpoints(ACCOUNT_RELEASE_URL, TRACE_RELEASE_URL, MEDIA_RELEASE_URL));
+         opts.setEnableDebuging(true);
+         otherSdk = new Sdk<Object>(opts);
+
+      }
+      return otherSdk;
    }
 
    @Test
@@ -152,7 +169,7 @@ public class TestSdk {
       try {
          Sdk<Object> sdk = getSdk();
          PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<Object, Object> state = sdk.getAttestationTraces(FORM_ID, paginationInfo);
+         TracesState<Object, Object> state = sdk.getAttestationTraces(ACTION_KEY, paginationInfo);
          // System.out.println("testBacklog " + gson.toJson(state));
          assertFalse(gson.toJson(state).contains("Error"));
       } catch (Exception ex) {
@@ -178,7 +195,6 @@ public class TestSdk {
    // used to pass the trace from one test method to another
    private TraceState<Object, Object> someTraceState;
 
-   @Test
    public void newTraceTest() {
       try {
          Sdk<Object> sdk = getSdk();
@@ -187,7 +203,7 @@ public class TestSdk {
          data.put("valid", true);
          data.put("operators", new String[] { "1", "2" });
          data.put("operation", "my new operation 1");
-         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
+         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(ACTION_KEY, data);
          TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
          someTraceState = state;
@@ -212,7 +228,7 @@ public class TestSdk {
          data.put("Certificates",
                new Identifiable[] { FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) });
 
-         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
+         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(ACTION_KEY, data);
 
          TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
@@ -232,7 +248,8 @@ public class TestSdk {
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
                + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToMap(json);
-         AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(FORM_ID, data, someTraceState.getTraceId());
+         AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(ACTION_KEY, data,
+               someTraceState.getTraceId());
          TraceState<Object, Object> state = getSdk().appendLink(appLinkInput);
          assertNotNull(state.getTraceId());
       } catch (Exception ex) {
@@ -246,26 +263,9 @@ public class TestSdk {
          newTraceTest();
          assertNotNull(someTraceState);
          Map<String, Object> data = new HashMap<String, Object>(
-               Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>("86", data, someTraceState.getTraceId());
+               Collections.singletonMap("why", "because im testing the pushTrace"));
+         PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, data, someTraceState.getTraceId());
 
-         someTraceState = getSdk().pushTrace(push);
-         // System.out.println("test pushTrace " + gson.toJson(someTraceState));
-         assertNotNull(push.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void pushTraceToMyGroupTest() {
-      try {
-         newTraceTest();
-         assertNotNull(someTraceState);
-         Map<String, Object> data = new HashMap<String, Object>(
-               Collections.singletonMap("why", "because im testing the pushTrace 2"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>(MY_GROUP, data, someTraceState.getTraceId());
          someTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
@@ -278,9 +278,9 @@ public class TestSdk {
    @Test
    public void acceptTransferTest() {
       try {
-         pushTraceToMyGroupTest();
+         pushTraceTest();
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null, someTraceState.getTraceId());
-         TraceState<Object, Object> stateAccept = getSdk().acceptTransfer(trInput);
+         TraceState<Object, Object> stateAccept = getOtherGroupSdk().acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
       } catch (Exception ex) {
@@ -297,14 +297,14 @@ public class TestSdk {
 
          String traceId = null;
          if (tracesIn.getTotalCount() == 0) {
-            pushTraceToMyGroupTest();
+            pushTraceTest();
             traceId = someTraceState.getTraceId();
          } else {
             someTraceState = tracesIn.getTraces().get(0);
             traceId = someTraceState.getTraceId();
          }
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null, traceId);
-         TraceState<Object, Object> stateReject = getSdk().rejectTransfer(trInput);
+         TraceState<Object, Object> stateReject = getOtherGroupSdk().rejectTransfer(trInput);
          // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
          assertNotNull(stateReject.getTraceId());
       } catch (Exception ex) {
@@ -413,7 +413,7 @@ public class TestSdk {
       String json = "{  operation:\"new shipment XYZ for ABC\"," + "    weight: 123," + "    valid: true,"
             + "    operators: [\"Ludovic K.\", \"Bernard Q.\"]" + "  }";
       data = JsonHelper.objectToMap(json);
-      NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(FORM_ID, data);
+      NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(ACTION_KEY, data);
       TraceState<Object, Object> newState = sdk.newTrace(newTraceInput);
       // System.out.println("newTrace:" + "\r\n" + newState);
 
@@ -430,20 +430,20 @@ public class TestSdk {
       // System.out.println("getBacklogTraces:" + "\r\n" + tracesBlog);
 
       paginationInfo = new PaginationInfo(10, null, null, null);
-      TracesState<Object, Object> tracesAtt = sdk.getAttestationTraces(FORM_ID, paginationInfo);
+      TracesState<Object, Object> tracesAtt = sdk.getAttestationTraces(ACTION_KEY, paginationInfo);
       // System.out.println("getAttestationTraces:" + "\r\n" + tracesAtt);
 
       // append link
       json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
             + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
       data = JsonHelper.objectToMap(json);
-      AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(FORM_ID, data, newState.getTraceId());
+      AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(ACTION_KEY, data, newState.getTraceId());
       TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
       // System.out.println("appendLink:" + "\r\n" + state);
 
       // push to cancel
       data = new HashMap<String, Object>(Collections.singletonMap("why", "because im testing the pushTrace 2"));
-      PushTransferInput<Object> push = new PushTransferInput<Object>("86", data, state.getTraceId());
+      PushTransferInput<Object> push = new PushTransferInput<Object>("1783", data, state.getTraceId());
       TraceState<Object, Object> statepsh = sdk.pushTrace(push);
       // System.out.println("pushTrace:" + "\r\n" + statepsh);
 

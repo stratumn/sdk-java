@@ -24,9 +24,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpEntity;
@@ -47,7 +49,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.JsonObject;
@@ -96,6 +97,8 @@ public class Client {
    private RestTemplate restTemplate;
    private ClientOptions options;
 
+   private String userAgent;
+
    /***
     * Constructs a new instance of the Client
     * 
@@ -107,6 +110,25 @@ public class Client {
       this.options = opts;
       initRestTemplate();
 
+      List<String> agents = new ArrayList<String>();
+      agents.add(String.format("%s/%s", System.getProperty("os.name"), System.getProperty("os.version")));
+      agents.add(String.format("Java/%s", System.getProperty("java.version")));
+
+      String sdkAgent = "stratumn-sdk-java";
+      // Get SDK version
+      try {
+         Properties p = new Properties();
+         InputStream is = getClass().getResourceAsStream("/project.properties");
+         if (is != null) {
+            p.load(is);
+            String version = p.getProperty("version", "");
+            sdkAgent += "/" + version;
+         }
+      } catch (Exception e) {
+      }
+      agents.add(sdkAgent);
+
+      this.userAgent = String.join(" ", agents);
    }
 
    class MyErrorHandler extends DefaultResponseErrorHandler {
@@ -154,11 +176,12 @@ public class Client {
       GsonHttpMessageConverter converter = null;
       // find existing converter
       List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-      for (int i = 0; i < converters.size(); i ++) {
+      for (int i = 0; i < converters.size(); i++) {
          HttpMessageConverter<?> c = converters.get(i);
          if (c instanceof GsonHttpMessageConverter) {
             // Move converter to head of list.
-            // When Jackson is in the classpath, a default Jackson converter is added to this list. 
+            // When Jackson is in the classpath, a default Jackson converter is added to
+            // this list.
             // We move the gson converter to the head so that it gets selected before.
             converter = (GsonHttpMessageConverter) c;
             converters.remove(i);
@@ -395,6 +418,7 @@ public class Client {
          con.setRequestMethod("POST");
          con.setRequestProperty("Content-Type", "application/json");
          con.setRequestProperty("Accept", "application/json");
+         con.setRequestProperty("User-Agent", this.userAgent);
          con.setRequestProperty("Authorization", this.getAuthorizationHeader(opts));
          con.setDoOutput(true);
 
@@ -445,6 +469,7 @@ public class Client {
          }
          con.setRequestProperty("Content-Type", "application/json; utf-8");
          con.setRequestProperty("Accept", "application/json");
+         con.setRequestProperty("User-Agent", this.userAgent);
          con.setRequestProperty("Authorization", this.getAuthorizationHeader(opts));
          con.setRequestMethod("GET");
 
@@ -592,6 +617,7 @@ public class Client {
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
+      headers.set(HttpHeaders.USER_AGENT, this.userAgent);
       headers.set(HttpHeaders.AUTHORIZATION, this.getAuthorizationHeader(null));
 
       HttpEntity<R> entity = new HttpEntity<R>(requestBody, headers);
@@ -616,6 +642,7 @@ public class Client {
       MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+      headers.set(HttpHeaders.USER_AGENT, this.userAgent);
       headers.set(HttpHeaders.AUTHORIZATION, this.getAuthorizationHeader(null));
 
       for (FileWrapper file : filesList) {

@@ -95,23 +95,38 @@ public class TestSdkPojo {
 
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
-   private static String FORM_ID = "8209";
-   private static String MY_GROUP = "1744";
+   private static String ACTION_KEY = "action1";
+
+   private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAWotrb1jJokHr7AVQTS6f6W7dFYnKpVy+DV++sG6x\nlExB4rtrKpCAEPt5q7oT6/lcF4brFSNiCxLPnHqiSjcyVw==\n-----END ED25519 PRIVATE KEY-----\n";
+   private static String OTHER_GROUP = "1785";
 
    private static Sdk<StateExample> sdk;
+   private static Sdk<StateExample> otherSdk;
 
    public static Sdk<StateExample> getSdk() {
 
       if (sdk == null) {
          Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY);
          SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
-         opts.setEndpoints(new Endpoints("https://account-api.staging.stratumn.com",
-               "https://trace-api.staging.stratumn.com", "https://media-api.staging.stratumn.com"));
+         opts.setEndpoints(new Endpoints(ACCOUNT_STAGING_URL, TRACE_STAGING_URL, MEDIA_STAGING_URL));
          opts.setEnableDebuging(true);
          sdk = new Sdk<StateExample>(opts, StateExample.class);
 
       }
       return sdk;
+   }
+
+   public static Sdk<StateExample> getOtherGroupSdk() {
+
+      if (otherSdk == null) {
+         Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY_2);
+         SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
+         opts.setEndpoints(new Endpoints(ACCOUNT_STAGING_URL, TRACE_STAGING_URL, MEDIA_STAGING_URL));
+         opts.setEnableDebuging(true);
+         otherSdk = new Sdk<StateExample>(opts);
+
+      }
+      return otherSdk;
    }
 
    @Test
@@ -182,7 +197,7 @@ public class TestSdkPojo {
       try {
          Sdk<StateExample> sdk = getSdk();
          PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> state = sdk.getAttestationTraces(FORM_ID, paginationInfo);
+         TracesState<StateExample, SomeClass> state = sdk.getAttestationTraces(ACTION_KEY, paginationInfo);
          // System.out.println("testBacklog " + gson.toJson(state));
          assertFalse(gson.toJson(state).contains("Error"));
       } catch (Exception ex) {
@@ -221,7 +236,7 @@ public class TestSdkPojo {
          dataMap.put("operation", "my new operation 1");
          // quickly convert existing map to object but the object can be created any way
          SomeClass data = JsonHelper.mapToObject(dataMap, SomeClass.class);
-         NewTraceInput<SomeClass> newTraceInput = new NewTraceInput<SomeClass>(FORM_ID, data);
+         NewTraceInput<SomeClass> newTraceInput = new NewTraceInput<SomeClass>(ACTION_KEY, data);
 
          TraceState<StateExample, SomeClass> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
@@ -245,7 +260,7 @@ public class TestSdkPojo {
          s.stp_form_section = new Identifiable[] {
                FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) };
 
-         NewTraceInput<StepData> newTraceInput = new NewTraceInput<StepData>(FORM_ID, s);
+         NewTraceInput<StepData> newTraceInput = new NewTraceInput<StepData>(ACTION_KEY, s);
 
          TraceState<StateExample, StepData> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
@@ -265,7 +280,7 @@ public class TestSdkPojo {
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
                + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToObject(json, OperationClass.class);
-         AppendLinkInput<OperationClass> appLinkInput = new AppendLinkInput<OperationClass>(FORM_ID, data,
+         AppendLinkInput<OperationClass> appLinkInput = new AppendLinkInput<OperationClass>(ACTION_KEY, data,
                someTraceState.getTraceId());
          TraceState<StateExample, OperationClass> state = getSdk().appendLink(appLinkInput);
          assertNotNull(state.getTraceId());
@@ -283,27 +298,7 @@ public class TestSdkPojo {
          String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
                + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
          data = JsonHelper.objectToObject(json, OperationClass.class);
-         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>("86", data,
-               someTraceState.getTraceId());
-         anotherTraceState = getSdk().pushTrace(push);
-         // System.out.println("test pushTrace " + gson.toJson(someTraceState));
-         assertNotNull(push.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void pushTraceToMyGroupTest() {
-      try {
-         newTraceTest();
-         assertNotNull(someTraceState);
-         OperationClass data;
-         String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
-               + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
-         data = JsonHelper.objectToObject(json, OperationClass.class);
-         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>(MY_GROUP, data,
+         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>(OTHER_GROUP, data,
                someTraceState.getTraceId());
          anotherTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
@@ -322,7 +317,7 @@ public class TestSdkPojo {
 
          String traceId = null;
          if (tracesIn.getTotalCount() == 0) {
-            pushTraceToMyGroupTest();
+            pushTraceTest();
             traceId = someTraceState.getTraceId();
          } else {
             someTraceState = tracesIn.getTraces().get(0);
@@ -330,7 +325,7 @@ public class TestSdkPojo {
          }
          TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null,
                someTraceState.getTraceId());
-         TraceState<StateExample, SomeClass> stateAccept = getSdk().acceptTransfer(trInput);
+         TraceState<StateExample, SomeClass> stateAccept = getOtherGroupSdk().acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
       } catch (Exception ex) {
@@ -347,14 +342,14 @@ public class TestSdkPojo {
 
          String traceId = null;
          if (tracesIn.getTotalCount() == 0) {
-            pushTraceToMyGroupTest();
+            pushTraceTest();
             traceId = someTraceState.getTraceId();
          } else {
             someTraceState = tracesIn.getTraces().get(0);
             traceId = someTraceState.getTraceId();
          }
          TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null, traceId);
-         TraceState<StateExample, SomeClass> stateReject = getSdk().rejectTransfer(trInput);
+         TraceState<StateExample, SomeClass> stateReject = getOtherGroupSdk().rejectTransfer(trInput);
          // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
          assertNotNull(stateReject.getTraceId());
       } catch (Exception ex) {
