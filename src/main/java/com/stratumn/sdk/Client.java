@@ -687,7 +687,7 @@ public class Client {
          System.out.println("Method      : " + request.getMethod());
          System.out.println("Headers     : " + request.getHeaders());
          System.out.println("Request body: " + new String(body, "UTF-8"));
-         System.out.println("==========================request end================================================");
+         System.out.println("==========================request end===================================================");
       }
 
       private void traceResponse(ClientHttpResponse response) throws IOException {
@@ -699,12 +699,12 @@ public class Client {
             inputStringBuilder.append('\n');
             line = bufferedReader.readLine();
          }
-         System.out.println("============================response begin==========================================");
+         System.out.println("============================response begin==============================================");
          System.out.println("Status code  : " + response.getStatusCode());
          System.out.println("Status text  : " + response.getStatusText());
          System.out.println("Headers      : " + response.getHeaders());
          System.out.println("Response body: " + inputStringBuilder.toString());
-         System.out.println("=======================response end=================================================");
+         System.out.println("=======================response end=====================================================");
       }
 
    }
