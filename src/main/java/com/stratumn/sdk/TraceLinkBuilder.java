@@ -46,6 +46,8 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 
 	private TLinkData formData;
 
+	private boolean enableDebuging = false;
+
 	/**
 	 * Create a new instance of a TraceLinkBuilder.
 	 *
@@ -88,6 +90,10 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 					.withParent(this.parentLink.hash());
 		}
 
+		if (cfg.isEnableDebuging()) {
+			this.enableDebuging = true;
+		}
+
 	}
 
 	/**
@@ -113,17 +119,26 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 		if (obj != null) {
 			String algo = "sha256";
 			String hash;
+			String formData;
 			try {
-				hash = Base64.getEncoder().encodeToString(CryptoUtils.sha256(CanonicalJson.stringify(obj).getBytes()));
+				formData = CanonicalJson.stringify(obj);
 			} catch (IOException e) {
 				throw new TraceSdkException("Failed to stringify object to json", e);
 			}
 
+			hash = Base64.getEncoder().encodeToString(CryptoUtils.sha256(formData.getBytes()));
 			Map<String, Object> data = new HashMap<String, Object>();
 			data.put("algo", algo);
 			data.put("hash", hash);
 			this.withData(data);
 			this.formData = obj;
+
+			if (this.enableDebuging) {
+				System.out.println("-------------------------- Hash link data --------------------------");
+				System.out.println(formData);
+				System.out.println(hash);
+				System.out.println("--------------------------------------------------------------------");
+			}
 		}
 		return this;
 	}

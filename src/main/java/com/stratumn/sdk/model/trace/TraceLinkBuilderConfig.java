@@ -14,33 +14,47 @@ See the License for the specific language governing permissions and
   limitations under the License.
 */
 package com.stratumn.sdk.model.trace;
+
 /**
  * The configuration interface for a new TraceLinkBuilder.
  */
 public class TraceLinkBuilderConfig<TLinkData> {
 
 	private String workflowId;
-	private ITraceLink<TLinkData>  parentLink;
-	
+	private ITraceLink<TLinkData> parentLink;
+	private boolean enableDebuging = false;
+
 	public TraceLinkBuilderConfig() {
-		
+
 	}
-	public TraceLinkBuilderConfig(String workflowId, ITraceLink<TLinkData>  parentLink) {
+
+	public boolean isEnableDebuging() {
+		return enableDebuging;
+	}
+
+	public void setEnableDebuging(boolean enableDebuging) {
+		this.enableDebuging = enableDebuging;
+	}
+
+	public TraceLinkBuilderConfig(String workflowId, ITraceLink<TLinkData> parentLink) {
 		this.workflowId = workflowId;
 		this.parentLink = parentLink;
 	}
-	
+
 	public String getWorkflowId() {
 		return workflowId;
 	}
+
 	public void setWorkflowId(String workflowId) {
 		this.workflowId = workflowId;
 	}
+
 	public ITraceLink<TLinkData> getParentLink() {
 		return parentLink;
 	}
-	public void setParentLink(ITraceLink<TLinkData>  parentLink) {
+
+	public void setParentLink(ITraceLink<TLinkData> parentLink) {
 		this.parentLink = parentLink;
-	}	
+	}
 
 }

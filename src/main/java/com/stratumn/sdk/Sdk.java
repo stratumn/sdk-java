@@ -619,6 +619,8 @@ public class Sdk<TState> implements ISdk<TState> {
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       cfg.setWorkflowId(workflowId);
+      cfg.setEnableDebuging(this.opts.isEnableDebuging());
+
       // use a TraceLinkBuilder to create the first link
       // only provide workflowId to initiate a new trace
       TraceLinkBuilder<TLinkData> linkBuilder;
@@ -686,6 +688,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
       // use a TraceLinkBuilder to create the first link
@@ -753,6 +756,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
       try {
@@ -819,6 +823,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
       try {
@@ -872,6 +877,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
       try {
@@ -926,6 +932,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
       try {
