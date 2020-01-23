@@ -21,11 +21,20 @@ package com.stratumn.sdk.model.trace;
 public class TraceLinkBuilderConfig<TLinkData> {
 
 	private String workflowId;
+	private String configId;
 	private ITraceLink<TLinkData> parentLink;
 	private boolean enableDebuging = false;
 
 	public TraceLinkBuilderConfig() {
 
+	}
+
+	public String getConfigId() {
+		return configId;
+	}
+
+	public void setConfigId(String configId) {
+		this.configId = configId;
 	}
 
 	public boolean isEnableDebuging() {
@@ -36,8 +45,9 @@ public class TraceLinkBuilderConfig<TLinkData> {
 		this.enableDebuging = enableDebuging;
 	}
 
-	public TraceLinkBuilderConfig(String workflowId, ITraceLink<TLinkData> parentLink) {
+	public TraceLinkBuilderConfig(String workflowId, String configId, ITraceLink<TLinkData> parentLink) {
 		this.workflowId = workflowId;
+		this.setConfigId(configId);
 		this.parentLink = parentLink;
 	}
 

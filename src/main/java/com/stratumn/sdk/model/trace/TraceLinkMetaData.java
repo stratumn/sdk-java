@@ -16,12 +16,14 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk.model.trace;
 
 import java.util.Date;
+
 /**
  * The link metadata
  */
 public class TraceLinkMetaData {
 
 	private String ownerId;
+	private String configId;
 	private String groupId;
 	private String formId;
 	private String lastFormId;
@@ -30,18 +32,17 @@ public class TraceLinkMetaData {
 	private String set;
 	private String[] inputs;
 
-	 
-	public TraceLinkMetaData(  )
-    {
-      super(); 
-    }
+	public TraceLinkMetaData() {
+		super();
+	}
 
-
-
-   TraceLinkMetaData(String ownerId, String groupId, String formId, String lastFormId, Date createdAt,
+	TraceLinkMetaData(String ownerId, String configId, String groupId, String formId, String lastFormId, Date createdAt,
 			String createdById, String[] inputs) throws IllegalArgumentException {
 		if (ownerId == null) {
 			throw new IllegalArgumentException("ownerId cannot be null");
+		}
+		if (configId == null) {
+			throw new IllegalArgumentException("configId cannot be null");
 		}
 		if (groupId == null) {
 			throw new IllegalArgumentException("groupId cannot be null");
@@ -61,8 +62,9 @@ public class TraceLinkMetaData {
 		if (inputs == null) {
 			throw new IllegalArgumentException("inputs cannot be null");
 		}
-	 
+
 		this.ownerId = ownerId;
+		this.configId = configId;
 		this.groupId = groupId;
 		this.formId = formId;
 		this.lastFormId = lastFormId;
@@ -77,6 +79,14 @@ public class TraceLinkMetaData {
 
 	public void setOwnerId(String ownerId) {
 		this.ownerId = ownerId;
+	}
+
+	public String getConfigId() {
+		return this.configId;
+	}
+
+	public void setConfigId(String configId) {
+		this.configId = configId;
 	}
 
 	public String getGroupId() {
@@ -126,6 +136,7 @@ public class TraceLinkMetaData {
 	public void setInputs(String[] inputs) {
 		this.inputs = inputs;
 	}
+
 	public String getSet() {
 		return set;
 	}
@@ -133,8 +144,5 @@ public class TraceLinkMetaData {
 	public void setSet(String set) {
 		this.set = set;
 	}
-
-
-	 
 
 }

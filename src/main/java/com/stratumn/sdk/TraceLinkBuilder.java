@@ -80,6 +80,9 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 		// set the created at timestamp
 		this.metadata = new TraceLinkMetaData();
 		this.metadata.setCreatedAt(new Date());
+		// this.metadata.setConfigId(cfg.getConfigId());
+		this.metadata.setConfigId("1");
+		;
 
 		// if parent link was provided set the parent hash and priority
 		if (this.parentLink != null) {
@@ -287,6 +290,17 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 */
 	public TraceLinkBuilder<TLinkData> withCreatedBy(String userId) {
 		this.metadata.setCreatedById(userId);
+		return this;
+	}
+
+	/**
+	 * To set the metadata createdById.
+	 *
+	 * @param configId the workflow config ID
+	 * @return
+	 */
+	public TraceLinkBuilder<TLinkData> withConfigId(String configId) {
+		this.metadata.setConfigId(configId);
 		return this;
 	}
 
