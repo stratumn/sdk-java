@@ -80,8 +80,7 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 		// set the created at timestamp
 		this.metadata = new TraceLinkMetaData();
 		this.metadata.setCreatedAt(new Date());
-		// this.metadata.setConfigId(cfg.getConfigId());
-		this.metadata.setConfigId("1");
+		this.metadata.setConfigId(cfg.getConfigId());
 		;
 
 		// if parent link was provided set the parent hash and priority
