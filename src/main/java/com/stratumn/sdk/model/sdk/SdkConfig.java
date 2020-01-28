@@ -23,6 +23,11 @@ public class SdkConfig {
 	 * The workflow id
 	 */
 	private String workflowId;
+
+	/**
+	 * The workflow config id
+	 */
+	private String configId;
 	/**
 	 * The user id
 	 */
@@ -48,9 +53,18 @@ public class SdkConfig {
 	public SdkConfig() {
 	}
 
-	public SdkConfig(String workflowId, String userId, String accountId, String groupId, String ownerId,
+	public String getConfigId() {
+		return configId;
+	}
+
+	public void setConfigId(String configId) {
+		this.configId = configId;
+	}
+
+	public SdkConfig(String workflowId, String configId, String userId, String accountId, String groupId, String ownerId,
 			PrivateKey signingPrivateKey) {
 		this.workflowId = workflowId;
+		this.configId = configId;
 		this.userId = userId;
 		this.accountId = accountId;
 		this.groupId = groupId;

@@ -622,9 +622,7 @@ public class Client {
 
       HttpEntity<R> entity = new HttpEntity<R>(requestBody, headers);
 
-      // System.out.println (JsonHelper.toJson(entity));
       ResponseEntity<T> resp = restTemplate.postForEntity(url, entity, tClass);
-
       return resp;
 
    }
@@ -691,6 +689,8 @@ public class Client {
       }
 
       private void traceResponse(ClientHttpResponse response) throws IOException {
+         HttpStatus statusCode = response.getStatusCode();
+
          StringBuilder inputStringBuilder = new StringBuilder();
          BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getBody(), "UTF-8"));
          String line = bufferedReader.readLine();
@@ -700,7 +700,7 @@ public class Client {
             line = bufferedReader.readLine();
          }
          System.out.println("============================response begin==============================================");
-         System.out.println("Status code  : " + response.getStatusCode());
+         System.out.println("Status code  : " + statusCode);
          System.out.println("Status text  : " + response.getStatusText());
          System.out.println("Headers      : " + response.getHeaders());
          System.out.println("Response body: " + inputStringBuilder.toString());

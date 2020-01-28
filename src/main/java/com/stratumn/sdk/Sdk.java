@@ -68,10 +68,14 @@ import com.stratumn.sdk.model.trace.TraceState;
 import com.stratumn.sdk.model.trace.TracesState;
 import com.stratumn.sdk.model.trace.TransferResponseInput;
 
+import org.springframework.web.client.HttpClientErrorException;
+
 /**
  * The Stratumn java Sdk
  */
 public class Sdk<TState> implements ISdk<TState> {
+
+   private static final String ERROR_CONFIG_DEPRECATED = "link config deprecated";
 
    private static final Gson gson = new Gson();
    private SdkOptions opts;
@@ -110,13 +114,14 @@ public class Sdk<TState> implements ISdk<TState> {
     * been computed, the Sdk will run a GraphQL query to retrieve the relevant info
     * and will generate the config.
     * 
+    * @param forceUpdate set to true if we want to force update the config
     * @throws Exception
     * 
     * @return the Sdk config object
     */
-   private SdkConfig getConfig() throws TraceSdkException {
+   private SdkConfig getConfig(boolean forceUpdate) throws TraceSdkException {
       // if the config already exists use it!
-      if (this.config != null)
+      if (this.config != null && !forceUpdate)
          return this.config;
 
       String workflowId = this.opts.getWorkflowId();
@@ -132,6 +137,8 @@ public class Sdk<TState> implements ISdk<TState> {
       JsonElement memberNodes = response.getData("account.memberOf.nodes");
       String accountId = response.getData("account.accountId").getAsString();
       String userId = response.getData("account.userId").getAsString();
+
+      String configId = response.getData("workflow.config.id").getAsString();
 
       List<String> myAccounts = new ArrayList<String>();
       // get all the account ids I am a member of
@@ -187,11 +194,15 @@ public class Sdk<TState> implements ISdk<TState> {
          throw new TraceSdkException("Security key error", ex);
       }
 
-      this.config = new SdkConfig(workflowId, userId, accountId, groupId, ownerId, signingPrivateKey);
+      this.config = new SdkConfig(workflowId, configId, userId, accountId, groupId, ownerId, signingPrivateKey);
 
       // return the new config
       return this.config;
 
+   }
+
+   private SdkConfig getConfig() throws TraceSdkException {
+      return this.getConfig(false);
    }
 
    /***
@@ -237,12 +248,13 @@ public class Sdk<TState> implements ISdk<TState> {
     * 
     * @param linkBuilder
     * @param classOfTLinkData
+    * @param firstTry         if this is not the first retry, do not retry
     * @return
     * @throws TraceSdkException
     * @throws ChainscriptException
     */
    private <TLinkData> TraceState<TState, TLinkData> createLink(TraceLinkBuilder<TLinkData> linkBuilder,
-         Class<TLinkData> classOfTLinkData) throws TraceSdkException, ChainscriptException {
+         Class<TLinkData> classOfTLinkData, boolean firstTry) throws TraceSdkException, ChainscriptException {
       // extract signing key from config
       SdkConfig sdkConfig = this.getConfig();
 
@@ -262,15 +274,42 @@ public class Sdk<TState> implements ISdk<TState> {
       variables.put("link", linkObj);
       variables.put("data", dataObj);
 
-      // execute graphql query
-      GraphResponse response = this.client.graphql(GraphQl.Query.MUTATION_CREATELINK, variables, null,
-            GraphResponse.class);
-      if (response.hasErrors())
-         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
-      JsonElement trace = response.getData("createLink.trace");
-      if (trace == null)
-         throw new TraceSdkException("Trace object not found:\n" + response.toString());
-      return this.makeTraceState(trace.getAsJsonObject(), classOfTLinkData);
+      try {
+         // execute graphql query
+         GraphResponse response = this.client.graphql(GraphQl.Query.MUTATION_CREATELINK, variables, null,
+               GraphResponse.class);
+         if (response.hasErrors()) {
+            throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
+         }
+         JsonElement trace = response.getData("createLink.trace");
+         if (trace == null)
+            throw new TraceSdkException("Trace object not found:\n" + response.toString());
+
+         return this.makeTraceState(trace.getAsJsonObject(), classOfTLinkData);
+
+      } catch (HttpClientErrorException e) {
+         if (firstTry && e.getMessage().contains(ERROR_CONFIG_DEPRECATED)) {
+            sdkConfig = this.getConfig(true);
+            linkBuilder.withConfigId(sdkConfig.getConfigId());
+            return this.createLink(linkBuilder, classOfTLinkData, false);
+         }
+         throw e;
+      }
+   }
+
+   /***
+    * * Creates a new Link from the given builder, signs it and executes the
+    * GraphQL mutation.
+    * 
+    * @param linkBuilder
+    * @param classOfTLinkData
+    * @return
+    * @throws TraceSdkException
+    * @throws ChainscriptException
+    */
+   private <TLinkData> TraceState<TState, TLinkData> createLink(TraceLinkBuilder<TLinkData> linkBuilder,
+         Class<TLinkData> classOfTLinkData) throws TraceSdkException, ChainscriptException {
+      return this.createLink(linkBuilder, classOfTLinkData, true);
    }
 
    /**
@@ -611,6 +650,7 @@ public class Sdk<TState> implements ISdk<TState> {
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
+      String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
       String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
@@ -619,6 +659,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       cfg.setWorkflowId(workflowId);
+      cfg.setConfigId(configId);
       cfg.setEnableDebuging(this.opts.isEnableDebuging());
 
       // use a TraceLinkBuilder to create the first link
@@ -681,6 +722,7 @@ public class Sdk<TState> implements ISdk<TState> {
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
+      String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
       String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
@@ -688,6 +730,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setConfigId(configId);
       cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
@@ -749,6 +792,7 @@ public class Sdk<TState> implements ISdk<TState> {
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
+      String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
       String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
@@ -756,6 +800,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setConfigId(configId);
       cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
@@ -818,11 +863,13 @@ public class Sdk<TState> implements ISdk<TState> {
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
+      String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setConfigId(configId);
       cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
@@ -868,6 +915,7 @@ public class Sdk<TState> implements ISdk<TState> {
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
+      String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
       String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
@@ -877,6 +925,7 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setConfigId(configId);
       cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
@@ -927,11 +976,13 @@ public class Sdk<TState> implements ISdk<TState> {
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
+      String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
       cfg.setWorkflowId(workflowId);
+      cfg.setConfigId(configId);
       cfg.setEnableDebuging(this.opts.isEnableDebuging());
       // and parent link to append to the existing trace
       cfg.setParentLink(parentLink);
