@@ -46,6 +46,7 @@ import com.stratumn.sdk.graph.GraphQl;
 import com.stratumn.sdk.model.api.GraphResponse;
 import com.stratumn.sdk.model.client.PrivateKeySecret;
 import com.stratumn.sdk.model.client.Secret;
+import com.stratumn.sdk.model.file.FileInfo;
 import com.stratumn.sdk.model.file.MediaRecord;
 import com.stratumn.sdk.model.misc.Identifiable;
 import com.stratumn.sdk.model.misc.Property;
@@ -496,8 +497,9 @@ public class Sdk<TState> implements ISdk<TState> {
       for (Entry<String, Property<FileRecord>> fileRecordElt : idToFileRecordMap.entrySet()) {
          FileRecord fileRecord = fileRecordElt.getValue().getValue();
          ByteBuffer file = client.downloadFile(fileRecord);
-         fileWrapperList.add(
-               fileRecordElt.getValue().transform((T) -> FileWrapper.fromFileBlob(file, fileRecord.getFileInfo())));
+         FileInfo info = fileRecord.getFileInfo();
+         fileWrapperList.add(fileRecordElt.getValue()
+               .transform((T) -> new FileBlobWrapper(file, info, info.getKey() == null || info.getKey() == "")));
       }
       return fileWrapperList;
    }
