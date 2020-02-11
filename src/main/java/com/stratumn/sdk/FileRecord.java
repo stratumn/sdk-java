@@ -15,6 +15,11 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map.Entry;
+
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.stratumn.canonicaljson.CanonicalJson;
 import com.stratumn.chainscript.utils.JsonHelper;
@@ -136,7 +141,7 @@ public class FileRecord implements Identifiable {
             if (json != null) {
                // attempt to generate FileRecord from json.
                json = removeAdditionalFields(json);
-               
+
                Object ob = JsonHelper.fromJson(json, FileRecord.class);
                String json2 = JsonHelper.toCanonicalJson(ob);
                if (json2.equalsIgnoreCase(json))
@@ -148,14 +153,18 @@ public class FileRecord implements Identifiable {
       return isFileRecord;
    }
 
-   // Since we do a canonicalized JSON string comparison to check if the object is a 
-   // FileRecord above, we need to remove the additional fields that can be added
+   // Since we do a canonicalized JSON string comparison to check if the object is
+   // a FileRecord above, we need to remove the additional fields that can be added
    // by the media API.
    private static String removeAdditionalFields(String json) {
+      List<String> recordFields = Arrays.asList(new String[] { "id", "key", "digest", "name", "mimetype", "size" });
       JsonObject o = JsonHelper.fromJson(json, JsonObject.class);
 
-      o.remove("createdAt");
-      o.remove("id");
+      for (Entry<String, JsonElement> e : o.entrySet()) {
+         if (!recordFields.contains(e.getKey())) {
+            o.remove(e.getKey());
+         }
+      }
 
       return JsonHelper.toJson(o);
 
