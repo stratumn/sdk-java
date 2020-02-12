@@ -23,34 +23,35 @@ import com.stratumn.sdk.model.file.FileInfo;
  * The implementation of a FileWrapper using the blob and info to represent it.
  */
 public class FileBlobWrapper extends FileWrapper {
-	
-   
-    private ByteBuffer blob;
-	private FileInfo fileInfo;
 
-	public FileBlobWrapper(ByteBuffer blob, FileInfo fileInfo) {
-		 super(fileInfo.getKey()==null || fileInfo.getKey() == "", fileInfo.getKey());
-		this.blob = blob;
-		this.fileInfo = fileInfo;
-	}
+  private ByteBuffer blob;
+  private FileInfo fileInfo;
 
-	public FileInfo info() {
-		return this.fileInfo;
-	}
+  public FileBlobWrapper(ByteBuffer blob, FileInfo fileInfo) {
+    super(false, fileInfo.getKey());
+    this.blob = blob;
+    this.fileInfo = fileInfo;
+  }
 
+  protected FileBlobWrapper(ByteBuffer blob, FileInfo fileInfo, boolean disableEncryption) {
+    super(disableEncryption, fileInfo.getKey());
+    this.blob = blob;
+    this.fileInfo = fileInfo;
+  }
 
+  public FileInfo info() {
+    return this.fileInfo;
+  }
 
-   @Override
-   public ByteBuffer encryptedData() throws TraceSdkException
-   { 
-            return super.encryptData(this.blob);
-      
-   }
+  @Override
+  public ByteBuffer encryptedData() throws TraceSdkException {
+    return super.encryptData(this.blob);
 
-   @Override
-   public  ByteBuffer  decryptedData() throws TraceSdkException
-   {
-            return super.decryptData(this.blob);
-   }
+  }
+
+  @Override
+  public ByteBuffer decryptedData() throws TraceSdkException {
+    return super.decryptData(this.blob);
+  }
 
 }
