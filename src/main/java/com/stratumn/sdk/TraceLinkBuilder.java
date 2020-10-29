@@ -147,7 +147,7 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 
 	/**
 	 * Helper method used to configure a link for an attestation. User must still
-	 * set owner, group and createdBy separately.
+	 * set group and createdBy separately.
 	 *
 	 * @param action the action key used for the attestation
 	 * @param action the name of the action associated with this form
@@ -163,8 +163,8 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 
 	/**
 	 * Helper method used for transfer of ownership requests (push and pull). Note
-	 * that owner and group are calculated from parent link. Parent link must have
-	 * been provided!
+	 * that group is calculated from parent link. Parent link must have been
+	 * provided!
 	 *
 	 * @param to     the group to which the transfer is made for
 	 * @param action the action (_PUSH_OWNERSHIP_ or _PULL_OWNERSHIP_)
@@ -176,8 +176,7 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	public TraceLinkBuilder<TLinkData> forTransferRequest(String to, TraceActionType action, TraceLinkType type,
 			TLinkData data) throws ChainscriptException, TraceSdkException {
 		TraceLink<TLinkData> parent = this.getParentLink();
-		this.withOwner(parent.owner().getAccount()).withHashedData(data).withGroup(parent.group())
-				.withAction(action.toString()).withProcessState(type.toString());
+		this.withHashedData(data).withGroup(parent.group()).withAction(action.toString()).withProcessState(type.toString());
 		this.metadata.setInputs(new String[] { to });
 		this.metadata.setLastFormId(parent.form() != null ? parent.form() : parent.lastForm());
 		return this;
@@ -210,8 +209,8 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	}
 
 	/**
-	 * Helper method used to cancel a transfer request. Note that owner and group
-	 * are calculated from parent link. Parent link must have been provided!
+	 * Helper method used to cancel a transfer request. Note that group is
+	 * calculated from parent link. Parent link must have been provided!
 	 *
 	 * @param data the optional data
 	 * @throws TraceSdkException
@@ -221,14 +220,13 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.CANCEL_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
-		this.withOwner(parent.owner().getAccount()).withGroup(parent.group()).withHashedData(data).withAction(action)
-				.withProcessState(type);
+		this.withGroup(parent.group()).withHashedData(data).withAction(action).withProcessState(type);
 		return this;
 	}
 
 	/**
-	 * Helper method used to reject a transfer request. Note that owner and group
-	 * are calculated from parent link. Parent link must have been provided!
+	 * Helper method used to reject a transfer request. Note that group is
+	 * calculated from parent link. Parent link must have been provided!
 	 *
 	 * @param data the optional data
 	 * @throws TraceSdkException
@@ -239,14 +237,13 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 		String action = TraceActionType.REJECT_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
 
-		this.withOwner(parent.owner().getAccount()).withGroup(parent.group()).withHashedData(data).withAction(action)
-				.withProcessState(type);
+		this.withGroup(parent.group()).withHashedData(data).withAction(action).withProcessState(type);
 		return this;
 	}
 
 	/**
 	 * Helper method used to accept a transfer request. Parent link must have been
-	 * provided! User must still set owner, group and createdBy separately.
+	 * provided! User must still set group and createdBy separately.
 	 *
 	 * @param data the optional data
 	 * @throws TraceSdkException
@@ -258,16 +255,6 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 		String type = TraceLinkType.OWNED.toString();
 
 		this.withHashedData(data).withAction(action).withProcessState(type);
-		return this;
-	}
-
-	/**
-	 * To set the metadata ownerId.
-	 *
-	 * @param ownerId the owner id
-	 */
-	public TraceLinkBuilder<TLinkData> withOwner(String ownerId) {
-		this.metadata.setOwnerId(ownerId);
 		return this;
 	}
 

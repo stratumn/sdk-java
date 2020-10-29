@@ -262,9 +262,8 @@ public class TestSdk {
       try {
          newTraceTest();
          assertNotNull(someTraceState);
-         Map<String, Object> data = new HashMap<String, Object>(
-               Collections.singletonMap("why", "because im testing the pushTrace"));
-         PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, data, someTraceState.getTraceId());
+         PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, new Object(),
+               someTraceState.getTraceId());
 
          someTraceState = getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));

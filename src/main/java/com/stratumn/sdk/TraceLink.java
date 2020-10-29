@@ -68,10 +68,6 @@ public class TraceLink<TLinkData> extends Link implements ITraceLink<TLinkData> 
     return this.metadata().getCreatedAt();
   }
 
-  public Account owner() throws ChainscriptException {
-    return new Account(this.metadata().getOwnerId());
-  }
-
   /**
    * The id of the group under which the trace is.
    * 

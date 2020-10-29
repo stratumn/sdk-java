@@ -222,7 +222,6 @@ public class TestSdkPojo {
 
    // used to pass the trace from one test method to another
    private TraceState<StateExample, SomeClass> someTraceState;
-   private TraceState<StateExample, OperationClass> anotherTraceState;
    private TraceState<StateExample, Step> uploadState;
 
    @Test
@@ -294,13 +293,10 @@ public class TestSdkPojo {
       try {
          newTraceTest();
          assertNotNull(someTraceState);
-         OperationClass data;
-         String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
-               + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
-         data = JsonHelper.objectToObject(json, OperationClass.class);
-         PushTransferInput<OperationClass> push = new PushTransferInput<OperationClass>(OTHER_GROUP, data,
+         PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, new Object(),
                someTraceState.getTraceId());
-         anotherTraceState = getSdk().pushTrace(push);
+
+         getSdk().pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
       } catch (Exception ex) {
@@ -326,7 +322,6 @@ public class TestSdkPojo {
          TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null,
                someTraceState.getTraceId());
          TraceState<StateExample, SomeClass> stateAccept = getOtherGroupSdk().acceptTransfer(trInput);
-         // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
       } catch (Exception ex) {
          ex.printStackTrace();

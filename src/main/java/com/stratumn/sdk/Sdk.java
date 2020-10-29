@@ -149,13 +149,22 @@ public class Sdk<TState> implements ISdk<TState> {
          myAccounts.add(element.getAsJsonObject().get("accountId").toString());
       }
 
+      // get all the groups I belong to
+      // i.e. where I belong to one of the account members
       List<JsonElement> myGroups = new ArrayList<JsonElement>();
-      // get all the groups that are owned by one of my accounts
+
       Iterator<JsonElement> iteratorGNodes = groupNodes.getAsJsonArray().iterator();
       while (iteratorGNodes.hasNext()) {
          JsonElement group = iteratorGNodes.next();
-         if (myAccounts.contains(group.getAsJsonObject().get("accountId").toString())) {
-            myGroups.add(group);
+
+         Iterator<JsonElement> members = group.getAsJsonObject().get("members").getAsJsonObject().get("nodes")
+               .getAsJsonArray().iterator();
+         while (members.hasNext()) {
+            JsonElement member = members.next();
+            if (myAccounts.contains(member.getAsJsonObject().get("accountId").toString())) {
+               myGroups.add(group);
+               break;
+            }
          }
       }
 
@@ -172,7 +181,6 @@ public class Sdk<TState> implements ISdk<TState> {
       // extract info from my only group
       String groupId = myGroups.get(0).getAsJsonObject().get("groupId").getAsString();
 
-      String ownerId = myGroups.get(0).getAsJsonObject().get("accountId").getAsString();
       PrivateKey signingPrivateKey = null;
       try {
          if (Secret.isPrivateKeySecret(opts.getSecret())) {
@@ -195,7 +203,7 @@ public class Sdk<TState> implements ISdk<TState> {
          throw new TraceSdkException("Security key error", ex);
       }
 
-      this.config = new SdkConfig(workflowId, configId, userId, accountId, groupId, ownerId, signingPrivateKey);
+      this.config = new SdkConfig(workflowId, configId, userId, accountId, groupId, signingPrivateKey);
 
       // return the new config
       return this.config;
@@ -654,7 +662,6 @@ public class Sdk<TState> implements ISdk<TState> {
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
-      String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
@@ -675,8 +682,6 @@ public class Sdk<TState> implements ISdk<TState> {
 
       // this is an attestation
       linkBuilder.forAttestation(action, data)
-            // add owner info
-            .withOwner(ownerId)
             // add group info
             .withGroup(groupId)
             // add creator info
@@ -726,7 +731,6 @@ public class Sdk<TState> implements ISdk<TState> {
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
-      String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
@@ -744,8 +748,6 @@ public class Sdk<TState> implements ISdk<TState> {
 
          // this is an attestation
          linkBuilder.forAcceptTransfer(data)
-               // add owner info
-               .withOwner(ownerId)
                // add group info
                .withGroup(groupId)
                // add creator info
@@ -796,7 +798,6 @@ public class Sdk<TState> implements ISdk<TState> {
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
-      String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
@@ -813,8 +814,6 @@ public class Sdk<TState> implements ISdk<TState> {
 
          // this is a push transfer
          linkBuilder.forRejectTransfer(data)
-               // add owner info
-               .withOwner(ownerId)
                // add group info
                .withGroup(groupId)
                // add creator info
@@ -919,7 +918,6 @@ public class Sdk<TState> implements ISdk<TState> {
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String userId = sdkConfig.getUserId();
-      String ownerId = sdkConfig.getOwnerId();
       String groupId = sdkConfig.getGroupId();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
@@ -938,8 +936,6 @@ public class Sdk<TState> implements ISdk<TState> {
 
          // this is an attestation
          linkBuilder.forAttestation(action, data)
-               // add owner info
-               .withOwner(ownerId)
                // add group info
                .withGroup(groupId)
                // add creator info
