@@ -42,10 +42,6 @@ public class SdkConfig {
 	private String groupId;
 
 	/**
-	 * The owner id
-	 */
-	private String ownerId;
-	/**
 	 * The private key used for signing links
 	 */
 	private PrivateKey signingPrivateKey;
@@ -61,14 +57,13 @@ public class SdkConfig {
 		this.configId = configId;
 	}
 
-	public SdkConfig(String workflowId, String configId, String userId, String accountId, String groupId, String ownerId,
+	public SdkConfig(String workflowId, String configId, String userId, String accountId, String groupId,
 			PrivateKey signingPrivateKey) {
 		this.workflowId = workflowId;
 		this.configId = configId;
 		this.userId = userId;
 		this.accountId = accountId;
 		this.groupId = groupId;
-		this.ownerId = ownerId;
 		this.signingPrivateKey = signingPrivateKey;
 	}
 
@@ -102,14 +97,6 @@ public class SdkConfig {
 
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
-	}
-
-	public String getOwnerId() {
-		return ownerId;
-	}
-
-	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
 	}
 
 	public PrivateKey getSigningPrivateKey() {

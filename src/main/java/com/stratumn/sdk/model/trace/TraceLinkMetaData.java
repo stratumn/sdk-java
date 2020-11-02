@@ -22,7 +22,6 @@ import java.util.Date;
  */
 public class TraceLinkMetaData {
 
-	private String ownerId;
 	private String configId;
 	private String groupId;
 	private String formId;
@@ -36,11 +35,8 @@ public class TraceLinkMetaData {
 		super();
 	}
 
-	TraceLinkMetaData(String ownerId, String configId, String groupId, String formId, String lastFormId, Date createdAt,
+	TraceLinkMetaData(String configId, String groupId, String formId, String lastFormId, Date createdAt,
 			String createdById, String[] inputs) throws IllegalArgumentException {
-		if (ownerId == null) {
-			throw new IllegalArgumentException("ownerId cannot be null");
-		}
 		if (configId == null) {
 			throw new IllegalArgumentException("configId cannot be null");
 		}
@@ -63,7 +59,6 @@ public class TraceLinkMetaData {
 			throw new IllegalArgumentException("inputs cannot be null");
 		}
 
-		this.ownerId = ownerId;
 		this.configId = configId;
 		this.groupId = groupId;
 		this.formId = formId;
@@ -71,14 +66,6 @@ public class TraceLinkMetaData {
 		this.createdAt = createdAt;
 		this.createdById = createdById;
 		this.inputs = inputs;
-	}
-
-	public String getOwnerId() {
-		return this.ownerId;
-	}
-
-	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
 	}
 
 	public String getConfigId() {

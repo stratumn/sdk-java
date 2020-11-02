@@ -23,7 +23,11 @@ query ConfigQuery($workflowId: BigInt!) {
     groups {
       nodes {
         groupId: rowId
-        accountId: ownerId
+        members {
+          nodes {
+            accountId
+          }
+        }
       }
     }
   }
