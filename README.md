@@ -74,7 +74,7 @@ Sdk<MyStateType> sdk = new Sdk<MyStateType>(opts, MyStateType.class);
 
 You can create a new trace this way:
 
-```
+```java
  Map<String, Object> data = new HashMap<String, Object>();
  data.put("weight", "123");
  data.put("valid", true);
@@ -82,9 +82,7 @@ You can create a new trace this way:
  data.put("operation", "my new operation 1"); 
  NewTraceInput<Object> newTraceInput = new 
  NewTraceInput<Object>(YOUR_CONFIG.formId, data); 
- TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
-
- 
+ TraceState<Object, Object> state = sdk.newTrace(newTraceInput); 
 ```
 
 You must provide:
@@ -190,7 +188,7 @@ TracesState<Object, Object> state =  sdk.getOutgoingTraces<Object>(paginationInf
 
 Or:
 
-```js
+```java
 var sdk = GetSdk();
 PaginationInfo info = new PaginationInfo(first, after, last, before);
  TracesState<Object, Object> state = sdk.GetBacklogTraces<Object>(info);
@@ -289,7 +287,7 @@ When providing a `data` object in an action (via `newTrace`, `appendLink` etc.),
 
 
 
-```
+```java
 AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.formId, data, TraceId);
 TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
 ```
