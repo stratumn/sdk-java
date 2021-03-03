@@ -6,12 +6,13 @@ The official Stratumn SDK for Java to interact with [Trace](https://trace.stratu
 
 ### Maven
 
+``` xml
 <dependency>
-  <groupId>com.stratumn.sdk</groupId>
-  <artifactId>sdk-java</artifactId>
+  <groupId>com.stratumn</groupId>
+  <artifactId>sdk</artifactId>
   <version>0.2.1</version>
 </dependency>
-
+```
 
 ## :rocket: Usage and Getting Started
 
