@@ -4,6 +4,8 @@ The official Stratumn SDK for Java to interact with [Trace](https://trace.stratu
 
 ## :satellite: Installing
 
+Required version : Java >= 8
+
 ### Maven
 
 ``` xml
@@ -101,8 +103,6 @@ The Sdk will return an object corresponding to the "state" of your new trace. Th
 
 Notes:
 
-- You can view your forms detail from your group's Attestation Forms page (for ex `https://trace.stratumn.com/group/322547/forms`).
-- When viewing a specific form detail, you can retrieve the form id from the url. (`https://trace.stratumn.com/group/322547/form/788547` => `formId=788547`).
 - The `data` object argument must be valid against the JSON schema of the form you are using, otherwise Trace will throw a validation error.
 
 
@@ -130,9 +130,9 @@ The Sdk will return the new state object of the trace. The shape of this object 
 
 Notes:
 
-- You can view your forms detail from your group's Attestation Forms page (for ex `https://trace.stratumn.com/group/322547/forms`).
-- When viewing a specific form detail, you can retrieve the form id from the url. (`https://trace.stratumn.com/group/322547/form/788547` => `formId=788547`).
 - The `data` object argument must be valid against the JSON schema of the form you are using, otherwise Trace will throw a validation error.
+
+
 ### Retrieving traces
 
 When all you have is the id of a trace, you can get its state by calling:
@@ -281,7 +281,6 @@ TracesState<Object, Object> results =  sdk.getIncomingTraces<Object>(paginationI
 
 
 
-
 ### :floppy_disk: Handling files
 
 When providing a `data` object in an action (via `newTrace`, `appendLink` etc.), you can embed files that will automatically be uploaded and encrypted for you. We provide two ways for embedding files, depending on the platform your app is running.
@@ -301,8 +300,8 @@ Map<String, Object> data = new HashMap<String, Object>();
  data.put("operators", new String[]{"1", "2" });
  data.put("operation", "my new operation 1"); 
  
-data.Add("Certificate1",FileWrapper.FromFilePath(Path.GetFullPath(filePath)));
-data.Add("Certificates", new Identifiable[] { FileWrapper.FromFilePath(filePath});
+data.add("Certificate1",FileWrapper.fromFilePath(Path.getFullPath(filePath)));
+data.add("Certificates", new Identifiable[] { FileWrapper.fromFilePath(filePath});
 
 AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.formId, data, TraceId);
 TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
