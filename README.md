@@ -29,7 +29,7 @@ import com.stratumn.sdk.Sdk;
 You can then create a new instance of the `Sdk`:
 
 ```java
-  Secret s = Secret.NewPrivateKeySecret(YOUR_SECRETS.privateKey);
+  Secret s = Secret.newPrivateKeySecret(YOUR_SECRETS.privateKey);
   SdkOptions opts = new SdkOptions(YOUR_CONFIG.workflowId, s);
 ```
 
