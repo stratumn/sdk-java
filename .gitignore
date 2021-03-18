@@ -28,3 +28,4 @@ target
 release.properties
 pom.xml.releaseBackup
 src/test/resources/out/
+.DS_Store
