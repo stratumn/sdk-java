@@ -405,6 +405,49 @@ public class TestSdk {
       }
    }
 
+   @Test
+   public void traceWithCloseAttributesTest() {
+      try {
+         Secret s = Secret.newPrivateKeySecret(
+               "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAT7R4P0yQ1pHijWnJaDcPObE/scM7dee2PDv/uExM\noOT9SZA2spdMafrNYnmGvJtwZuqD+AABIu+jSRt1jgLNWg==\n-----END ED25519 PRIVATE KEY-----");
+         SdkOptions opts = new SdkOptions("20", s);
+         opts.setEndpoints(new Endpoints("https://account-api.preprod.stratumn.com",
+               "https://trace-api.preprod.stratumn.com", "https://media-api.preprod.stratumn.com"));
+         // opts.setEnableDebuging(true);
+         sdk = new Sdk<Object>(opts);
+
+         Map<String, Object> data = new HashMap<String, Object>();
+         data.put("identifiantDemande", "identifiantDemande");
+         data.put("typeOperation", "typeOperation");
+         data.put("isin", "isin");
+         data.put("libelleSupport", "libelleSupport");
+         data.put("typeSupport", "typeSupport");
+         data.put("typeSupportNiveau2", "typeSupportNiveau2");
+         data.put("codeBu", "codeBu");
+         data.put("supportTypeNiveau2", "supportTypeNiveau2");
+         data.put("libelleBu", "libelleBu");
+         data.put("libelleBuLevel", "libelleBuLevel");
+         data.put("codeProduit", "codeProduit");
+         data.put("produit", "produit");
+         data.put("codePartenaire", "codePartenaire");
+         data.put("partenaireDistributeur", "partenaireDistributeur");
+         data.put("codeModeGestion", "codeModeGestion");
+         data.put("modeGestion", "modeGestion");
+         data.put("codeSocieteGestion", "codeSocieteGestion");
+         data.put("societeGestion", "societeGestion");
+         data.put("codeCompartimentPer", "codeCompartimentPer");
+         data.put("compartimentPer", "compartimentPer");
+
+         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>("ref1k", data);
+         TraceState<Object, Object> someTraceState = sdk.newTrace(newTraceInput);
+         // System.out.println("someTraceState:" + "\r\n" + someTraceState);
+         assertNotNull(someTraceState.getTraceId());
+      } catch (Exception ex) {
+         ex.printStackTrace();
+         fail(ex.getMessage());
+      }
+   }
+
    public static void main(String[] args) throws Exception {
       Sdk<Object> sdk = getSdk();
 
