@@ -27,7 +27,7 @@ public class TraceLinkMetaData {
 	private String formId;
 	private String lastFormId;
 	private Date createdAt;
-	private String createdById;
+	private String createdByAccountId;
 	private String set;
 	private String[] inputs;
 
@@ -36,7 +36,7 @@ public class TraceLinkMetaData {
 	}
 
 	TraceLinkMetaData(String configId, String groupId, String formId, String lastFormId, Date createdAt,
-			String createdById, String[] inputs) throws IllegalArgumentException {
+			String createdByAccountId, String[] inputs) throws IllegalArgumentException {
 		if (configId == null) {
 			throw new IllegalArgumentException("configId cannot be null");
 		}
@@ -52,8 +52,8 @@ public class TraceLinkMetaData {
 		if (createdAt == null) {
 			throw new IllegalArgumentException("createdAt cannot be null");
 		}
-		if (createdById == null) {
-			throw new IllegalArgumentException("createdById cannot be null");
+		if (createdByAccountId == null) {
+			throw new IllegalArgumentException("createdByAccountId cannot be null");
 		}
 		if (inputs == null) {
 			throw new IllegalArgumentException("inputs cannot be null");
@@ -64,7 +64,7 @@ public class TraceLinkMetaData {
 		this.formId = formId;
 		this.lastFormId = lastFormId;
 		this.createdAt = createdAt;
-		this.createdById = createdById;
+		this.createdByAccountId = createdByAccountId;
 		this.inputs = inputs;
 	}
 
@@ -108,12 +108,12 @@ public class TraceLinkMetaData {
 		this.createdAt = createdAt;
 	}
 
-	public String getCreatedById() {
-		return this.createdById;
+	public String getCreatedByAccountId() {
+		return this.createdByAccountId;
 	}
 
-	public void setCreatedById(String createdById) {
-		this.createdById = createdById;
+	public void setCreatedByAccountId(String createdByAccountId) {
+		this.createdByAccountId = createdByAccountId;
 	}
 
 	public String[] getInputs() {

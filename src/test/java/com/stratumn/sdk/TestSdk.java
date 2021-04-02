@@ -60,15 +60,27 @@ import com.stratumn.sdk.model.trace.TransferResponseInput;
 public class TestSdk {
 
    private static Gson gson = JsonHelper.getGson();
-   private static final String ACCOUNT_RELEASE_URL = "https://account-api.staging.stratumn.com";
-   private static final String TRACE_RELEASE_URL = "https://trace-api.staging.stratumn.com";
-   private static final String MEDIA_RELEASE_URL = "https://media-api.staging.stratumn.com";
+   private static final String ACCOUNT_URL = "https://account-api.staging.stratumn.com";
+   private static final String TRACE_URL = "https://trace-api.staging.stratumn.com";
+   private static final String MEDIA_URL = "https://media-api.staging.stratumn.com";
 
+   // Java bot : public key = `-----BEGIN ED25519 PUBLIC KEY-----
+   // MCowBQYDK2VwAyEA0GfAkS/x1hgj6RLdfCax2a/WcAPVMqBKLD0fID2pGRU=
+   // -----END ED25519 PUBLIC KEY-----
+   // `,
+   // private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE
+   // KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAjgtjpc1iOR4zYm+21McRGoWr0WM1NBkm26uZmFAx\n853QZ8CRL/HWGCPpEt18JrHZr9ZwA9UyoEosPR8gPakZFQ==\n-----END
+   // ED25519 PRIVATE KEY-----\n";
+   // User
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
+
    private static String WORFKLOW_ID = "591";
    private static String ACTION_KEY = "action1";
    private static String MY_GROUP = "1744";
 
+   // private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE
+   // KEY-----\nMFACAQAwBwYDK2VwBQAEQgRArbo87/1Yd/nOqFwmmcuxm01T9/pqkeARQxK9y4iG\nF3Xe1W+/2UOr/rYuQPFHQC4a/F0r6nVJGgCI1Ghc/luHZw==\n-----END
+   // ED25519 PRIVATE KEY-----\n";
    private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAWotrb1jJokHr7AVQTS6f6W7dFYnKpVy+DV++sG6x\nlExB4rtrKpCAEPt5q7oT6/lcF4brFSNiCxLPnHqiSjcyVw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String OTHER_GROUP = "1785";
 
@@ -80,7 +92,7 @@ public class TestSdk {
       if (sdk == null) {
          Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY);
          SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ACCOUNT_RELEASE_URL, TRACE_RELEASE_URL, MEDIA_RELEASE_URL));
+         opts.setEndpoints(new Endpoints(ACCOUNT_URL, TRACE_URL, MEDIA_URL));
          opts.setEnableDebuging(true);
          sdk = new Sdk<Object>(opts);
 
@@ -93,7 +105,7 @@ public class TestSdk {
       if (otherSdk == null) {
          Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY_2);
          SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ACCOUNT_RELEASE_URL, TRACE_RELEASE_URL, MEDIA_RELEASE_URL));
+         opts.setEndpoints(new Endpoints(ACCOUNT_URL, TRACE_URL, MEDIA_URL));
          opts.setEnableDebuging(true);
          otherSdk = new Sdk<Object>(opts);
 
@@ -127,7 +139,6 @@ public class TestSdk {
          GetTraceStateInput input = new GetTraceStateInput(traceId);
          TraceState<Object, Object> state = sdk.getTraceState(input);
          // // System.out.println("testTraceState" + gson.toJson(state));
-         assertTrue(state.getTraceId().equals(traceId));
          assertTrue(state.getTraceId().equals(traceId));
          assertFalse(gson.toJson(state).contains("Error"));
       } catch (Exception ex) {

@@ -135,18 +135,26 @@ public class Sdk<TState> implements ISdk<TState> {
       if (groupNodes == null)
          throw new TraceSdkException("Workflow.groups object not found:\n" + response.toString());
 
-      JsonElement memberNodes = response.getData("account.memberOf.nodes");
       String accountId = response.getData("account.accountId").getAsString();
-      String userId = response.getData("account.userId").getAsString();
 
       String configId = response.getData("workflow.config.id").getAsString();
 
+      JsonElement userMemberOf = response.getData("account.user.memberOf.nodes");
+      JsonElement botTeams = response.getData("account.bot.teams.nodes");
+
       List<String> myAccounts = new ArrayList<String>();
+      Iterator<JsonElement> iteratorNodes = null;
       // get all the account ids I am a member of
-      Iterator<JsonElement> iteratorNodes = memberNodes.getAsJsonArray().iterator();
-      while (iteratorNodes.hasNext()) {
-         JsonElement element = iteratorNodes.next();
-         myAccounts.add(element.getAsJsonObject().get("accountId").toString());
+      if (null != userMemberOf) {
+         iteratorNodes = userMemberOf.getAsJsonArray().iterator();
+      } else if (null != botTeams) {
+         iteratorNodes = botTeams.getAsJsonArray().iterator();
+      }
+      if (null != iteratorNodes) {
+         while (iteratorNodes.hasNext()) {
+            JsonElement element = iteratorNodes.next();
+            myAccounts.add(element.getAsJsonObject().get("accountId").toString());
+         }
       }
 
       // get all the groups I belong to
@@ -188,7 +196,7 @@ public class Sdk<TState> implements ISdk<TState> {
             final String privateKey = ((PrivateKeySecret) opts.getSecret()).getPrivateKey();
             signingPrivateKey = CryptoUtils.decodePrivateKey(privateKey);
          } else {
-            JsonElement privateKeyElt = response.getData("account.account.signingKey.privateKey");
+            JsonElement privateKeyElt = response.getData("account.signingKey.privateKey");
             JsonObject privateKey = privateKeyElt.getAsJsonObject();
             Boolean passwordProtected = privateKey.get("passwordProtected").getAsBoolean();
             String decrypted = privateKey.get("decrypted").getAsString();
@@ -203,7 +211,7 @@ public class Sdk<TState> implements ISdk<TState> {
          throw new TraceSdkException("Security key error", ex);
       }
 
-      this.config = new SdkConfig(workflowId, configId, userId, accountId, groupId, signingPrivateKey);
+      this.config = new SdkConfig(workflowId, configId, accountId, groupId, signingPrivateKey);
 
       // return the new config
       return this.config;
@@ -661,8 +669,8 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String userId = sdkConfig.getUserId();
       String groupId = sdkConfig.getGroupId();
+      String accountId = sdkConfig.getAccountId();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
 
@@ -685,7 +693,7 @@ public class Sdk<TState> implements ISdk<TState> {
             // add group info
             .withGroup(groupId)
             // add creator info
-            .withCreatedBy(userId);
+            .withCreatedBy(accountId);
       @SuppressWarnings("unchecked")
       Class<TLinkData> dataClass = (Class<TLinkData>) data.getClass();
       // call createLink helper
@@ -730,7 +738,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String userId = sdkConfig.getUserId();
+      String accountId = sdkConfig.getAccountId();
       String groupId = sdkConfig.getGroupId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
@@ -751,7 +759,7 @@ public class Sdk<TState> implements ISdk<TState> {
                // add group info
                .withGroup(groupId)
                // add creator info
-               .withCreatedBy(userId);
+               .withCreatedBy(accountId);
          // try to read the type from the data otherwise use the type parameter
          @SuppressWarnings("unchecked")
          Class<TLinkData> dataClass = data != null ? (Class<TLinkData>) data.getClass() : classOfTLinkData;
@@ -797,7 +805,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String userId = sdkConfig.getUserId();
+      String accountId = sdkConfig.getAccountId();
       String groupId = sdkConfig.getGroupId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
@@ -817,7 +825,7 @@ public class Sdk<TState> implements ISdk<TState> {
                // add group info
                .withGroup(groupId)
                // add creator info
-               .withCreatedBy(userId);
+               .withCreatedBy(accountId);
          // try to read the type from the data otherwise use the parameter
          @SuppressWarnings("unchecked")
          Class<TLinkData> dataClass = data != null ? (Class<TLinkData>) data.getClass() : classOfTLinkData;
@@ -865,7 +873,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String userId = sdkConfig.getUserId();
+      String accountId = sdkConfig.getAccountId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
@@ -882,7 +890,7 @@ public class Sdk<TState> implements ISdk<TState> {
          linkBuilder // this is to cancel the transfer
                .forCancelTransfer(data)
                // add creator info
-               .withCreatedBy(userId);
+               .withCreatedBy(accountId);
          // try to read type from data else use the class parameter
          @SuppressWarnings("unchecked")
          Class<TLinkData> dataClass = data != null ? (Class<TLinkData>) data.getClass() : classOfTLinkData;
@@ -917,7 +925,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String userId = sdkConfig.getUserId();
+      String accountId = sdkConfig.getAccountId();
       String groupId = sdkConfig.getGroupId();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
@@ -939,7 +947,7 @@ public class Sdk<TState> implements ISdk<TState> {
                // add group info
                .withGroup(groupId)
                // add creator info
-               .withCreatedBy(userId);
+               .withCreatedBy(accountId);
 
          // try to read type from data else use the class parameter
          @SuppressWarnings("unchecked")
@@ -975,7 +983,7 @@ public class Sdk<TState> implements ISdk<TState> {
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String userId = sdkConfig.getUserId();
+      String accountId = sdkConfig.getAccountId();
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
@@ -992,7 +1000,7 @@ public class Sdk<TState> implements ISdk<TState> {
          // this is a push transfer
          linkBuilder.forPushTransfer(recipient, data)
                // add creator info
-               .withCreatedBy(userId);
+               .withCreatedBy(accountId);
          // try to read type from data else use the class parameter
          @SuppressWarnings("unchecked")
          Class<TLinkData> dataClass = data != null ? (Class<TLinkData>) data.getClass() : null;
