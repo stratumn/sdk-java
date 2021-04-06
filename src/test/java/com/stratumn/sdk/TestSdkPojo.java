@@ -99,10 +99,6 @@ public class TestSdkPojo {
    private static final String TRACE_STAGING_URL = "https://trace-api.staging.stratumn.com";
    private static final String MEDIA_STAGING_URL = "https://media-api.staging.stratumn.com";
 
-   // Java bot : public key = `-----BEGIN ED25519 PUBLIC KEY-----
-   // MCowBQYDK2VwAyEA0GfAkS/x1hgj6RLdfCax2a/WcAPVMqBKLD0fID2pGRU=
-   // -----END ED25519 PUBLIC KEY-----
-   // `,
    private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAjgtjpc1iOR4zYm+21McRGoWr0WM1NBkm26uZmFAx\n853QZ8CRL/HWGCPpEt18JrHZr9ZwA9UyoEosPR8gPakZFQ==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
    private static String ACTION_KEY = "action1";
@@ -457,5 +453,4 @@ public class TestSdkPojo {
          throw new TraceSdkException(e);
       }
    }
-
 }
