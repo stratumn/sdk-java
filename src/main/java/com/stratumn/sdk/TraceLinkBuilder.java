@@ -176,7 +176,8 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	public TraceLinkBuilder<TLinkData> forTransferRequest(String to, TraceActionType action, TraceLinkType type,
 			TLinkData data) throws ChainscriptException, TraceSdkException {
 		TraceLink<TLinkData> parent = this.getParentLink();
-		this.withHashedData(data).withGroup(parent.group()).withAction(action.toString()).withProcessState(type.toString());
+		this.withHashedData(data).withGroup(parent.group()).withAction(action.toString())
+				.withProcessState(type.toString());
 		this.metadata.setInputs(new String[] { to });
 		this.metadata.setLastFormId(parent.form() != null ? parent.form() : parent.lastForm());
 		return this;
@@ -216,7 +217,8 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * @throws TraceSdkException
 	 * @throws ChainscriptException
 	 */
-	public TraceLinkBuilder<TLinkData> forCancelTransfer(TLinkData data) throws TraceSdkException, ChainscriptException {
+	public TraceLinkBuilder<TLinkData> forCancelTransfer(TLinkData data)
+			throws TraceSdkException, ChainscriptException {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.CANCEL_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
@@ -232,7 +234,8 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	 * @throws TraceSdkException
 	 * @throws ChainscriptException
 	 */
-	public TraceLinkBuilder<TLinkData> forRejectTransfer(TLinkData data) throws TraceSdkException, ChainscriptException {
+	public TraceLinkBuilder<TLinkData> forRejectTransfer(TLinkData data)
+			throws TraceSdkException, ChainscriptException {
 		TraceLink<TLinkData> parent = this.getParentLink();
 		String action = TraceActionType.REJECT_TRANSFER.toString();
 		String type = TraceLinkType.OWNED.toString();
@@ -269,18 +272,18 @@ public class TraceLinkBuilder<TLinkData> extends LinkBuilder {
 	}
 
 	/**
-	 * To set the metadata createdById.
+	 * To set the metadata createdByAccountId.
 	 *
-	 * @param userId the user id
+	 * @param accountId the account id
 	 * @return
 	 */
-	public TraceLinkBuilder<TLinkData> withCreatedBy(String userId) {
-		this.metadata.setCreatedById(userId);
+	public TraceLinkBuilder<TLinkData> withCreatedBy(String accountId) {
+		this.metadata.setCreatedByAccountId(accountId);
 		return this;
 	}
 
 	/**
-	 * To set the metadata createdById.
+	 * To set the metadata createdByAccountId.
 	 *
 	 * @param configId the workflow config ID
 	 * @return

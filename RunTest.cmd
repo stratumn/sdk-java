@@ -73,7 +73,7 @@ set CLASSPATH="!CLASSPATH!"
 @REM echo !CLASSPATH! 
   
 Echo Executing SDK Test 
-%JAVA_EXE%  -cp !CLASSPATH!;.\target\sdk-1.0.jar;.\target\test-classes  com.stratumn.sdk.TestSdk  
+%JAVA_EXE%  -cp !CLASSPATH!;.\target\sdk-1.0.jar;.\target\test-classes  com.stratumn.sdk.TestSdkPojo
 
 Goto success
   

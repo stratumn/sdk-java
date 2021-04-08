@@ -29,10 +29,6 @@ public class SdkConfig {
 	 */
 	private String configId;
 	/**
-	 * The user id
-	 */
-	private String userId;
-	/**
 	 * The account id
 	 */
 	private String accountId;
@@ -57,11 +53,10 @@ public class SdkConfig {
 		this.configId = configId;
 	}
 
-	public SdkConfig(String workflowId, String configId, String userId, String accountId, String groupId,
+	public SdkConfig(String workflowId, String configId, String accountId, String groupId,
 			PrivateKey signingPrivateKey) {
 		this.workflowId = workflowId;
 		this.configId = configId;
-		this.userId = userId;
 		this.accountId = accountId;
 		this.groupId = groupId;
 		this.signingPrivateKey = signingPrivateKey;
@@ -73,14 +68,6 @@ public class SdkConfig {
 
 	public void setWorkflowId(String workflowId) {
 		this.workflowId = workflowId;
-	}
-
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
 	}
 
 	public String getAccountId() {

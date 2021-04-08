@@ -61,7 +61,7 @@ public class TraceLink<TLinkData> extends Link implements ITraceLink<TLinkData> 
   }
 
   public Account createdBy() throws ChainscriptException {
-    return new Account(this.metadata().getCreatedById());
+    return new Account(this.metadata().getCreatedByAccountId());
   }
 
   public Date createdAt() throws ChainscriptException {

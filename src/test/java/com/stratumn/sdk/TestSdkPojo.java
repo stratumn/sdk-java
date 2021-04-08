@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -26,8 +27,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -39,12 +43,14 @@ import com.stratumn.sdk.model.client.Secret;
 import com.stratumn.sdk.model.misc.Identifiable;
 import com.stratumn.sdk.model.misc.Property;
 import com.stratumn.sdk.model.sdk.SdkOptions;
+import com.stratumn.sdk.model.trace.AddTagsToTraceInput;
 import com.stratumn.sdk.model.trace.AppendLinkInput;
 import com.stratumn.sdk.model.trace.GetTraceDetailsInput;
 import com.stratumn.sdk.model.trace.GetTraceStateInput;
 import com.stratumn.sdk.model.trace.NewTraceInput;
 import com.stratumn.sdk.model.trace.PaginationInfo;
 import com.stratumn.sdk.model.trace.PushTransferInput;
+import com.stratumn.sdk.model.trace.SearchTracesFilter;
 import com.stratumn.sdk.model.trace.TraceDetails;
 import com.stratumn.sdk.model.trace.TraceState;
 import com.stratumn.sdk.model.trace.TracesState;
@@ -93,11 +99,11 @@ public class TestSdkPojo {
    private static final String TRACE_STAGING_URL = "https://trace-api.staging.stratumn.com";
    private static final String MEDIA_STAGING_URL = "https://media-api.staging.stratumn.com";
 
-   private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRACaNT4cup/ZQAq4IULZCrlPB7eR1QTCN9V3Qzct8S\nYp57BqN4FipIrGpyclvbT1FKQfYLJpeBXeCi2OrrQMTgiw==\n-----END ED25519 PRIVATE KEY-----\n";
+   private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAjgtjpc1iOR4zYm+21McRGoWr0WM1NBkm26uZmFAx\n853QZ8CRL/HWGCPpEt18JrHZr9ZwA9UyoEosPR8gPakZFQ==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String WORFKLOW_ID = "591";
    private static String ACTION_KEY = "action1";
 
-   private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAWotrb1jJokHr7AVQTS6f6W7dFYnKpVy+DV++sG6x\nlExB4rtrKpCAEPt5q7oT6/lcF4brFSNiCxLPnHqiSjcyVw==\n-----END ED25519 PRIVATE KEY-----\n";
+   private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRArbo87/1Yd/nOqFwmmcuxm01T9/pqkeARQxK9y4iG\nF3Xe1W+/2UOr/rYuQPFHQC4a/F0r6nVJGgCI1Ghc/luHZw==\n-----END ED25519 PRIVATE KEY-----\n";
    private static String OTHER_GROUP = "1785";
 
    private static Sdk<StateExample> sdk;
@@ -155,7 +161,6 @@ public class TestSdkPojo {
          GetTraceStateInput input = new GetTraceStateInput(traceId);
          TraceState<StateExample, SomeClass> state = sdk.getTraceState(input);
          // // System.out.println("testTraceState" + gson.toJson(state));
-         assertTrue(state.getTraceId().equals(traceId));
          assertTrue(state.getTraceId().equals(traceId));
          assertFalse(gson.toJson(state).contains("Error"));
       } catch (Exception ex) {
@@ -311,13 +316,10 @@ public class TestSdkPojo {
          PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
          TracesState<StateExample, SomeClass> tracesIn = getSdk().getIncomingTraces(paginationInfo);
 
-         String traceId = null;
          if (tracesIn.getTotalCount() == 0) {
             pushTraceTest();
-            traceId = someTraceState.getTraceId();
          } else {
             someTraceState = tracesIn.getTraces().get(0);
-            traceId = someTraceState.getTraceId();
          }
          TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null,
                someTraceState.getTraceId());
@@ -393,6 +395,36 @@ public class TestSdkPojo {
       }
    }
 
+   @Test
+   public void traceTagsRWTest() {
+      try {
+         String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
+
+         // Add a tag to a trace
+         UUID uuid = UUID.randomUUID();
+         String randomUUIDString = uuid.toString();
+         AddTagsToTraceInput input = new AddTagsToTraceInput();
+         input.setTraceId(traceId);
+         input.setTags(new String[] { randomUUIDString });
+
+         TraceState<StateExample, SomeClass> t = getSdk().addTagsToTrace(input);
+         assertEquals(traceId, t.getTraceId());
+
+         // search the trace by tags
+         List<String> tags = new ArrayList<String>();
+         tags.add(randomUUIDString);
+         SearchTracesFilter f = new SearchTracesFilter(tags);
+         TracesState<StateExample, SomeClass> res = sdk.searchTraces(f, new PaginationInfo());
+
+         assertEquals(1, res.getTotalCount());
+         assertEquals(traceId, res.getTraces().get(0).getTraceId());
+
+      } catch (Exception ex) {
+         ex.printStackTrace();
+         fail(ex.getMessage());
+      }
+   }
+
    /***
     * Writes the files to the output folder
     * 
@@ -421,5 +453,4 @@ public class TestSdkPojo {
          throw new TraceSdkException(e);
       }
    }
-
 }
