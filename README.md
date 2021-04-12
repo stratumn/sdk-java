@@ -90,7 +90,7 @@ You can create a new trace this way:
 
 You must provide:
 
-- `actionKey`: a valid form id,
+- `actionKey`: a valid action key that exists in the targeted workflow,
 - `data`: the data object corresponding to the action being done.
 
 The Sdk will return an object corresponding to the "state" of your new trace. This state exposes the following fields:
@@ -122,7 +122,7 @@ TraceState<Object, Object> state =   sdk.appendLink(appLinkInput);
 
 You must provide:
 
-- `actionKey`: a valid form id,
+- `actionKey`: a valid action key that exists in the targeted workflow
 - `data`: the data object corresponding to the action being done,
 - `prevLink` or `traceId`.
 
@@ -235,6 +235,8 @@ List<String> tags = new ArrayList<String>();
 tags.add("todo");
 tags.add("other tag");
 SearchTracesFilter f = new SearchTracesFilter(tags);
+// Which is the same as :
+// SearchTracesFilter f = new SearchTracesFilter(tags, SearchTracesFilter.SEARCH_TYPE.TAGS_OVERLAPS);
 TracesState<Object, Object> res = sdk.searchTraces(f, new PaginationInfo());
 
 // If you want to search for all tags provided, use the `TAGS_CONTAINS` parameter :
