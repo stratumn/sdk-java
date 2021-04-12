@@ -220,11 +220,9 @@ Traces can be searched by tag. So in order to search you must first add a tag to
 String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
 
 // Add a tag to a trace
-UUID uuid = UUID.randomUUID();
-String randomUUIDString = uuid.toString();
 AddTagsToTraceInput input = new AddTagsToTraceInput();
 input.setTraceId(traceId);
-input.setTags(new String[] { randomUUIDString });
+input.setTags(new String[] { "todo", "other tag" });
 
 TraceState<Object, Object> t = getSdk().addTagsToTrace(input);
 ```
@@ -239,7 +237,7 @@ tags.add("other tag");
 SearchTracesFilter f = new SearchTracesFilter(tags);
 TracesState<Object, Object> res = sdk.searchTraces(f, new PaginationInfo());
 
-// If you want to search for all tags provided, use the `contains` parameter :
+// If you want to search for all tags provided, use the `TAGS_CONTAINS` parameter :
 List<String> tags = new ArrayList<String>();
 tags.add("todo");
 tags.add("other tag");
