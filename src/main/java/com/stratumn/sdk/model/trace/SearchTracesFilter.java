@@ -13,43 +13,62 @@ public class SearchTracesFilter {
     TAGS_CONTAINS, TAGS_OVERLAPS
   }
 
-  private Map<String, Object> filters;
+  private List<String> tags;
+  private SEARCH_TYPE searchType;
 
-  public SearchTracesFilter(List<String> tags) {
-    // By default, search for any tags (for non breaking change)
-    this(tags, SEARCH_TYPE.TAGS_OVERLAPS);
+  public SearchTracesFilter() {
+    super();
   }
 
-  public SearchTracesFilter(List<String> tags, SEARCH_TYPE searchType) {
-    filters = new HashMap<String, Object>();
+  public SearchTracesFilter(List<String> tags) {
+    super();
+    // By default, search for any tags (for non breaking change)
+    this.tags = tags;
+  }
 
-    Map<String, Object> searchFilter = new HashMap<String, Object>();
-    this.filters = new HashMap<String, Object>();
+  public List<String> getTags() {
+    return this.tags;
+  }
 
-    switch (searchType) {
-    case TAGS_CONTAINS:
-      // search for all tags
-      searchFilter.put("contains", tags);
-      this.filters.put("tags", searchFilter);
-      break;
-    case TAGS_OVERLAPS:
-      searchFilter.put("overlaps", tags);
-      this.filters.put("tags", searchFilter);
-      break;
-    default:
-      // By default, search for any tags (for non breaking change)
-      searchFilter.put("overlaps", tags);
-      this.filters.put("tags", searchFilter);
-      break;
-    }
+  public void setTags(List<String> tags) {
+    this.tags = tags;
+  }
+
+  public SEARCH_TYPE getSearchType() {
+    return this.searchType;
+  }
+
+  public void setSearchType(SEARCH_TYPE searchType) {
+    this.searchType = searchType;
   }
 
   public Map<String, Object> getFilters() {
-    return this.filters;
-  }
+    Map<String, Object> filters = new HashMap<String, Object>();
 
-  public void setFilters(Map<String, Object> filters) {
-    this.filters = filters;
+    Map<String, Object> searchFilter = new HashMap<String, Object>();
+
+    if (null == this.searchType) {
+      // By default, search for any tags (for non breaking change)
+      searchFilter.put("overlaps", this.getTags());
+      filters.put("tags", searchFilter);
+    } else {
+      switch (this.searchType) {
+      case TAGS_CONTAINS:
+        // search for all tags
+        searchFilter.put("contains", this.getTags());
+        filters.put("tags", searchFilter);
+        break;
+      case TAGS_OVERLAPS:
+        // search for any tags
+        searchFilter.put("overlaps", this.getTags());
+        filters.put("tags", searchFilter);
+        break;
+      default:
+        break;
+      }
+    }
+
+    return filters;
   }
 
 }

@@ -432,7 +432,9 @@ public class TestSdkPojo {
          List<String> tags = new ArrayList<String>();
          tags.add("tag1");
          tags.add("tag2");
-         SearchTracesFilter f = new SearchTracesFilter(tags, SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
+         SearchTracesFilter f = new SearchTracesFilter();
+         f.setTags(tags);
+         f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
          TracesState<StateExample, SomeClass> res = getSdk().searchTraces(f, new PaginationInfo());
          assertEquals(1, res.getTotalCount());
          assertEquals("5bf6d482-cfdc-4edc-a5ef-c96539da94d8", res.getTraces().get(0).getTraceId());

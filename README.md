@@ -122,7 +122,7 @@ TraceState<Object, Object> state =   sdk.appendLink(appLinkInput);
 
 You must provide:
 
-- `actionKey`: a valid action key that exists in the targeted workflow
+- `actionKey`: a valid action key that exists in the targeted workflow,
 - `data`: the data object corresponding to the action being done,
 - `prevLink` or `traceId`.
 
@@ -227,23 +227,20 @@ input.setTags(new String[] { "todo", "other tag" });
 TraceState<Object, Object> t = getSdk().addTagsToTrace(input);
 ```
 
-Now that there is a trace with a tag we can search for it.
+Now that there is a trace with a tag, we can search for it.
 
 ```java
 // In order to search for any of the tags provided, use the `overlaps` parameter :
 List<String> tags = new ArrayList<String>();
 tags.add("todo");
 tags.add("other tag");
-SearchTracesFilter f = new SearchTracesFilter(tags);
-// Which is the same as :
-// SearchTracesFilter f = new SearchTracesFilter(tags, SearchTracesFilter.SEARCH_TYPE.TAGS_OVERLAPS);
-TracesState<Object, Object> res = sdk.searchTraces(f, new PaginationInfo());
+SearchTracesFilter f = new SearchTracesFilter();
+f.setTags(tags);
+// By default, the filter mode is set to "overlaps", which checks for any matching tag
+f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_OVERLAPS);
 
-// If you want to search for all tags provided, use the `TAGS_CONTAINS` parameter :
-List<String> tags = new ArrayList<String>();
-tags.add("todo");
-tags.add("other tag");
-SearchTracesFilter f = new SearchTracesFilter(tags, SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
+// The "contains" filter is available to check for traces that match all provided tags
+f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
 TracesState<Object, Object> res = sdk.searchTraces(f, new PaginationInfo());
 
 ```
