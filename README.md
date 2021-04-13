@@ -230,7 +230,6 @@ TraceState<Object, Object> t = getSdk().addTagsToTrace(input);
 Now that there is a trace with a tag, we can search for it.
 
 ```java
-// In order to search for any of the tags provided, use the `overlaps` parameter :
 List<String> tags = new ArrayList<String>();
 tags.add("todo");
 tags.add("other tag");
@@ -242,7 +241,6 @@ f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_OVERLAPS);
 // The "contains" filter is available to check for traces that match all provided tags
 f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
 TracesState<Object, Object> res = sdk.searchTraces(f, new PaginationInfo());
-
 ```
 
 This method supports [pagination](#pagination) in case there are multiple traces with the provided tags. All traces containing any one of the provided tags will be returned.
