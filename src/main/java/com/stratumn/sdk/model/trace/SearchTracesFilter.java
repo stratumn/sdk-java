@@ -47,25 +47,13 @@ public class SearchTracesFilter {
 
     Map<String, Object> searchFilter = new HashMap<String, Object>();
 
-    if (null == this.searchType) {
+    if (SEARCH_TYPE.TAGS_CONTAINS == this.searchType) {
+      searchFilter.put("contains", this.getTags());
+      filters.put("tags", searchFilter);
+    } else {
       // By default, search for any tags (for non breaking change)
       searchFilter.put("overlaps", this.getTags());
       filters.put("tags", searchFilter);
-    } else {
-      switch (this.searchType) {
-      case TAGS_CONTAINS:
-        // search for all tags
-        searchFilter.put("contains", this.getTags());
-        filters.put("tags", searchFilter);
-        break;
-      case TAGS_OVERLAPS:
-        // search for any tags
-        searchFilter.put("overlaps", this.getTags());
-        filters.put("tags", searchFilter);
-        break;
-      default:
-        break;
-      }
     }
 
     return filters;
