@@ -8,7 +8,7 @@ Required version : Java >= 8
 
 ### Maven
 
-``` xml
+```xml
 <dependency>
   <groupId>com.stratumn</groupId>
   <artifactId>sdk</artifactId>
@@ -54,13 +54,14 @@ Secret s = Secret.NewPrivateKeySecret(YOUR_SECRETS.privateKey);
 SdkOptions opts = new SdkOptions(YOUR_CONFIG.workflowId, s);
 opts.setEndpoints(new Endpoints("https://account-api.staging.stratumn.com", "https://trace-api.staging.stratumn.com", "https://media-api.staging.stratumn.com"));
 ```
+
 - To enable low level http debuging set the enableDebugging option to true;
 
 ```java
 opts.setEnableDebuging(true);
 ```
 
-- To connect through a proxy server: 
+- To connect through a proxy server:
 
 ```java
 opts.setProxy("MyProxyHost", 1234);
@@ -72,7 +73,6 @@ Finally to create the sdk instance:
 Sdk<MyStateType> sdk = new Sdk<MyStateType>(opts, MyStateType.class);
 ```
 
-
 ### Creating a new trace
 
 You can create a new trace this way:
@@ -82,15 +82,15 @@ You can create a new trace this way:
  data.put("weight", "123");
  data.put("valid", true);
  data.put("operators", new String[]{"1", "2" });
- data.put("operation", "my new operation 1"); 
- NewTraceInput<Object> newTraceInput = new 
- NewTraceInput<Object>(YOUR_CONFIG.formId, data); 
- TraceState<Object, Object> state = sdk.newTrace(newTraceInput); 
+ data.put("operation", "my new operation 1");
+ NewTraceInput<Object> newTraceInput = new
+ NewTraceInput<Object>(YOUR_CONFIG.actionKey, data);
+ TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
 ```
 
 You must provide:
 
-- `formId`: a valid form id,
+- `actionKey`: a valid action key that exists in the targeted workflow,
 - `data`: the data object corresponding to the action being done.
 
 The Sdk will return an object corresponding to the "state" of your new trace. This state exposes the following fields:
@@ -105,24 +105,24 @@ Notes:
 
 - The `data` object argument must be valid against the JSON schema of the form you are using, otherwise Trace will throw a validation error.
 
-
 ### Appending a link to an existing trace
-  
+
 ```java
-AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.formId, data, prevLink);
+AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.actionKey, data, prevLink);
 TraceState<Object, Object> state =   sdk.appendLink(appLinkInput);
 
 ```
+
 If you don't have access to the head link, you can also provide the trace id:
 
 ```java
-AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.formId, data, traceId);
+AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.actionKey, data, traceId);
 TraceState<Object, Object> state =   sdk.appendLink(appLinkInput);
 ```
- 
+
 You must provide:
 
-- `formId`: a valid form id,
+- `actionKey`: a valid action key that exists in the targeted workflow,
 - `data`: the data object corresponding to the action being done,
 - `prevLink` or `traceId`.
 
@@ -131,7 +131,6 @@ The Sdk will return the new state object of the trace. The shape of this object 
 Notes:
 
 - The `data` object argument must be valid against the JSON schema of the form you are using, otherwise Trace will throw a validation error.
-
 
 ### Retrieving traces
 
@@ -192,7 +191,7 @@ Or:
 ```java
 var sdk = GetSdk();
 PaginationInfo info = new PaginationInfo(first, after, last, before);
- TracesState<Object, Object> state = sdk.GetBacklogTraces<Object>(info);
+TracesState<Object, Object> state = sdk.GetBacklogTraces<Object>(info);
 ```
 
 Arguments:
@@ -221,22 +220,26 @@ Traces can be searched by tag. So in order to search you must first add a tag to
 String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
 
 // Add a tag to a trace
-UUID uuid = UUID.randomUUID();
-String randomUUIDString = uuid.toString();
 AddTagsToTraceInput input = new AddTagsToTraceInput();
 input.setTraceId(traceId);
-input.setTags(new String[] { randomUUIDString });
+input.setTags(new String[] { "todo", "other tag" });
 
 TraceState<Object, Object> t = getSdk().addTagsToTrace(input);
 ```
 
-Now that there is a trace with a tag we can search for it.
+Now that there is a trace with a tag, we can search for it.
 
 ```java
-// search the trace by tags
 List<String> tags = new ArrayList<String>();
-tags.add(randomUUIDString);
-SearchTracesFilter f = new SearchTracesFilter(tags);
+tags.add("todo");
+tags.add("other tag");
+SearchTracesFilter f = new SearchTracesFilter();
+f.setTags(tags);
+// By default, the filter mode is set to "overlaps", which checks for any matching tag
+f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_OVERLAPS);
+
+// The "contains" filter is available to check for traces that match all provided tags
+f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
 TracesState<Object, Object> res = sdk.searchTraces(f, new PaginationInfo());
 ```
 
@@ -262,13 +265,11 @@ In the result object, you will have the `totalCount` and an `info` object that h
 
 Let's look at a pagination example. We start by retrieving (and consuming) the first 10 incoming traces:
 
-
 ```java
 Sdk<Object> sdk = GetSdk();
 PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
 TracesState<Object, Object> results =  sdk.getIncomingTraces<Object>(paginationInfo);
 ```
-
 
 Next, we look at the pagination info results to know if there are more traces to retrieve:
 
@@ -279,18 +280,15 @@ TracesState<Object, Object> results =  sdk.getIncomingTraces<Object>(paginationI
 }
 ```
 
-
-
 ### :floppy_disk: Handling files
 
 When providing a `data` object in an action (via `newTrace`, `appendLink` etc.), you can embed files that will automatically be uploaded and encrypted for you. We provide two ways for embedding files, depending on the platform your app is running.
 
-
-
 ```java
-AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.formId, data, TraceId);
+AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.actionKey, data, TraceId);
 TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
 ```
+
 In the browser, assuming you are working with File objects, you can use:
 
 ```java
@@ -298,18 +296,16 @@ Map<String, Object> data = new HashMap<String, Object>();
  data.put("weight", "123");
  data.put("valid", true);
  data.put("operators", new String[]{"1", "2" });
- data.put("operation", "my new operation 1"); 
- 
+ data.put("operation", "my new operation 1");
+
 data.add("Certificate1",FileWrapper.fromFilePath(Path.getFullPath(filePath)));
 data.add("Certificates", new Identifiable[] { FileWrapper.fromFilePath(filePath});
 
-AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.formId, data, TraceId);
+AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(YOUR_CONFIG.actionKey, data, TraceId);
 TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
 ```
 
-
 This record uniquely identifies the corresponding file in our service and is easily serializable. If you look in the `headLink` of the returned state, you will see that the `FileWrapper` have been converted to `FileRecord` types:
-
 
 When you retrieve traces with the Sdk, it will not automatically download the files for you. You have to explicitely call a method on the Sdk for that purpose:
 
@@ -340,7 +336,6 @@ PushTransferInput<Object> push = new PushTransferInput<Object>(recipient, data, 
 someTraceState = sdk.pushTrace<Object>(push);
 
 ```
-
 
 The arguments are:
 
@@ -387,7 +382,7 @@ TraceState<Object, Object> stateReject = sdk.rejectTransfer(trInput);
 
 ```
 
-Alternatively, if you have initiated the transfer (push or pull), you can  also cancel before it has been accepted:
+Alternatively, if you have initiated the transfer (push or pull), you can also cancel before it has been accepted:
 
 ```java
 TransferResponseInput<Object> responseInput = new TransferResponseInput<Object>(null, traceId);

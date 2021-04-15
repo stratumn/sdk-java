@@ -1049,14 +1049,9 @@ public class Sdk<TState> implements ISdk<TState> {
    public <TLinkData> TracesState<TState, TLinkData> searchTraces(SearchTracesFilter filter,
          PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
-      Map<String, Object> tagFilter = new HashMap<String, Object>();
-      tagFilter.put("overlaps", filter.getTags());
-      Map<String, Object> filters = new HashMap<String, Object>();
-      filters.put("tags", tagFilter);
-
       // create variables
       Map<String, Object> variables = new HashMap<String, Object>();
-      variables.put("filter", filters);
+      variables.put("filter", filter.getFilters());
       variables.put("workflowId", this.getConfig().getWorkflowId());
       Map<String, Object> variablesPaginationInfo = JsonHelper.objectToMap(paginationInfo);
       variables.putAll(variablesPaginationInfo);
