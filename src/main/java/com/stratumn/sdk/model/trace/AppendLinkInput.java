@@ -29,6 +29,7 @@ public class AppendLinkInput<TLinkData> {
   private TLinkData data;
   private String traceId;
   private ITraceLink<TLinkData> prevLink;
+  private String groupLabel;
 
   public AppendLinkInput(String action, TLinkData data, String traceId) throws IllegalArgumentException {
     if (action == null) {
@@ -87,6 +88,14 @@ public class AppendLinkInput<TLinkData> {
 
   public void setPrevLink(ITraceLink<TLinkData> prevLink) {
     this.prevLink = prevLink;
+  }
+
+  public String getGroupLabel() {
+    return this.groupLabel;
+  }
+
+  public void setGroupLabel(String groupLabel) {
+    this.groupLabel = groupLabel;
   }
 
 }

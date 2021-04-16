@@ -17,30 +17,26 @@ package com.stratumn.sdk.model.trace;
 
 import java.util.Arrays;
 import java.util.Date;
+
 /**
- * The state of trace is composed of:
- * - the trace id
- * - the link hash of the head of the trace
- * - the date at which it was last updated
- * - the person who last updated it
- * - some abstract data validated against a predefined schema
- * - the tags of the trace
+ * The state of trace is composed of: - the trace id - the link hash of the head
+ * of the trace - the date at which it was last updated - the person who last
+ * updated it - some abstract data validated against a predefined schema - the
+ * tags of the trace
  */
-public class TraceState<TState, TLinkData>
-{
+public class TraceState<TState, TLinkData> {
 
    private String traceId;
    private ITraceLink<TLinkData> headLink;
    private Date updatedAt;
    private Account updatedBy;
+   private String updatedByGroupId;
    private TState data;
    private String[] tags;
 
-   public TraceState(String traceId, ITraceLink<TLinkData> headLink, Date updatedAt, Account updatedBy, TState data, String[] tags)
-      throws IllegalArgumentException
-   {
-      if(traceId == null)
-      {
+   public TraceState(String traceId, ITraceLink<TLinkData> headLink, Date updatedAt, Account updatedBy, TState data,
+         String[] tags, String updatedByGroupId) throws IllegalArgumentException {
+      if (traceId == null) {
          throw new IllegalArgumentException("traceId cannot be null in a TraceState object");
       }
 
@@ -50,75 +46,70 @@ public class TraceState<TState, TLinkData>
       this.updatedBy = updatedBy;
       this.data = data;
       this.tags = tags;
+      this.updatedByGroupId = updatedByGroupId;
 
    }
 
-   public String getTraceId()
-   {
+   public String getTraceId() {
       return this.traceId;
    }
 
-   public void setTraceId(String traceId)
-   {
+   public void setTraceId(String traceId) {
       this.traceId = traceId;
    }
 
-   public ITraceLink<TLinkData> getHeadLink()
-   {
+   public ITraceLink<TLinkData> getHeadLink() {
       return this.headLink;
    }
 
-   public void setHeadLink(ITraceLink<TLinkData> headLink)
-   {
+   public void setHeadLink(ITraceLink<TLinkData> headLink) {
       this.headLink = headLink;
    }
 
-   public Date getUpdatedAt()
-   {
+   public Date getUpdatedAt() {
       return this.updatedAt;
    }
 
-   public void setUpdatedAt(Date updatedAt)
-   {
+   public void setUpdatedAt(Date updatedAt) {
       this.updatedAt = updatedAt;
    }
 
-   public Account getUpdatedBy()
-   {
+   public Account getUpdatedBy() {
       return this.updatedBy;
    }
 
-   public void setUpdatedBy(Account updatedBy)
-   {
+   public void setUpdatedBy(Account updatedBy) {
       this.updatedBy = updatedBy;
    }
 
-   public TState getData()
-   {
+   public TState getData() {
       return this.data;
    }
 
-   public void setData(TState data)
-   {
+   public void setData(TState data) {
       this.data = data;
    }
 
-   public String[] getTags()
-   {
+   public String[] getTags() {
       return tags;
    }
 
-   public void setTags(String[] tags)
-   {
+   public void setTags(String[] tags) {
       this.tags = tags;
    }
 
-   @Override
-   public String toString()
-   {
-      return "TraceState [traceId=" + traceId + ", headLink=" + headLink + ", updatedAt=" + updatedAt + ", updatedBy=" + updatedBy + ", data=" + data
-         + ", tags=" + Arrays.toString(tags) + "]";
+   public String getUpdatedByGroupId() {
+      return this.updatedByGroupId;
    }
 
-   
+   public void setUpdatedByGroupId(String updatedByGroupId) {
+      this.updatedByGroupId = updatedByGroupId;
+   }
+
+   @Override
+   public String toString() {
+      return "TraceState [traceId=" + traceId + ", headLink=" + headLink + ", updatedAt=" + updatedAt + ", updatedBy="
+            + updatedBy + ", data=" + data + ", tags=" + Arrays.toString(tags) + "]";
+   }
+
 }

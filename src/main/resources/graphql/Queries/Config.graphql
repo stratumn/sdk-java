@@ -29,6 +29,7 @@ query ConfigQuery($workflowId: BigInt!) {
     groups {
       nodes {
         groupId: rowId
+        label
         members {
           nodes {
             accountId
