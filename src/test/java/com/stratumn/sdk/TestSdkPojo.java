@@ -484,13 +484,14 @@ public class TestSdkPojo {
       assertNotNull(someTraceState);
       assertEquals(someTraceState.getUpdatedByGroupId(), MY_GROUP);
       try {
-         // change group for action for group2
-         sdk.withGroupLabel(OTHER_GROUP_LABEL);
+         Sdk<StateExample> sdk = getSdk();
          // Appendlink
          Map<String, Object> dataMap = new HashMap<String, Object>();
          dataMap.put("comment", "commment");
          AppendLinkInput<Map<String, Object>> appLinkInput = new AppendLinkInput<Map<String, Object>>(
                COMMENT_ACTION_KEY, dataMap, someTraceState.getTraceId());
+         // change group for action
+         appLinkInput.setGroupLabel(OTHER_GROUP_LABEL);
 
          TraceState<StateExample, Map<String, Object>> state = sdk.appendLink(appLinkInput);
          // should equal group2 id
