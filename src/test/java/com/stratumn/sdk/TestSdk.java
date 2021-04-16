@@ -263,11 +263,13 @@ public class TestSdk {
    public void pushTraceTest() {
       try {
          newTraceTest();
+         Sdk<Object> sdk = getSdk();
+         sdk.withGroupLabel(MY_GROUP);
          assertNotNull(someTraceState);
          PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, new Object(),
                someTraceState.getTraceId());
 
-         someTraceState = getSdk().pushTrace(push);
+         someTraceState = sdk.pushTrace(push);
          // System.out.println("test pushTrace " + gson.toJson(someTraceState));
          assertNotNull(push.getTraceId());
       } catch (Exception ex) {
@@ -281,7 +283,9 @@ public class TestSdk {
       try {
          pushTraceTest();
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null, someTraceState.getTraceId());
-         TraceState<Object, Object> stateAccept = getOtherGroupSdk().acceptTransfer(trInput);
+         Sdk<Object> sdk = getOtherGroupSdk();
+         sdk.withGroupLabel(MY_GROUP);
+         TraceState<Object, Object> stateAccept = sdk.acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
       } catch (Exception ex) {
@@ -432,14 +436,15 @@ public class TestSdk {
       assertNotNull(someTraceState);
       assertEquals(someTraceState.getUpdatedByGroupId(), MY_GROUP);
       try {
-         // change group for action
-         sdk.withGroupLabel(OTHER_GROUP_LABEL);
+         Sdk<Object> sdk = getSdk();
          // Appendlink
          Map<String, Object> dataMap = new HashMap<String, Object>();
          dataMap.put("comment", "commment");
          // comment action
          AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(COMMENT_ACTION_KEY, dataMap,
                someTraceState.getTraceId());
+         // change group for action
+         appLinkInput.setGroupLabel(OTHER_GROUP_LABEL);
 
          TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
          assertEquals(state.getUpdatedByGroupId(), OTHER_GROUP);
