@@ -264,7 +264,7 @@ public class TestSdk {
       try {
          newTraceTest();
          Sdk<Object> sdk = getSdk();
-         sdk.withGroupLabel(MY_GROUP);
+         sdk.withGroupLabel(MY_GROUP_LABEL);
          assertNotNull(someTraceState);
          PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, new Object(),
                someTraceState.getTraceId());
@@ -284,7 +284,7 @@ public class TestSdk {
          pushTraceTest();
          TransferResponseInput<Object> trInput = new TransferResponseInput<Object>(null, someTraceState.getTraceId());
          Sdk<Object> sdk = getOtherGroupSdk();
-         sdk.withGroupLabel(MY_GROUP);
+         sdk.withGroupLabel(MY_GROUP_LABEL);
          TraceState<Object, Object> stateAccept = sdk.acceptTransfer(trInput);
          // System.out.println("Accept Transfer:" + "\r\n" + stateAccept);
          assertNotNull(stateAccept.getTraceId());
