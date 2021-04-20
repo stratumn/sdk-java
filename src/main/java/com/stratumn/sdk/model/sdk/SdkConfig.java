@@ -37,7 +37,7 @@ public class SdkConfig {
 	/**
 	 * The group id
 	 */
-	private String groupId;
+	private String groupLabel;
 	/**
 	 * Map label to group id
 	 */
@@ -92,8 +92,12 @@ public class SdkConfig {
 		return this.getGroupIdByLabel(groupLabel);
 	}
 
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
+	public String getGroupLabel() {
+		return this.groupLabel;
+	}
+
+	public void setGroupLabel(String groupLabel) {
+		this.groupLabel = groupLabel;
 	}
 
 	private String getGroupIdByLabel(String groupLabelParam) throws TraceSdkException {
@@ -105,8 +109,8 @@ public class SdkConfig {
 					resultGroupId = groupLabelToIdMap.get(groupLabelToIdMap.keySet().toArray()[0]);
 				} else if (groupLabelToIdMap.size() > 1) {
 					// Last check if groupId has been set manually
-					if (null != this.groupId) {
-						resultGroupId = this.groupId;
+					if (null != this.getGroupLabel() && null != groupLabelToIdMap.get(this.getGroupLabel())) {
+						resultGroupId = groupLabelToIdMap.get(this.getGroupLabel());
 					} else {
 						throw new TraceSdkException(
 								"Multiple groups to select from, please specify the group label you wish to perform the action with.");

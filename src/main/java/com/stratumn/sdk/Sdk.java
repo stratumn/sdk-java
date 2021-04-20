@@ -177,7 +177,7 @@ public class Sdk<TState> implements ISdk<TState> {
             }
          }
 
-         // // there must be at least one group!
+         // there must be at least one group!
          if (myGroups.size() == 0) {
             throw new TraceSdkException("No group to choose from.");
          }
@@ -209,9 +209,8 @@ public class Sdk<TState> implements ISdk<TState> {
       }
 
       // sets the group id in any case
-      if (null != this.opts.getGroupLabel()
-            && null != this.config.getGroupLabelToIdMap().get(this.opts.getGroupLabel())) {
-         this.config.setGroupId(this.config.getGroupLabelToIdMap().get(this.opts.getGroupLabel()));
+      if (null != this.opts.getGroupLabel()) {
+         this.config.setGroupLabel(this.opts.getGroupLabel());
       }
 
       // return the new config
