@@ -121,97 +121,97 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Sdk config object
     */
    private SdkConfig getConfig(boolean forceUpdate) throws TraceSdkException {
-      // if the config already exists use it!
-      if (this.config != null && !forceUpdate)
-         return this.config;
+      // update the config if doesn't exist or force
+      if (this.config == null || forceUpdate) {
+         String workflowId = this.opts.getWorkflowId();
+         // execute graphql query
+         GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_CONFIG,
+               Collections.singletonMap("workflowId", workflowId), null, GraphResponse.class);
+         if (response.hasErrors())
+            throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
+         JsonElement groupNodes = response.getData("workflow.groups.nodes");
+         if (groupNodes == null)
+            throw new TraceSdkException("Workflow.groups object not found:\n" + response.toString());
 
-      String workflowId = this.opts.getWorkflowId();
-      // execute graphql query
-      GraphResponse response = this.client.graphql(GraphQl.Query.QUERY_CONFIG,
-            Collections.singletonMap("workflowId", workflowId), null, GraphResponse.class);
-      if (response.hasErrors())
-         throw new TraceSdkException(Arrays.asList(response.getErrors()).toString());
-      JsonElement groupNodes = response.getData("workflow.groups.nodes");
-      if (groupNodes == null)
-         throw new TraceSdkException("Workflow.groups object not found:\n" + response.toString());
+         String accountId = response.getData("account.accountId").getAsString();
 
-      String accountId = response.getData("account.accountId").getAsString();
+         String configId = response.getData("workflow.config.id").getAsString();
 
-      String configId = response.getData("workflow.config.id").getAsString();
+         JsonElement userMemberOf = response.getData("account.user.memberOf.nodes");
+         JsonElement botTeams = response.getData("account.bot.teams.nodes");
 
-      JsonElement userMemberOf = response.getData("account.user.memberOf.nodes");
-      JsonElement botTeams = response.getData("account.bot.teams.nodes");
-
-      List<String> myAccounts = new ArrayList<String>();
-      Iterator<JsonElement> iteratorNodes = null;
-      // get all the account ids I am a member of
-      if (null != userMemberOf) {
-         iteratorNodes = userMemberOf.getAsJsonArray().iterator();
-      } else if (null != botTeams) {
-         iteratorNodes = botTeams.getAsJsonArray().iterator();
-      }
-      if (null != iteratorNodes) {
-         while (iteratorNodes.hasNext()) {
-            JsonElement element = iteratorNodes.next();
-            myAccounts.add(element.getAsJsonObject().get("accountId").toString());
+         List<String> myAccounts = new ArrayList<String>();
+         Iterator<JsonElement> iteratorNodes = null;
+         // get all the account ids I am a member of
+         if (null != userMemberOf) {
+            iteratorNodes = userMemberOf.getAsJsonArray().iterator();
+         } else if (null != botTeams) {
+            iteratorNodes = botTeams.getAsJsonArray().iterator();
          }
-      }
-
-      // get all the groups I belong to
-      // i.e. where I belong to one of the account members
-      List<JsonElement> myGroups = new ArrayList<JsonElement>();
-
-      Iterator<JsonElement> iteratorGNodes = groupNodes.getAsJsonArray().iterator();
-      while (iteratorGNodes.hasNext()) {
-         JsonElement group = iteratorGNodes.next();
-
-         Iterator<JsonElement> members = group.getAsJsonObject().get("members").getAsJsonObject().get("nodes")
-               .getAsJsonArray().iterator();
-         while (members.hasNext()) {
-            JsonElement member = members.next();
-            if (myAccounts.contains(member.getAsJsonObject().get("accountId").toString())) {
-               myGroups.add(group);
-               break;
+         if (null != iteratorNodes) {
+            while (iteratorNodes.hasNext()) {
+               JsonElement element = iteratorNodes.next();
+               myAccounts.add(element.getAsJsonObject().get("accountId").toString());
             }
          }
-      }
 
-      // there must be at most one group!
-      if (myGroups.size() > 1) {
-         throw new TraceSdkException("More than one group to choose from.");
-      }
+         // get all the groups I belong to
+         // i.e. where I belong to one of the account members
+         List<JsonElement> myGroups = new ArrayList<JsonElement>();
+         Map<String, String> groupLabelToIdMap = new HashMap<String, String>();
 
-      // // there must be at least one group!
-      if (myGroups.size() == 0) {
-         throw new TraceSdkException("No group to choose from.");
-      }
+         Iterator<JsonElement> iteratorGNodes = groupNodes.getAsJsonArray().iterator();
+         while (iteratorGNodes.hasNext()) {
+            JsonElement group = iteratorGNodes.next();
 
-      // extract info from my only group
-      String groupId = myGroups.get(0).getAsJsonObject().get("groupId").getAsString();
-
-      PrivateKey signingPrivateKey = null;
-      try {
-         if (Secret.isPrivateKeySecret(opts.getSecret())) {
-            // if the secret is a PrivateKeySecret, use it!
-            final String privateKey = ((PrivateKeySecret) opts.getSecret()).getPrivateKey();
-            signingPrivateKey = CryptoUtils.decodePrivateKey(privateKey);
-         } else {
-            JsonElement privateKeyElt = response.getData("account.signingKey.privateKey");
-            JsonObject privateKey = privateKeyElt.getAsJsonObject();
-            Boolean passwordProtected = privateKey.get("passwordProtected").getAsBoolean();
-            String decrypted = privateKey.get("decrypted").getAsString();
-            if (!passwordProtected)
-               // otherwise use the key from the response
-               // if it's not password protected!
-               signingPrivateKey = CryptoUtils.decodePrivateKey(decrypted);
-            else
-               throw new TraceSdkException("Cannot get signing private key");
+            Iterator<JsonElement> members = group.getAsJsonObject().get("members").getAsJsonObject().get("nodes")
+                  .getAsJsonArray().iterator();
+            while (members.hasNext()) {
+               JsonElement member = members.next();
+               if (myAccounts.contains(member.getAsJsonObject().get("accountId").toString())) {
+                  myGroups.add(group);
+                  groupLabelToIdMap.put(group.getAsJsonObject().get("label").getAsString(),
+                        group.getAsJsonObject().get("groupId").getAsString());
+                  break;
+               }
+            }
          }
-      } catch (InvalidKeySpecException ex) {
-         throw new TraceSdkException("Security key error", ex);
+
+         // there must be at least one group!
+         if (myGroups.size() == 0) {
+            throw new TraceSdkException("No group to choose from.");
+         }
+
+         PrivateKey signingPrivateKey = null;
+         try {
+            if (Secret.isPrivateKeySecret(opts.getSecret())) {
+               // if the secret is a PrivateKeySecret, use it!
+               final String privateKey = ((PrivateKeySecret) opts.getSecret()).getPrivateKey();
+               signingPrivateKey = CryptoUtils.decodePrivateKey(privateKey);
+            } else {
+               JsonElement privateKeyElt = response.getData("account.signingKey.privateKey");
+               JsonObject privateKey = privateKeyElt.getAsJsonObject();
+               Boolean passwordProtected = privateKey.get("passwordProtected").getAsBoolean();
+               String decrypted = privateKey.get("decrypted").getAsString();
+               if (!passwordProtected)
+                  // otherwise use the key from the response
+                  // if it's not password protected!
+                  signingPrivateKey = CryptoUtils.decodePrivateKey(decrypted);
+               else
+                  throw new TraceSdkException("Cannot get signing private key");
+            }
+         } catch (InvalidKeySpecException ex) {
+            throw new TraceSdkException("Security key error", ex);
+         }
+
+         this.config = new SdkConfig(workflowId, configId, accountId, groupLabelToIdMap, signingPrivateKey);
+
       }
 
-      this.config = new SdkConfig(workflowId, configId, accountId, groupId, signingPrivateKey);
+      // sets the group id in any case
+      if (null != this.opts.getGroupLabel()) {
+         this.config.setGroupLabel(this.opts.getGroupLabel());
+      }
 
       // return the new config
       return this.config;
@@ -220,6 +220,11 @@ public class Sdk<TState> implements ISdk<TState> {
 
    private SdkConfig getConfig() throws TraceSdkException {
       return this.getConfig(false);
+   }
+
+   public Sdk<TState> withGroupLabel(String groupLabel) {
+      this.opts.setGroupLabel(groupLabel);
+      return this;
    }
 
    /***
@@ -252,7 +257,7 @@ public class Sdk<TState> implements ISdk<TState> {
                ? JsonHelper.fromJson(trace.get("state").getAsJsonObject().get("data"), classOfTState)
                : (TState) trace.get("state").getAsJsonObject().get("data");
          traceState = new TraceState<TState, TLinkData>(headLink.traceId(), headLink, headLink.createdAt(),
-               headLink.createdBy(), tState, tags.toArray(new String[tags.size()]));
+               headLink.createdBy(), tState, tags.toArray(new String[tags.size()]), headLink.group());
       } catch (ChainscriptException e) {
          throw new TraceSdkException("Error constructing traceState ", e);
       }
@@ -429,7 +434,6 @@ public class Sdk<TState> implements ISdk<TState> {
          TracesState<TState, TLinkData> tracesList = new TracesState<TState, TLinkData>();
          tracesList.setTraces(traces);
 
-         tracesList.setTraces(traces);
          tracesList.setTotalCount(totalCount);
          tracesList.setInfo(gson.fromJson(info, Info.class));
          return tracesList;
@@ -664,12 +668,14 @@ public class Sdk<TState> implements ISdk<TState> {
       // extract info from input
       String action = input.getAction();
       TLinkData data = input.getData();
+      String groupLabel = input.getGroupLabel();
 
+      // Set the group label if it is set
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
-      String groupId = sdkConfig.getGroupId();
+      String groupId = sdkConfig.getGroupId(groupLabel);
       String accountId = sdkConfig.getAccountId();
       // upload files and transform data
       this.uploadFilesInLinkData(data);
@@ -733,13 +739,14 @@ public class Sdk<TState> implements ISdk<TState> {
 
       // extract info from input
       TLinkData data = input.getData();
+      String groupLabel = input.getGroupLabel();
 
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String accountId = sdkConfig.getAccountId();
-      String groupId = sdkConfig.getGroupId();
+      String groupId = sdkConfig.getGroupId(groupLabel);
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
@@ -800,13 +807,14 @@ public class Sdk<TState> implements ISdk<TState> {
       TraceLink<TLinkData> parentLink = this.getHeadLink(headLinkInput);
 
       TLinkData data = input.getData();
+      String groupLabel = input.getGroupLabel();
 
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String accountId = sdkConfig.getAccountId();
-      String groupId = sdkConfig.getGroupId();
+      String groupId = sdkConfig.getGroupId(groupLabel);
 
       TraceLinkBuilderConfig<TLinkData> cfg = new TraceLinkBuilderConfig<TLinkData>();
       // provide workflow id
@@ -920,13 +928,14 @@ public class Sdk<TState> implements ISdk<TState> {
       // extract info from input
       String action = input.getAction();
       TLinkData data = input.getData();
+      String groupLabel = input.getGroupLabel();
 
       SdkConfig sdkConfig = this.getConfig();
 
       String workflowId = sdkConfig.getWorkflowId();
       String configId = sdkConfig.getConfigId();
       String accountId = sdkConfig.getAccountId();
-      String groupId = sdkConfig.getGroupId();
+      String groupId = sdkConfig.getGroupId(groupLabel);
       // upload files and transform data
       this.uploadFilesInLinkData(data);
 
@@ -1078,7 +1087,6 @@ public class Sdk<TState> implements ISdk<TState> {
       TracesState<TState, TLinkData> tracesList = new TracesState<TState, TLinkData>();
       tracesList.setTraces(traces);
 
-      tracesList.setTraces(traces);
       tracesList.setTotalCount(traceResponse.get("totalCount").getAsInt());
       tracesList.setInfo(gson.fromJson(traceResponse.get("info").getAsJsonObject(), Info.class));
       return tracesList;

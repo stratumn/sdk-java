@@ -17,31 +17,35 @@ package com.stratumn.sdk.model.trace;
 
 import com.stratumn.sdk.TraceLink;
 
-public class TransferResponseInput<TLinkData> extends ParentLink<TLinkData>
-{
+public class TransferResponseInput<TLinkData> extends ParentLink<TLinkData> {
 
    private TLinkData data;
+   private String groupLabel;
 
-   public TransferResponseInput( TLinkData data ,String traceId)
-   {
+   public TransferResponseInput(TLinkData data, String traceId) {
       super(traceId);
       this.data = data;
    }
-   
-   public TransferResponseInput( TLinkData data, TraceLink<TLinkData> prevLink)
-   {
-      super( prevLink);
+
+   public TransferResponseInput(TLinkData data, TraceLink<TLinkData> prevLink) {
+      super(prevLink);
       this.data = data;
    }
 
-   public TLinkData getData()
-   {
+   public TLinkData getData() {
       return this.data;
    }
 
-   public void setData(TLinkData data)
-   {
+   public void setData(TLinkData data) {
       this.data = data;
+   }
+
+   public String getGroupLabel() {
+      return this.groupLabel;
+   }
+
+   public void setGroupLabel(String groupLabel) {
+      this.groupLabel = groupLabel;
    }
 
 }

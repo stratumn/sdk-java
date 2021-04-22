@@ -17,12 +17,13 @@ package com.stratumn.sdk.model.trace;
 
 /**
  * Interface used as argument to create a new trace. User must provide the form
- * id to use and the form data.
+ * id to use, the form data and the group's label.
  */
 public class NewTraceInput<TLinkData> {
 
   private String action;
   private TLinkData data;
+  private String groupLabel;
 
   public NewTraceInput(String action, TLinkData data) throws IllegalArgumentException {
     if (action == null) {
@@ -30,6 +31,15 @@ public class NewTraceInput<TLinkData> {
     }
     this.action = action;
     this.data = data;
+  }
+
+  public NewTraceInput(String action, TLinkData data, String groupLabel) throws IllegalArgumentException {
+    if (action == null) {
+      throw new IllegalArgumentException("action cannot be null in NewTraceInput");
+    }
+    this.action = action;
+    this.data = data;
+    this.groupLabel = groupLabel;
   }
 
   public String getFormId() {
@@ -54,6 +64,14 @@ public class NewTraceInput<TLinkData> {
 
   public void setData(TLinkData data) {
     this.data = data;
+  }
+
+  public String getGroupLabel() {
+    return this.groupLabel;
+  }
+
+  public void setGroupLabel(String groupLabel) {
+    this.groupLabel = groupLabel;
   }
 
 }

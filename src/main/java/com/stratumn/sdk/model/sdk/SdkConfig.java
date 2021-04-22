@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 package com.stratumn.sdk.model.sdk;
 
 import java.security.PrivateKey;
+import java.util.Map;
+import com.stratumn.sdk.TraceSdkException;
 
 public class SdkConfig {
 
@@ -35,7 +37,11 @@ public class SdkConfig {
 	/**
 	 * The group id
 	 */
-	private String groupId;
+	private String groupLabel;
+	/**
+	 * Map label to group id
+	 */
+	private Map<String, String> groupLabelToIdMap;
 
 	/**
 	 * The private key used for signing links
@@ -53,12 +59,12 @@ public class SdkConfig {
 		this.configId = configId;
 	}
 
-	public SdkConfig(String workflowId, String configId, String accountId, String groupId,
+	public SdkConfig(String workflowId, String configId, String accountId, Map<String, String> groupLabelToIdMap,
 			PrivateKey signingPrivateKey) {
 		this.workflowId = workflowId;
 		this.configId = configId;
 		this.accountId = accountId;
-		this.groupId = groupId;
+		this.groupLabelToIdMap = groupLabelToIdMap;
 		this.signingPrivateKey = signingPrivateKey;
 	}
 
@@ -78,12 +84,57 @@ public class SdkConfig {
 		this.accountId = accountId;
 	}
 
-	public String getGroupId() {
-		return groupId;
+	public String getGroupId() throws TraceSdkException {
+		return this.getGroupIdByLabel(null);
 	}
 
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
+	public String getGroupId(String groupLabel) throws TraceSdkException {
+		return this.getGroupIdByLabel(groupLabel);
+	}
+
+	public String getGroupLabel() {
+		return this.groupLabel;
+	}
+
+	public void setGroupLabel(String groupLabel) {
+		this.groupLabel = groupLabel;
+	}
+
+	private String getGroupIdByLabel(String groupLabelParam) throws TraceSdkException {
+		String resultGroupId = null;
+		if (null != groupLabelToIdMap && 0 < groupLabelToIdMap.size()) {
+			if (null == groupLabelParam) {
+				if (groupLabelToIdMap.size() == 1) {
+					// return the id of the only element
+					resultGroupId = groupLabelToIdMap.get(groupLabelToIdMap.keySet().toArray()[0]);
+				} else if (groupLabelToIdMap.size() > 1) {
+					// Last check if groupId has been set manually
+					if (null != this.getGroupLabel() && null != groupLabelToIdMap.get(this.getGroupLabel())) {
+						resultGroupId = groupLabelToIdMap.get(this.getGroupLabel());
+					} else {
+						throw new TraceSdkException(
+								"Multiple groups to select from, please specify the group label you wish to perform the action with.");
+					}
+				}
+			} else {
+				resultGroupId = groupLabelToIdMap.get(groupLabelParam);
+			}
+		}
+
+		if (null == resultGroupId) {
+			throw new TraceSdkException(
+					"No group to select from. At least one group is required to perform an action.");
+		}
+
+		return resultGroupId;
+	}
+
+	public Map<String, String> getGroupLabelToIdMap() {
+		return this.groupLabelToIdMap;
+	}
+
+	public void setGroupLabelToIdMap(Map<String, String> groupLabelToIdMap) {
+		this.groupLabelToIdMap = groupLabelToIdMap;
 	}
 
 	public PrivateKey getSigningPrivateKey() {
