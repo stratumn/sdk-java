@@ -12,7 +12,7 @@ Required version : Java >= 8
 <dependency>
   <groupId>com.stratumn</groupId>
   <artifactId>sdk</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
 </dependency>
 ```
 
