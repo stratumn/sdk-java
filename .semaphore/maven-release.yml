@@ -15,7 +15,7 @@ blocks:
         - name: github-write
       env_vars:
         - name: MAVEN_OPTS
-          value: "-Dmaven.repo.local=.m2"
+          value: '-Dmaven.repo.local=.m2'
       prologue:
         commands:
           - checkout
@@ -29,5 +29,4 @@ blocks:
             - mvn --batch-mode release:prepare
             - mvn -Dmaven.test.skip=true release:perform
             # the release creates commits with tags, we need to push them to github
-            - git push origin master
-
+            - git push -q https://${GH_TOKEN}@github.com/${SEMAPHORE_GIT_REPO_SLUG}.git master
