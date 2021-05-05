@@ -1,5 +1,7 @@
 # Stratumn SDK for Java
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.stratumn/sdk/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.stratumn/sdk)
+
 The official Stratumn SDK for Java to interact with [Trace](https://trace.stratumn.com).
 
 ## :satellite: Installing
@@ -8,13 +10,9 @@ Required version : Java >= 8
 
 ### Maven
 
-```xml
-<dependency>
-  <groupId>com.stratumn</groupId>
-  <artifactId>sdk</artifactId>
-  <version>0.2.1</version>
-</dependency>
-```
+The latest available version along with installation information can be found [here](https://maven-badges.herokuapp.com/maven-central/com.stratumn/sdk).
+
+All versions can be seen [here](https://search.maven.org/artifact/com.stratumn/sdk).
 
 ## :rocket: Usage and Getting Started
 
