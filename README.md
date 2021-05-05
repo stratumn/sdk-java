@@ -13,6 +13,7 @@ Required version : Java >= 8
 The latest available version along with installation information can be found [here](https://maven-badges.herokuapp.com/maven-central/com.stratumn/sdk).
 
 All versions can be seen [here](https://search.maven.org/artifact/com.stratumn/sdk).
+
 ## :rocket: Usage and Getting Started
 
 ### Configuration
