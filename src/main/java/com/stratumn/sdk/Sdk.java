@@ -382,6 +382,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws Error
     * @throws Exception
     */
+   @Deprecated
    private <TLinkData> TracesState<TState, TLinkData> getTracesInStage(TraceStageType stageType,
          PaginationInfo paginationInfo, String actionKey, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
@@ -590,6 +591,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws TraceSdkException
     */
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getAttestationTraces(String actionKey,
          PaginationInfo paginationInfo) throws TraceSdkException {
 
@@ -597,6 +599,7 @@ public class Sdk<TState> implements ISdk<TState> {
    }
 
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getAttestationTraces(String actionKey,
          PaginationInfo paginationInfo, Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
@@ -604,12 +607,14 @@ public class Sdk<TState> implements ISdk<TState> {
    }
 
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getIncomingTraces(PaginationInfo paginationInfo)
          throws TraceSdkException {
       return this.getTracesInStage(TraceStageType.INCOMING, paginationInfo, null, null);
    }
 
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getIncomingTraces(PaginationInfo paginationInfo,
          Class<TLinkData> classOfTLinkData) throws TraceSdkException {
       return this.getTracesInStage(TraceStageType.INCOMING, paginationInfo, null, classOfTLinkData);
@@ -623,12 +628,14 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws TraceSdkException
     */
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getOutgoingTraces(PaginationInfo paginationInfo)
          throws TraceSdkException {
       return this.getTracesInStage(TraceStageType.OUTGOING, paginationInfo, null, null);
    }
 
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getOutgoingTraces(PaginationInfo paginationInfo,
          Class<TLinkData> classOfTLinkData) throws TraceSdkException {
       return this.getTracesInStage(TraceStageType.OUTGOING, paginationInfo, null, classOfTLinkData);
@@ -642,6 +649,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @throws TraceSdkException
     */
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getBacklogTraces(PaginationInfo paginationInfo)
          throws TraceSdkException {
       return this.getTracesInStage(TraceStageType.BACKLOG, paginationInfo, null, null);
@@ -649,6 +657,7 @@ public class Sdk<TState> implements ISdk<TState> {
    }
 
    @Override
+   @Deprecated
    public <TLinkData> TracesState<TState, TLinkData> getBacklogTraces(PaginationInfo paginationInfo,
          Class<TLinkData> classOfTLinkData) throws TraceSdkException {
       return this.getTracesInStage(TraceStageType.BACKLOG, paginationInfo, null, classOfTLinkData);
@@ -718,6 +727,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> acceptTransfer(TransferResponseInput<TLinkData> input)
          throws TraceSdkException {
       return acceptTransfer(input, null);
@@ -731,6 +741,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> acceptTransfer(TransferResponseInput<TLinkData> input,
          Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
@@ -786,6 +797,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> rejectTransfer(TransferResponseInput<TLinkData> input)
          throws TraceSdkException {
       return rejectTransfer(input, null);
@@ -799,6 +811,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> rejectTransfer(TransferResponseInput<TLinkData> input,
          Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
@@ -853,6 +866,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> cancelTransfer(TransferResponseInput<TLinkData> input)
          throws TraceSdkException {
 
@@ -868,6 +882,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> cancelTransfer(TransferResponseInput<TLinkData> input,
          Class<TLinkData> classOfTLinkData) throws TraceSdkException {
 
@@ -977,6 +992,7 @@ public class Sdk<TState> implements ISdk<TState> {
     * @return the Trace
     */
    @Override
+   @Deprecated
    public <TLinkData> TraceState<TState, TLinkData> pushTrace(PushTransferInput<TLinkData> input)
          throws TraceSdkException {
 

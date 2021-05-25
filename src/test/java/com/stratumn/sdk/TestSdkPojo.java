@@ -21,11 +21,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,12 +31,10 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.stratumn.chainscript.utils.JsonHelper;
 import com.stratumn.sdk.model.client.Endpoints;
 import com.stratumn.sdk.model.client.Secret;
 import com.stratumn.sdk.model.misc.Identifiable;
-import com.stratumn.sdk.model.misc.Property;
 import com.stratumn.sdk.model.sdk.SdkOptions;
 import com.stratumn.sdk.model.trace.AddTagsToTraceInput;
 import com.stratumn.sdk.model.trace.AppendLinkInput;
@@ -49,78 +42,65 @@ import com.stratumn.sdk.model.trace.GetTraceDetailsInput;
 import com.stratumn.sdk.model.trace.GetTraceStateInput;
 import com.stratumn.sdk.model.trace.NewTraceInput;
 import com.stratumn.sdk.model.trace.PaginationInfo;
-import com.stratumn.sdk.model.trace.PushTransferInput;
 import com.stratumn.sdk.model.trace.SearchTracesFilter;
 import com.stratumn.sdk.model.trace.TraceDetails;
 import com.stratumn.sdk.model.trace.TraceState;
 import com.stratumn.sdk.model.trace.TracesState;
-import com.stratumn.sdk.model.trace.TransferResponseInput;
-
-//used the same structure so its compatable with existing links
-class SomeClass {
-   public int weight;
-   public boolean valid;
-   public String[] operators;
-   public String operation;
-   public Identifiable certificate;
-   public Identifiable certificate2;
-   public Identifiable[] certificates;
-}
-
-class StateExample {
-   public String f1;
-   public SomeClass data;
-
-}
-
-class ReasonClass {
-   public String reason;
-}
-
-class OperationClass {
-   public String operation;
-   public String destination;
-   public String eta;
-}
-
-class Step {
-
-   public StepData data;
-}
-
-class StepData {
-   public Identifiable[] stp_form_section;
-}
 
 public class TestSdkPojo {
 
    private static Gson gson = JsonHelper.getGson();
-   private static final String ACCOUNT_STAGING_URL = "https://account-api.staging.stratumn.com";
-   private static final String TRACE_STAGING_URL = "https://trace-api.staging.stratumn.com";
-   private static final String MEDIA_STAGING_URL = "https://media-api.staging.stratumn.com";
-
-   private static String PEM_PRIVATEKEY = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRAjgtjpc1iOR4zYm+21McRGoWr0WM1NBkm26uZmFAx\n853QZ8CRL/HWGCPpEt18JrHZr9ZwA9UyoEosPR8gPakZFQ==\n-----END ED25519 PRIVATE KEY-----\n";
-   private static String WORFKLOW_ID = "591";
-   private static String ACTION_KEY = "action1";
-   private static String COMMENT_ACTION_KEY = "3HflvBg1mU";
-   private static String MY_GROUP = "1744";
-   private static String MY_GROUP_LABEL = "group1";
-
-   private static String PEM_PRIVATEKEY_2 = "-----BEGIN ED25519 PRIVATE KEY-----\nMFACAQAwBwYDK2VwBQAEQgRArbo87/1Yd/nOqFwmmcuxm01T9/pqkeARQxK9y4iG\nF3Xe1W+/2UOr/rYuQPFHQC4a/F0r6nVJGgCI1Ghc/luHZw==\n-----END ED25519 PRIVATE KEY-----\n";
-   private static String OTHER_GROUP = "1785";
-   private static String OTHER_GROUP_LABEL = "stp";
-
    private static Sdk<StateExample> sdk;
    private static Sdk<StateExample> otherSdk;
+
+   // used the same structure so its compatable with existing links
+   class InitDataClass {
+      public String entity;
+      public String submissionPeriod;
+      public String startDate;
+      public String deadline;
+      public String comment;
+
+   }
+
+   class CommentClass {
+      public String comment;
+   }
+
+   class UploadDocumentsClass {
+      public Identifiable[] documents;
+      public String comment;
+   }
+
+   class StatusClass {
+      public String value;
+      public double progress;
+   }
+
+   class ImportTaClass {
+      public Object taSummary;
+      public Object file;
+   }
+
+   class StateExample {
+      public String entity;
+      public String submissionPeriod;
+      public String startDate;
+      public String deadline;
+      public Object taSummary;
+      public StatusClass status;
+      public Object[] comments;
+   }
 
    public static Sdk<StateExample> getSdk() {
 
       if (sdk == null) {
-         Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY);
-         SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ACCOUNT_STAGING_URL, TRACE_STAGING_URL, MEDIA_STAGING_URL));
+         Secret s = Secret.newPrivateKeySecret(ConfigTest.PEM_PRIVATEKEY);
+         SdkOptions opts = new SdkOptions(ConfigTest.WORKFLOW_ID, s);
+         opts.setEndpoints(new Endpoints(ConfigTest.ACCOUNT_STAGING_URL, ConfigTest.TRACE_STAGING_URL,
+               ConfigTest.MEDIA_STAGING_URL));
          opts.setEnableDebuging(true);
-         opts.setGroupLabel(MY_GROUP_LABEL);
+         opts.setGroupLabel(ConfigTest.MY_GROUP_LABEL);
          sdk = new Sdk<StateExample>(opts, StateExample.class);
       }
       return sdk;
@@ -129,42 +109,27 @@ public class TestSdkPojo {
    public static Sdk<StateExample> getOtherGroupSdk() {
 
       if (otherSdk == null) {
-         Secret s = Secret.newPrivateKeySecret(PEM_PRIVATEKEY_2);
-         SdkOptions opts = new SdkOptions(WORFKLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ACCOUNT_STAGING_URL, TRACE_STAGING_URL, MEDIA_STAGING_URL));
+         Secret s = Secret.newPrivateKeySecret(ConfigTest.PEM_PRIVATEKEY_2);
+         SdkOptions opts = new SdkOptions(ConfigTest.WORKFLOW_ID, s);
+         opts.setEndpoints(new Endpoints(ConfigTest.ACCOUNT_STAGING_URL, ConfigTest.TRACE_STAGING_URL,
+               ConfigTest.MEDIA_STAGING_URL));
          opts.setEnableDebuging(true);
-         opts.setGroupLabel(OTHER_GROUP_LABEL);
+         opts.setGroupLabel(ConfigTest.OTHER_GROUP_LABEL);
          otherSdk = new Sdk<StateExample>(opts);
 
       }
       return otherSdk;
    }
 
-   @Test
-   public void getTraceDetailsTest() {
-      try {
-         Sdk<StateExample> sdk = getSdk();
-         String traceId = "18014bb9-1c3c-402f-91f8-5cab2c23b292";
-         GetTraceDetailsInput input = new GetTraceDetailsInput(traceId, 5, null, null, null);
-
-         TraceDetails<Object> details = sdk.getTraceDetails(input);
-
-         assertTrue(details.getTotalCount() > 0);
-         assertFalse(gson.toJson(details).contains("Error"));
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-
-   }
+   private TraceState<StateExample, InitDataClass> initTraceState;
 
    @Test
    public void getTraceStateTest() {
       try {
          Sdk<StateExample> sdk = getSdk();
-         String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
+         String traceId = ConfigTest.TRACE_ID;
          GetTraceStateInput input = new GetTraceStateInput(traceId);
-         TraceState<StateExample, SomeClass> state = sdk.getTraceState(input);
+         TraceState<StateExample, StateExample> state = sdk.getTraceState(input);
          // // System.out.println("testTraceState" + gson.toJson(state));
          assertTrue(state.getTraceId().equals(traceId));
          assertFalse(gson.toJson(state).contains("Error"));
@@ -175,105 +140,41 @@ public class TestSdkPojo {
    }
 
    @Test
-   public void getIncomingTracesTest() {
+   public void getTraceDetailsTest() {
       try {
          Sdk<StateExample> sdk = getSdk();
-         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> state = sdk.getIncomingTraces(paginationInfo);
-         // System.out.println("testIncomingTraces " + gson.toJson(state));
-         assertFalse(gson.toJson(state).contains("Error"));
+         String traceId = ConfigTest.TRACE_ID;
+         GetTraceDetailsInput input = new GetTraceDetailsInput(traceId, 5, null, null, null);
+
+         TraceDetails<Object> details = sdk.getTraceDetails(input);
+
+         assertTrue(details.getTotalCount() > 0);
+         assertFalse(gson.toJson(details).contains("Error"));
       } catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
-
-   @Test
-   public void getOutoingTracesTest() {
-      try {
-         Sdk<StateExample> sdk = getSdk();
-         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> state = sdk.getOutgoingTraces(paginationInfo);
-         // System.out.println("testOutoingTraces " + gson.toJson(state));
-         assertFalse(gson.toJson(state).contains("Error"));
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void getAttestationTracesTest() {
-      try {
-         Sdk<StateExample> sdk = getSdk();
-         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> state = sdk.getAttestationTraces(ACTION_KEY, paginationInfo);
-         // System.out.println("testBacklog " + gson.toJson(state));
-         assertFalse(gson.toJson(state).contains("Error"));
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void getBacklogTracesTest() {
-      try {
-         Sdk<StateExample> sdk = getSdk();
-         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> state = sdk.getBacklogTraces(paginationInfo);
-         // System.out.println("testBacklog " + gson.toJson(state));
-         assertFalse(gson.toJson(state).contains("Error"));
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   // used to pass the trace from one test method to another
-   private TraceState<StateExample, SomeClass> someTraceState;
-   private TraceState<StateExample, Step> uploadState;
 
    @Test
    public void newTraceTest() {
       try {
          Sdk<StateExample> sdk = getSdk();
          Map<String, Object> dataMap = new HashMap<String, Object>();
-         dataMap.put("weight", "123");
-         dataMap.put("valid", true);
-         dataMap.put("operators", new String[] { "1", "2" });
-         dataMap.put("operation", "my new operation 1");
+         dataMap.put("entity", ConfigTest.OTHER_GROUP_NAME);
+         dataMap.put("submissionPeriod", "2021.Q4");
+         dataMap.put("startDate", "2021-01-30");
+         dataMap.put("deadline", "2021-06-30");
+         dataMap.put("comment", "init comment");
          // quickly convert existing map to object but the object can be created any way
-         SomeClass data = JsonHelper.mapToObject(dataMap, SomeClass.class);
-         NewTraceInput<SomeClass> newTraceInput = new NewTraceInput<SomeClass>(ACTION_KEY, data);
+         InitDataClass data = JsonHelper.mapToObject(dataMap, InitDataClass.class);
+         NewTraceInput<InitDataClass> newTraceInput = new NewTraceInput<InitDataClass>(ConfigTest.INIT_ACTION_KEY,
+               data);
 
-         TraceState<StateExample, SomeClass> state = sdk.newTrace(newTraceInput);
+         TraceState<StateExample, InitDataClass> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
          assertTrue(state.getData() instanceof StateExample);
-         someTraceState = state;
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void newTraceUploadTest() {
-      try {
-         Sdk<StateExample> sdk = getSdk();
-
-         // Step s = new Step();
-         StepData s = new StepData();
-
-         // This fails on Identifiable deserialzation
-         s.stp_form_section = new Identifiable[] {
-               FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) };
-
-         NewTraceInput<StepData> newTraceInput = new NewTraceInput<StepData>(ACTION_KEY, s);
-
-         TraceState<StateExample, StepData> state = sdk.newTrace(newTraceInput);
-         assertNotNull(state.getTraceId());
-
+         initTraceState = state;
       } catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
@@ -284,14 +185,13 @@ public class TestSdkPojo {
    public void appendLinkTest() {
       try {
          newTraceTest();
-         assertNotNull(someTraceState);
-         OperationClass data;
-         String json = "{ operation: \"XYZ shipment departed port for ABC\"," + "    destination: \"ABC\", "
-               + "    customsCheck: true, " + "    eta: \"2019-07-02T12:00:00.000Z\"" + "  }";
-         data = JsonHelper.objectToObject(json, OperationClass.class);
-         AppendLinkInput<OperationClass> appLinkInput = new AppendLinkInput<OperationClass>(ACTION_KEY, data,
-               someTraceState.getTraceId());
-         TraceState<StateExample, OperationClass> state = getSdk().appendLink(appLinkInput);
+         assertNotNull(initTraceState);
+         CommentClass data = new CommentClass();
+         data.comment = "comment";
+
+         AppendLinkInput<CommentClass> appLinkInput = new AppendLinkInput<CommentClass>(ConfigTest.COMMENT_ACTION_KEY,
+               data, initTraceState.getTraceId());
+         TraceState<StateExample, CommentClass> state = getSdk().appendLink(appLinkInput);
          assertNotNull(state.getTraceId());
       } catch (Exception ex) {
          fail(ex.getMessage());
@@ -299,16 +199,19 @@ public class TestSdkPojo {
    }
 
    @Test
-   public void pushTraceTest() {
+   public void newTraceUploadTest() {
       try {
          newTraceTest();
-         assertNotNull(someTraceState);
-         PushTransferInput<Object> push = new PushTransferInput<Object>(OTHER_GROUP, new Object(),
-               someTraceState.getTraceId());
+         UploadDocumentsClass s = new UploadDocumentsClass();
+         s.documents = new Identifiable[] { FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) };
+         s.comment = "upload comment";
 
-         getSdk().pushTrace(push);
-         // System.out.println("test pushTrace " + gson.toJson(someTraceState));
-         assertNotNull(push.getTraceId());
+         AppendLinkInput<UploadDocumentsClass> newTraceInput = new AppendLinkInput<UploadDocumentsClass>(
+               ConfigTest.UPLOAD_DOCUMENTS_ACTION_KEY, s, initTraceState.getTraceId());
+
+         TraceState<StateExample, UploadDocumentsClass> state = getOtherGroupSdk().appendLink(newTraceInput);
+         assertNotNull(state.getTraceId());
+
       } catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
@@ -316,84 +219,23 @@ public class TestSdkPojo {
    }
 
    @Test
-   public void acceptTransferTest() {
+   public void ImportDataCsvTest() {
       try {
-         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> tracesIn = getSdk().getIncomingTraces(paginationInfo);
+         newTraceTest();
 
-         if (tracesIn.getTotalCount() == 0) {
-            pushTraceTest();
-         } else {
-            someTraceState = tracesIn.getTraces().get(0);
-         }
-         TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null,
-               someTraceState.getTraceId());
-         TraceState<StateExample, SomeClass> stateAccept = getOtherGroupSdk().acceptTransfer(trInput);
-         assertNotNull(stateAccept.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
+         ImportTaClass data = new ImportTaClass();
+         String json = "[{ reference: \"reference\", entityName: \"entity\", currency:\"EUR\", amount: 500, endDate: \"2020-06-25\"},"
+               + "{reference: \"reference 2\", entityName: \"entity 2\", currency: \"EUR\",amount: 1300, endDate: \"2020-06-28\"}"
+               + "]";
 
-   @Test
-   public void rejectTransferTest() {
-      try {
-         PaginationInfo paginationInfo = new PaginationInfo(10, null, null, null);
-         TracesState<StateExample, SomeClass> tracesIn = getSdk().getIncomingTraces(paginationInfo);
+         data.taSummary = JsonHelper.fromJson(json, Object.class);
+         data.file = FileWrapper.fromFilePath(Paths.get("src/test/resources/TA.csv"));
 
-         String traceId = null;
-         if (tracesIn.getTotalCount() == 0) {
-            pushTraceTest();
-            traceId = someTraceState.getTraceId();
-         } else {
-            someTraceState = tracesIn.getTraces().get(0);
-            traceId = someTraceState.getTraceId();
-         }
-         TransferResponseInput<SomeClass> trInput = new TransferResponseInput<SomeClass>(null, traceId);
-         TraceState<StateExample, SomeClass> stateReject = getOtherGroupSdk().rejectTransfer(trInput);
-         // System.out.println("Reject Transfer:" + "\r\n" + stateReject);
-         assertNotNull(stateReject.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
+         AppendLinkInput<ImportTaClass> newTraceInput = new AppendLinkInput<ImportTaClass>(
+               ConfigTest.IMPORT_TA_ACTION_KEY, data, initTraceState.getTraceId());
 
-   @Test
-   public void cancelTransferTest() {
-      try {
-         pushTraceTest();
-         TransferResponseInput<SomeClass> responseInput = new TransferResponseInput<SomeClass>(null,
-               someTraceState.getTraceId());
-         TraceState<StateExample, SomeClass> statecancel = sdk.cancelTransfer(responseInput);
-         // System.out.println("cancelTransfer:" + "\r\n" + statecancel);
-         assertNotNull(statecancel.getTraceId());
-      } catch (Exception ex) {
-         ex.printStackTrace();
-         fail(ex.getMessage());
-      }
-   }
-
-   @Test
-   public void downloadFilesInObjectTest() {
-      try {
-         TraceState<StateExample, Step> state;
-         try {
-            state = getSdk().getTraceState(new GetTraceStateInput("9565be68-5a11-4262-9a55-bd3fe6bfa3f0"));
-         } catch (Exception e) { // trace not found
-            newTraceUploadTest();
-            state = uploadState;
-         }
-
-         Object dataWithRecords = state.getHeadLink().formData();
-         JsonObject dataWithFiles = (JsonObject) getSdk().downloadFilesInObject(dataWithRecords);
-         Map<String, Property<FileWrapper>> fileWrappers = Helpers.extractFileWrappers(dataWithFiles);
-
-         for (Property<FileWrapper> fileWrapperProp : fileWrappers.values()) {
-            writeFileToDisk(fileWrapperProp.getValue());
-            // assert files are equal
-         }
+         TraceState<StateExample, ImportTaClass> state = sdk.appendLink(newTraceInput);
+         assertNotNull(state.getTraceId());
       } catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
@@ -403,7 +245,7 @@ public class TestSdkPojo {
    @Test
    public void traceTagsRWTest() {
       try {
-         String traceId = "191516ec-5f8c-4757-9061-8c7ab06cf0a0";
+         String traceId = ConfigTest.TRACE_ID;
 
          // Add a tag to a trace
          UUID uuid = UUID.randomUUID();
@@ -412,14 +254,16 @@ public class TestSdkPojo {
          input.setTraceId(traceId);
          input.setTags(new String[] { randomUUIDString });
 
-         TraceState<StateExample, SomeClass> t = getSdk().addTagsToTrace(input);
+         TraceState<StateExample, StateExample> t = getSdk().addTagsToTrace(input);
          assertEquals(traceId, t.getTraceId());
 
          // search the trace by tags
          List<String> tags = new ArrayList<String>();
          tags.add(randomUUIDString);
+         tags.add("tag1");
+         tags.add("tag2");
          SearchTracesFilter f = new SearchTracesFilter(tags);
-         TracesState<StateExample, SomeClass> res = sdk.searchTraces(f, new PaginationInfo());
+         TracesState<StateExample, StateExample> res = sdk.searchTraces(f, new PaginationInfo());
 
          assertEquals(1, res.getTotalCount());
          assertEquals(traceId, res.getTraces().get(0).getTraceId());
@@ -440,70 +284,41 @@ public class TestSdkPojo {
          SearchTracesFilter f = new SearchTracesFilter();
          f.setTags(tags);
          f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
-         TracesState<StateExample, SomeClass> res = getSdk().searchTraces(f, new PaginationInfo());
+         TracesState<StateExample, StateExample> res = getSdk().searchTraces(f, new PaginationInfo());
          assertEquals(1, res.getTotalCount());
-         assertEquals("5bf6d482-cfdc-4edc-a5ef-c96539da94d8", res.getTraces().get(0).getTraceId());
+         assertEquals(ConfigTest.TRACE_ID, res.getTraces().get(0).getTraceId());
       } catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
       }
    }
 
-   /***
-    * Writes the files to the output folder
-    * 
-    * @param fWrapper
-    * @throws TraceSdkException
-    */
-   private void writeFileToDisk(FileWrapper fWrapper) throws TraceSdkException {
-
-      ByteBuffer buffer = fWrapper.decryptedData();
-
-      File file = Paths.get("src/test/resources/out/" + fWrapper.info().getName()).toFile();
-      if (!file.getParentFile().exists())
-         file.getParentFile().mkdirs();
-      if (!file.exists())
-         try {
-            file.createNewFile();
-         } catch (IOException e1) {
-            throw new TraceSdkException("Failed to create output file");
-         }
-      try (FileOutputStream outputStream = new FileOutputStream(file, false);
-            FileChannel channel = outputStream.getChannel()) {
-
-         // Writes a sequence of bytes to this channel from the given buffer.
-         channel.write(buffer);
-      } catch (Exception e) {
-         throw new TraceSdkException(e);
-      }
-   }
-
    @Test
    public void changeGroupTest() {
       newTraceTest();
-      assertNotNull(someTraceState);
-      assertEquals(someTraceState.getUpdatedByGroupId(), MY_GROUP);
+      assertNotNull(initTraceState);
+      assertEquals(initTraceState.getUpdatedByGroupId(), ConfigTest.MY_GROUP);
       try {
          Sdk<StateExample> sdk = getSdk();
          // Appendlink
          Map<String, Object> dataMap = new HashMap<String, Object>();
          dataMap.put("comment", "commment");
          AppendLinkInput<Map<String, Object>> appLinkInput = new AppendLinkInput<Map<String, Object>>(
-               COMMENT_ACTION_KEY, dataMap, someTraceState.getTraceId());
+               ConfigTest.COMMENT_ACTION_KEY, dataMap, initTraceState.getTraceId());
          // change group for action
-         appLinkInput.setGroupLabel(OTHER_GROUP_LABEL);
+         appLinkInput.setGroupLabel(ConfigTest.OTHER_GROUP_LABEL);
 
          TraceState<StateExample, Map<String, Object>> state = sdk.appendLink(appLinkInput);
          // should equal group2 id
-         assertEquals(state.getUpdatedByGroupId(), OTHER_GROUP);
+         assertEquals(state.getUpdatedByGroupId(), ConfigTest.OTHER_GROUP);
 
          AppendLinkInput<Map<String, Object>> appLinkInputWithGroupLabel = new AppendLinkInput<Map<String, Object>>(
-               COMMENT_ACTION_KEY, dataMap, someTraceState.getTraceId());
-         appLinkInputWithGroupLabel.setGroupLabel(MY_GROUP_LABEL);
+               ConfigTest.COMMENT_ACTION_KEY, dataMap, initTraceState.getTraceId());
+         appLinkInputWithGroupLabel.setGroupLabel(ConfigTest.MY_GROUP_LABEL);
 
          state = sdk.appendLink(appLinkInputWithGroupLabel);
          // should equal group2 id
-         assertEquals(state.getUpdatedByGroupId(), MY_GROUP);
+         assertEquals(state.getUpdatedByGroupId(), ConfigTest.MY_GROUP);
       } catch (TraceSdkException e) {
          e.printStackTrace();
          fail(e.getMessage());

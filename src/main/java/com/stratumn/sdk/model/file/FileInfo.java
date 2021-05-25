@@ -15,30 +15,28 @@ See the License for the specific language governing permissions and
 */
 package com.stratumn.sdk.model.file;
 
+import java.time.ZonedDateTime;
+
 /**
  * A file information interface.
  */
-public class FileInfo 
-{
-  
+public class FileInfo {
+
    private String mimetype;
    private Long size;
    private String name;
    private String key;
+   private ZonedDateTime createdAt;
 
-   public FileInfo(String name, Long size, String mimetype, String key) throws IllegalArgumentException
-   {
- 
-      if(name == null)
-      {
+   public FileInfo(String name, Long size, String mimetype, String key) throws IllegalArgumentException {
+
+      if (name == null) {
          throw new IllegalArgumentException("name cannot be null");
       }
-      if(size == null)
-      {
+      if (size == null) {
          throw new IllegalArgumentException("size cannot be null");
       }
-      if(mimetype == null)
-      {
+      if (mimetype == null) {
          throw new IllegalArgumentException("mimetype cannot be null");
       }
 
@@ -46,52 +44,53 @@ public class FileInfo
       this.size = size;
       this.mimetype = mimetype;
       this.key = key;
+      this.createdAt = ZonedDateTime.now();
    }
 
-   public String getMimetype()
-   {
+   public String getMimetype() {
       return this.mimetype;
    }
 
-   public void setMimetype(String mimetype)
-   {
+   public void setMimetype(String mimetype) {
       this.mimetype = mimetype;
    }
 
-   public Long getSize()
-   {
+   public Long getSize() {
       return this.size;
    }
 
-   public void setSize(Long size)
-   {
+   public void setSize(Long size) {
       this.size = size;
    }
 
-   public String getName()
-   {
+   public String getName() {
       return this.name;
    }
 
-   public void setName(String name)
-   {
+   public void setName(String name) {
       this.name = name;
    }
 
-   public String getKey()
-   {
+   public String getKey() {
       return key;
    }
 
-   public void setKey(String key)
-   {
+   public void setKey(String key) {
       this.key = key;
    }
 
+   public ZonedDateTime getCreatedAt() {
+      return createdAt;
+   }
+
+   public void setCreatedAt(ZonedDateTime createdAt) {
+      this.createdAt = createdAt;
+   }
+
    @Override
-   public String toString()
-   {
-      return "FileInfo [mimetype=" + mimetype + ", size=" + size + ", name=" + name + ", key=" + key + "]";
+   public String toString() {
+      return "FileInfo [mimetype=" + mimetype + ", size=" + size + ", name=" + name + ", key=" + key + ", createdAt="
+            + createdAt + "]";
    }
 
 }
