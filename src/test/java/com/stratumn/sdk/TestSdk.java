@@ -57,15 +57,16 @@ public class TestSdk {
    private static Sdk<Object> sdk;
    private static Sdk<Object> otherSdk;
 
+   private static ConfigTest config = new ConfigTest();;
+
    public static Sdk<Object> getSdk() {
 
       if (sdk == null) {
-         Secret s = Secret.newPrivateKeySecret(ConfigTest.PEM_PRIVATEKEY);
-         SdkOptions opts = new SdkOptions(ConfigTest.WORKFLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ConfigTest.ACCOUNT_STAGING_URL, ConfigTest.TRACE_STAGING_URL,
-               ConfigTest.MEDIA_STAGING_URL));
+         Secret s = Secret.newPrivateKeySecret(config.PEM_PRIVATEKEY);
+         SdkOptions opts = new SdkOptions(config.WORKFLOW_ID, s);
+         opts.setEndpoints(new Endpoints(config.ACCOUNT_API_URL, config.TRACE_API_URL, config.MEDIA_API_URL));
          opts.setEnableDebuging(true);
-         opts.setGroupLabel(ConfigTest.MY_GROUP_LABEL);
+         opts.setGroupLabel(config.MY_GROUP_LABEL);
          sdk = new Sdk<Object>(opts);
 
       }
@@ -75,12 +76,11 @@ public class TestSdk {
    public static Sdk<Object> getOtherGroupSdk() {
 
       if (otherSdk == null) {
-         Secret s = Secret.newPrivateKeySecret(ConfigTest.PEM_PRIVATEKEY_2);
-         SdkOptions opts = new SdkOptions(ConfigTest.WORKFLOW_ID, s);
-         opts.setEndpoints(new Endpoints(ConfigTest.ACCOUNT_STAGING_URL, ConfigTest.TRACE_STAGING_URL,
-               ConfigTest.MEDIA_STAGING_URL));
+         Secret s = Secret.newPrivateKeySecret(config.PEM_PRIVATEKEY_2);
+         SdkOptions opts = new SdkOptions(config.WORKFLOW_ID, s);
+         opts.setEndpoints(new Endpoints(config.ACCOUNT_API_URL, config.TRACE_API_URL, config.MEDIA_API_URL));
          opts.setEnableDebuging(true);
-         opts.setGroupLabel(ConfigTest.OTHER_GROUP_LABEL);
+         opts.setGroupLabel(config.OTHER_GROUP_LABEL);
          otherSdk = new Sdk<Object>(opts);
 
       }
@@ -91,7 +91,7 @@ public class TestSdk {
    public void getTraceStateTest() {
       try {
          Sdk<Object> sdk = getSdk();
-         String traceId = ConfigTest.TRACE_ID;
+         String traceId = config.TRACE_ID;
          GetTraceStateInput input = new GetTraceStateInput(traceId);
          TraceState<Object, Object> state = sdk.getTraceState(input);
          System.out.println("testTraceState" + gson.toJson(state));
@@ -107,7 +107,7 @@ public class TestSdk {
    public void getTraceDetailsTest() {
       try {
          Sdk<Object> sdk = getSdk();
-         String traceId = ConfigTest.TRACE_ID;
+         String traceId = config.TRACE_ID;
          GetTraceDetailsInput input = new GetTraceDetailsInput(traceId, 5, null, null, null);
 
          TraceDetails<Object> details = sdk.getTraceDetails(input);
@@ -129,12 +129,12 @@ public class TestSdk {
       try {
          Sdk<Object> sdk = getSdk();
          Map<String, Object> data = new HashMap<String, Object>();
-         data.put("entity", ConfigTest.OTHER_GROUP_NAME);
+         data.put("entity", config.OTHER_GROUP_NAME);
          data.put("submissionPeriod", "2021.Q4");
          data.put("startDate", "2021-01-30");
          data.put("deadline", "2021-06-30");
          data.put("comment", "init comment");
-         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(ConfigTest.INIT_ACTION_KEY, data);
+         NewTraceInput<Object> newTraceInput = new NewTraceInput<Object>(config.INIT_ACTION_KEY, data);
          TraceState<Object, Object> state = sdk.newTrace(newTraceInput);
          assertNotNull(state.getTraceId());
          someTraceState = state;
@@ -152,7 +152,7 @@ public class TestSdk {
          Map<String, Object> data;
          String json = "{ comment: \"comment\" }";
          data = JsonHelper.objectToMap(json);
-         AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(ConfigTest.COMMENT_ACTION_KEY, data,
+         AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(config.COMMENT_ACTION_KEY, data,
                someTraceState.getTraceId());
          TraceState<Object, Object> state = getSdk().appendLink(appLinkInput);
          assertNotNull(state.getTraceId());
@@ -173,8 +173,8 @@ public class TestSdk {
          data.put("documents",
                new Identifiable[] { FileWrapper.fromFilePath(Paths.get("src/test/resources/TestFileX.txt")) });
 
-         AppendLinkInput<Object> newTraceInput = new AppendLinkInput<Object>(ConfigTest.UPLOAD_DOCUMENTS_ACTION_KEY,
-               data, someTraceState.getTraceId());
+         AppendLinkInput<Object> newTraceInput = new AppendLinkInput<Object>(config.UPLOAD_DOCUMENTS_ACTION_KEY, data,
+               someTraceState.getTraceId());
 
          TraceState<Object, Object> state = sdk.appendLink(newTraceInput);
          assertNotNull(state.getTraceId());
@@ -190,7 +190,7 @@ public class TestSdk {
       try {
          TraceState<Object, Object> state;
          try {
-            state = getSdk().getTraceState(new GetTraceStateInput(ConfigTest.TRACE_ID));
+            state = getSdk().getTraceState(new GetTraceStateInput(config.TRACE_ID));
          } catch (Exception e) { // trace not found
             newTraceUploadTest();
             state = traceStateWithFile;
@@ -223,7 +223,7 @@ public class TestSdk {
          data.put("taSummary", JsonHelper.fromJson(json, Object.class));
          data.put("file", FileWrapper.fromFilePath(Paths.get("src/test/resources/TA.csv")));
 
-         AppendLinkInput<Object> newTraceInput = new AppendLinkInput<Object>(ConfigTest.IMPORT_TA_ACTION_KEY, data,
+         AppendLinkInput<Object> newTraceInput = new AppendLinkInput<Object>(config.IMPORT_TA_ACTION_KEY, data,
                someTraceState.getTraceId());
 
          TraceState<Object, Object> state = sdk.appendLink(newTraceInput);
@@ -237,7 +237,7 @@ public class TestSdk {
    @Test
    public void traceTagsRWTest() {
       try {
-         String traceId = ConfigTest.TRACE_ID;
+         String traceId = config.TRACE_ID;
 
          // Add a tag to a trace
          UUID uuid = UUID.randomUUID();
@@ -278,7 +278,7 @@ public class TestSdk {
          f.setSearchType(SearchTracesFilter.SEARCH_TYPE.TAGS_CONTAINS);
          TracesState<Object, Object> res = getSdk().searchTraces(f, new PaginationInfo());
          assertEquals(1, res.getTotalCount());
-         assertEquals(ConfigTest.TRACE_ID, res.getTraces().get(0).getTraceId());
+         assertEquals(config.TRACE_ID, res.getTraces().get(0).getTraceId());
       } catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
@@ -312,28 +312,28 @@ public class TestSdk {
    public void changeGroupTest() {
       newTraceTest();
       assertNotNull(someTraceState);
-      assertEquals(someTraceState.getUpdatedByGroupId(), ConfigTest.MY_GROUP);
+      assertEquals(someTraceState.getUpdatedByGroupId(), config.MY_GROUP);
       try {
          Sdk<Object> sdk = getSdk();
          // Appendlink
          Map<String, Object> dataMap = new HashMap<String, Object>();
          dataMap.put("comment", "commment");
          // comment action
-         AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(ConfigTest.COMMENT_ACTION_KEY, dataMap,
+         AppendLinkInput<Object> appLinkInput = new AppendLinkInput<Object>(config.COMMENT_ACTION_KEY, dataMap,
                someTraceState.getTraceId());
          // change group for action
-         appLinkInput.setGroupLabel(ConfigTest.OTHER_GROUP_LABEL);
+         appLinkInput.setGroupLabel(config.OTHER_GROUP_LABEL);
 
          TraceState<Object, Object> state = sdk.appendLink(appLinkInput);
-         assertEquals(state.getUpdatedByGroupId(), ConfigTest.OTHER_GROUP);
+         assertEquals(state.getUpdatedByGroupId(), config.OTHER_GROUP);
 
-         AppendLinkInput<Object> appLinkInputWithGroupLabel = new AppendLinkInput<Object>(ConfigTest.COMMENT_ACTION_KEY,
+         AppendLinkInput<Object> appLinkInputWithGroupLabel = new AppendLinkInput<Object>(config.COMMENT_ACTION_KEY,
                dataMap, someTraceState.getTraceId());
-         appLinkInputWithGroupLabel.setGroupLabel(ConfigTest.MY_GROUP_LABEL);
+         appLinkInputWithGroupLabel.setGroupLabel(config.MY_GROUP_LABEL);
 
          state = sdk.appendLink(appLinkInputWithGroupLabel);
          // should equal group2 id
-         assertEquals(state.getUpdatedByGroupId(), ConfigTest.MY_GROUP);
+         assertEquals(state.getUpdatedByGroupId(), config.MY_GROUP);
       } catch (TraceSdkException e) {
          e.printStackTrace();
          fail(e.getMessage());

@@ -26,6 +26,8 @@ blocks:
 
   - name: Test & Build
     task:
+      secrets:
+        - name: sdk-test-staging
       env_vars:
         - name: MAVEN_OPTS
           value: "-Dmaven.repo.local=.m2"
