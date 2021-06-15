@@ -37,7 +37,7 @@ public class ConfigTest {
         MEDIA_API_URL = dotenv.get("MEDIA_API_URL");
 
         // Bot 1
-        PEM_PRIVATEKEY = dotenv.get("PEM_PRIVATEKEY").replaceAll("\\\\n", "\n");
+        PEM_PRIVATEKEY = dotenv.get("PEM_PRIVATEKEY");
         ;
         // // Bot 2
         PEM_PRIVATEKEY_2 = dotenv.get("PEM_PRIVATEKEY_2").replaceAll("\\\\n", "\n");
