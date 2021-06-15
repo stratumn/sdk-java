@@ -8,8 +8,10 @@ execution_time_limit:
   minutes: 15
 
 blocks:
-  - name: Install dependencies
+  - name: Install dependencies & test
     task:
+      secrets:
+        - name: sdk-test-staging
       env_vars:
         - name: MAVEN_OPTS
           value: "-Dmaven.repo.local=.m2"
@@ -23,25 +25,6 @@ blocks:
             - mvn -q package
             - cache store build-$KEY target
             - cache store maven-$KEY .m2
-
-  - name: Test & Build
-    task:
-      secrets:
-        - name: sdk-test-staging
-      env_vars:
-        - name: MAVEN_OPTS
-          value: "-Dmaven.repo.local=.m2"
-
-      prologue:
-        commands:
-          - checkout
-          - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
-          - cache restore build-$KEY
-          - cache restore maven-$KEY
-      jobs:
-        - name: Unit tests
-          commands:
-            - mvn test
 
 promotions:
   - name: Release to maven registry
