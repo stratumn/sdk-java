@@ -26,7 +26,7 @@ public class ConfigTest {
     public String PEM_PRIVATEKEY;
 
     public ConfigTest() {
-        Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
 
         WORKFLOW_ID = dotenv.get("WORKFLOW_ID");
         TRACE_ID = dotenv.get("TRACE_ID");
