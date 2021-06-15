@@ -19,7 +19,7 @@ blocks:
         commands:
           - checkout
       jobs:
-        - name: Build
+        - name: Build & test
           commands:
             - KEY=$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
             - mvn -q package
