@@ -414,3 +414,7 @@ Notes:
 - When someone pushes a trace to your group, it will appear in your `Incoming` stage and their `Outgoing` stage.
 - When you accept a transfer, the trace will move to your `Backlog` stage.
 - When you reject a transfer, the trace will move back to its previous `Attestation` stage and disappear from the `Outgoing` and `Incoming` stages it was in.
+
+## Test locally
+
+If you want to test the SDK locally, you will have to create a `.env` file at the root, and get the content of the `SDK Tests - .env - staging` file on 1Password.
