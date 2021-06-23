@@ -18,12 +18,12 @@ package com.stratumn.sdk;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
 import com.stratumn.sdk.model.file.FileInfo;
+import org.apache.tika.Tika;
 
 /**
  * The implementation of a FileWrapper using a file path to point to the actual
@@ -49,7 +49,13 @@ public class FilePathWrapper extends FileWrapper {
       }
 
       final Long size = file.length();
-      final String mimetype = URLConnection.guessContentTypeFromName(file.getName());
+      Tika tika = new Tika();
+      String mimetype = null;
+      try {
+         mimetype = tika.detect(file);
+      } catch (Exception e) {
+
+      }
       final String name = file.getName();
 
       FileInfo fileInfo = new FileInfo(name, size, mimetype, null);

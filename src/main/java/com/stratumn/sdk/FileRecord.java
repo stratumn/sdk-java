@@ -18,6 +18,7 @@ package com.stratumn.sdk;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+import java.time.format.DateTimeFormatter;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -39,6 +40,7 @@ public class FileRecord implements Identifiable {
    private String mimetype;
    private Long size;
    private String key;
+   private String createdAt;
 
    public FileRecord() {
       super();
@@ -50,6 +52,7 @@ public class FileRecord implements Identifiable {
       this.mimetype = info.getMimetype();
       this.size = info.getSize();
       this.key = info.getKey();
+      this.createdAt = info.getCreatedAt().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
    }
 
    public FileInfo getFileInfo() {
@@ -105,6 +108,14 @@ public class FileRecord implements Identifiable {
 
    public void setKey(String key) {
       this.key = key;
+   }
+
+   public String getCreatedAt() {
+      return createdAt;
+   }
+
+   public void setCreatedAt(String createdAt) {
+      this.createdAt = createdAt;
    }
 
    /**
@@ -173,7 +184,7 @@ public class FileRecord implements Identifiable {
    @Override
    public String toString() {
       return "FileRecord [name=" + name + ", digest=" + digest + ", mimetype=" + mimetype + ", size=" + size + ", key="
-            + key + "]";
+            + key + ", createdAt=" + createdAt + "]";
    }
 
 }
