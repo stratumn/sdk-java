@@ -16,7 +16,8 @@ public class GraphResponse {
 
    @Override
    public String toString() {
-      return "GraphResponse [data=" + data + ", errors=" + Arrays.asList(errors).toString() + "]";
+      return (errors != null) ? "GraphResponse [data=" + data + ", errors=" + Arrays.asList(errors).toString() + "]"
+            : "GraphResponse [data=" + data + "]";
    }
 
    public JsonObject getData() {
